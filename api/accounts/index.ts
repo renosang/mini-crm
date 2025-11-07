@@ -1,5 +1,5 @@
-import dbConnect from '../_lib/dbConnect';
-import Account from '../_models/Account';
+import dbConnect from '../_lib/dbConnect.ts';
+import Account from '../_models/Account.ts';
 // import { protect, admin } from '../_lib/authMiddleware'; // Middleware xác thực
 
 export default async function handler(req, res) {

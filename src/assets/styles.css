@@ -1,16 +1,35 @@
-/* Biến màu */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* :root (Biến màu)
+   Dựa trên thiết kế ALTCRM của bạn
+*/
 :root {
-  --primary-color: #4a69bd; /* Màu xanh dương chính */
-  --bg-color: #f4f7fa;      /* Màu nền chính */
-  --sidebar-bg: #ffffff;
-  --header-bg: #ffffff;
-  --widget-bg: #ffffff;
-  --text-color: #333;
-  --text-light: #777;
-  --border-color: #e0e0e0;
+  --primary-color: #5E72E4;  /* Màu tím/xanh chủ đạo */
+  --bg-color: #F4F7FA;      /* Màu nền chính (light grey) */
+  --sidebar-bg: #FFFFFF;
+  --header-bg: #FFFFFF;
+  --widget-bg: #FFFFFF;
+  --text-color: #32325d;
+  --text-light: #8898AA;
+  --border-color: #E9ECEF;
+  --shadow: 0 0 2rem 0 rgba(136,152,170,.15);
+  --success-color: #2DCE89;
+  --pending-color: #FB6340;
+  --processing-color: #11CDEF;
+
+    /* Bảng màu icon mới */
+  --icon-color-1: #11CDEF; /* Cyan (Gia Hạn) */
+  --icon-color-2: #F3A41A; /* Orange (Tài Khoản) */
+  --icon-color-3: #F5365C; /* Red (Bán Hàng) */
+  --icon-color-4: #2DCE89; /* Green (Khách Hàng) */
+  --icon-color-5: #8965E0; /* Purple (Giao Dịch) */
+  --icon-color-6: #FB6340; /* Orange-Red (Báo Cáo) */
+  --icon-color-7: #32325D; /* Dark (Hợp Đồng) */
+  --icon-color-8: #E67E22; /* Carrot (Nhà Cung Cấp) */
+  --icon-color-9: #9B59B6; /* Amethyst (Hồ Sơ) */
+  --icon-color-10: #8898AA; /* Grey (Cài Đặt) */
 }
 
-/* Reset cơ bản */
+/* --- Reset cơ bản --- */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -18,13 +37,393 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
     Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   background-color: var(--bg-color);
   color: var(--text-color);
+  font-weight: 400; /* Font mảnh hơn cho chữ thường */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* --- Trang Login --- */
+h1, h2, h3, h4, h5 {
+  color: var(--text-color);
+  font-weight: 600; /* In đậm vừa phải */
+}
+
+/* --- Bố cục chính (Layout) --- */
+.layout {
+  display: flex;
+}
+
+.sidebar {
+  width: 280px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: var(--sidebar-bg);
+  box-shadow: 0 0 2rem 0 rgba(136,152,170,.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: 100;
+  border-right: 1px solid var(--border-color);
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 280px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-content {
+  padding: 2rem 2.5rem;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.logout-button {
+  width: auto;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* --- Sidebar (Menu trái) - PHIÊN BẢN NÂNG CẤP --- */
+.sidebar {
+  width: 260px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: var(--sidebar-bg);
+  box-shadow: 0 0 2rem 0 rgba(136,152,170,.1);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  border-right: 1px solid var(--border-color);
+}
+
+.sidebar-logo {
+  padding: 1.6rem 2.25rem; /* Điều chỉnh padding */
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: left;
+}
+.sidebar-logo a {
+  text-decoration: none;
+  color: var(--primary-color);
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 0 1.25rem;
+  overflow-y: auto;
+  flex: 1;
+  
+  /* Ẩn thanh cuộn */
+  scrollbar-width: none; /* Firefox */
+}
+.sidebar-nav::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+
+/* Kiểu cho mỗi mục menu (Gọn gàng hơn) */
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 0.85rem 1rem; /* Padding mới gọn hơn */
+  margin-bottom: 0.35rem; /* Khoảng cách giữa các mục */
+  text-decoration: none;
+  color: var(--text-color);
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.925rem; /* Font chữ gọn hơn */
+  transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+/* === ICON CHUNG === */
+.nav-item svg {
+  margin-right: 1.15rem; /* Tăng khoảng cách icon và chữ */
+  font-size: 1.2rem; /* Kích thước icon chuẩn */
+  flex-shrink: 0;
+  stroke-width: 2.5; /* Làm nét icon đậm hơn một chút */
+  transition: color 0.2s;
+}
+
+/* === HOVER STATE (Quan trọng) === */
+/* Khi hover, chữ và icon sẽ đổi sang màu primary */
+.nav-item:hover {
+  background-color: #F6F9FC; /* Màu nền xám nhạt khi hover */
+  color: var(--primary-color);
+}
+.nav-item:hover svg {
+  color: var(--primary-color) !important; /* Luôn đổi màu khi hover */
+}
+
+/* === ACTIVE STATE (Khi được chọn) === */
+.nav-item.active {
+  background-color: var(--primary-color);
+  color: white;
+  box-shadow: 0 4px 6px rgba(50,50,93,.11), 0 1px 3px rgba(0,0,0,.08);
+}
+/* Khi active, icon luôn là màu trắng */
+.nav-item.active svg {
+  color: white !important;
+}
+
+.nav-item[href="/"] svg {
+  color: var(--primary-color); /* Dashboard (Giữ màu chính) */
+}
+.nav-item[href="/khach-hang"] svg {
+  color: var(--icon-color-4); /* Khách Hàng (Green) */
+}
+.nav-item[href="/ban-hang"] svg {
+  color: var(--icon-color-3); /* Bán Hàng (Red) */
+}
+.nav-item[href="/hop-dong"] svg {
+  color: var(--icon-color-7); /* Hợp Đồng (Dark) */
+}
+/* Nhóm Tài Khoản */
+.nav-group .nav-item svg {
+  color: var(--icon-color-2); /* Tài Khoản (Orange) */
+}
+.nav-item[href="/giao-dich"] svg {
+  color: var(--icon-color-5); /* Giao Dịch (Purple) */
+}
+.nav-item[href="/gia-han"] svg {
+  color: var(--icon-color-1); /* Gia Hạn (Cyan) */
+}
+.nav-item[href="/nha-cung-cap"] svg {
+  color: var(--icon-color-8); /* Nhà Cung Cấp (Carrot) */
+}
+.nav-item[href="/bao-cao"] svg {
+  color: var(--icon-color-6); /* Báo Cáo (Orange-Red) */
+}
+.nav-item[href="/ho-so"] svg {
+  color: var(--icon-color-9); /* Hồ Sơ (Amethyst) */
+}
+.nav-item[href="/cai-dat"] svg {
+  color: var(--icon-color-10); /* Cài Đặt (Grey) */
+}
+
+/* --- Menu Con (Submenu) --- */
+.nav-group-toggle {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  cursor: pointer;
+}
+.nav-group-toggle .chevron {
+  transition: transform 0.2s;
+  color: var(--text-light);
+}
+.nav-group-toggle.open .chevron {
+  transform: rotate(90deg);
+}
+.nav-group-toggle:hover .chevron {
+  color: var(--primary-color);
+}
+.nav-item.active .chevron {
+  color: white !important;
+}
+
+.sidebar-submenu {
+  padding-left: 2.85rem; /* Thụt lề sâu hơn 1 chút */
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+.sidebar-submenu.open {
+  max-height: 500px;
+}
+.sidebar-submenu a {
+  display: block;
+  padding: 0.7rem 0; /* Điều chỉnh padding */
+  text-decoration: none;
+  color: var(--text-light);
+  font-size: 0.9rem;
+  font-weight: 500; /* Đậm hơn 1 chút */
+}
+.sidebar-submenu a:hover {
+  color: var(--text-color);
+}
+
+/* --- Trang Dashboard --- */
+.dashboard-header {
+  margin-bottom: 2rem;
+}
+.dashboard-header h1 {
+  font-size: 1.75rem;
+}
+.dashboard-header p {
+  font-size: 1rem;
+  color: var(--text-light);
+}
+
+/* 4 widgets trên cùng */
+.widgets-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.widget {
+  background: var(--widget-bg);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+}
+
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: top;
+  margin-bottom: 1rem;
+}
+.widget-header h3 {
+  color: var(--text-light);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.widget-icon {
+  font-size: 1.25rem;
+  color: var(--text-light);
+}
+
+.widget-body .value {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+}
+.widget-body .change {
+  font-size: 0.9rem;
+  color: var(--success-color);
+}
+.widget-body .change.negative {
+  color: var(--pending-color);
+}
+
+/* Widgets 2 cột ở giữa */
+.widgets-grid-2 {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* 2/3 và 1/3 */
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+.list-widget h3 {
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+.list-item:last-child {
+  border-bottom: none;
+}
+
+.list-item-main {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.list-item-main svg {
+  font-size: 1.5rem;
+  color: var(--text-color);
+}
+.list-item-main-text h4 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+.list-item-main-text p {
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+.list-item-side .value {
+  font-weight: 600;
+  text-align: right;
+}
+.badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+}
+.badge-success {
+  background-color: var(--success-color);
+}
+.badge-pending {
+  background-color: var(--pending-color);
+}
+
+/* Thao tác nhanh */
+.quick-actions a {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  text-decoration: none;
+  color: var(--text-color);
+  font-weight: 500;
+  border-radius: 6px;
+}
+.quick-actions a:hover {
+  background-color: var(--bg-color);
+}
+.quick-actions a svg {
+  color: var(--primary-color);
+  font-size: 1.25rem;
+}
+
+/* Cảnh báo dưới cùng */
+.alert-widget {
+  background: var(--widget-bg);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+}
+.alert-widget h3 {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+.alert-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.alert-item svg {
+  font-size: 1.25rem;
+  color: var(--pending-color);
+}
+.alert-item p {
+  font-size: 0.95rem;
+}
+.alert-item p strong {
+  color: var(--text-color);
+}
+
+/* --- Trang Login (Cải tiến) --- */
 .login-container {
   display: flex;
   justify-content: center;
@@ -35,172 +434,587 @@ body {
 
 .login-form {
   background: var(--widget-bg);
-  padding: 2rem;
+  padding: 2.5rem;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow);
   width: 100%;
-  max-width: 400px;
+  max-width: 450px;
 }
 
 .login-form h2 {
   text-align: center;
-  margin-bottom: 1.5rem;
-  color: var(--primary-color);
+  margin-bottom: 2rem;
+  color: var(--text-color);
+  font-size: 1.75rem;
 }
 
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .form-group input {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.9rem 1rem;
   border: 1px solid var(--border-color);
-  border-radius: 4px;
+  border-radius: 6px;
+  font-size: 1rem;
 }
 
 .login-button, .logout-button {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.9rem;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   background-color: var(--primary-color);
   color: white;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s;
+  box-shadow: 0 4px 6px rgba(50,50,93,.11), 0 1px 3px rgba(0,0,0,.08);
 }
 
-.login-button:hover {
-  background-color: #3b5998;
+/* --- CSS cho Bảng (Table) - NÂNG CẤP --- */
+.table-container {
+  overflow-x: auto;
 }
 
-.login-error {
-  color: red;
-  margin-bottom: 1rem;
-  text-align: center;
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+  background-color: var(--widget-bg);
+  box-shadow: var(--shadow);
+  border-radius: 8px;
+  overflow: hidden; /* Quan trọng để giữ border-radius */
 }
 
-/* --- Bố cục chính (Layout) --- */
-.layout {
-  display: flex;
-}
-
-.sidebar {
-  width: 240px;
-  height: 100vh;
-  background: var(--sidebar-bg);
-  border-right: 1px solid var(--border-color);
-  display: flex;
-  flex-direction: column;
-}
-
-.sidebar-logo {
-  padding: 1.5rem;
-  font-size: 1.5rem;
-  font-weight: 700;
-  text-align: center;
-}
-.sidebar-logo a {
-  text-decoration: none;
-  color: var(--primary-color);
-}
-
-.sidebar-nav {
-  display: flex;
-  flex-direction: column;
-  padding: 1rem;
-}
-
-.sidebar-nav a {
-  padding: 1rem;
-  text-decoration: none;
+.styled-table thead tr {
+  /* Bỏ nền xanh, dùng text đậm cho sạch sẽ */
+  background-color: #F6F9FC;
   color: var(--text-light);
-  border-radius: 6px;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  transition: background-color 0.2s, color 0.2s;
+  text-align: left;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.sidebar-nav a:hover {
-  background-color: var(--bg-color);
+.styled-table th,
+.styled-table td {
+  padding: 1rem 1.25rem; /* Tăng padding */
+  border-bottom: 1px solid var(--border-color);
+}
+
+.styled-table tbody tr {
+  transition: background-color 0.2s;
+}
+
+.styled-table tbody tr:last-of-type td {
+  border-bottom: none;
+}
+
+.styled-table tbody tr:hover {
+  background-color: #F6F9FC; /* Màu hover nhẹ */
+}
+
+.styled-table td:first-child {
+  font-weight: 600; /* Làm nổi bật cột đầu tiên (tên) */
+  color: var(--text-color);
+}
+
+.action-buttons button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1.1rem; /* Kích thước icon vừa phải */
+  margin-right: 12px;
+  color: var(--text-light);
+  transition: color 0.2s;
+}
+.action-buttons button:hover {
   color: var(--primary-color);
 }
+.action-buttons button.delete:hover {
+  color: var(--pending-color);
+}
 
-.sidebar-nav a.active {
+/* --- CSS cho Modal (Popup) - NÂNG CẤP --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4); /* Tối hơn 1 chút */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  /* Animation */
+  opacity: 0;
+  animation: fadeIn 0.3s forwards;
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px; /* Bo góc nhiều hơn */
+  width: 100%;
+  max-width: 550px; /* Rộng hơn 1 chút */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  /* Animation */
+  transform: scale(0.9);
+  animation: scaleIn 0.3s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes scaleIn {
+  to { transform: scale(1); }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
+}
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--text-color);
+}
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: var(--text-light);
+  line-height: 1;
+}
+.modal-close-btn:hover {
+  color: var(--text-color);
+}
+
+.modal-body .form-group {
+  margin-bottom: 1.25rem;
+}
+.modal-body .form-group label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+.modal-body .form-group input,
+.modal-body .form-group textarea {
+  width: 100%;
+  padding: 0.85rem 1rem; /* Padding mới */
+  border: 1px solid #CAD1D7; /* Border rõ hơn */
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.modal-body .form-group input:focus,
+.modal-body .form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(94, 114, 228, 0.2);
+}
+
+.modal-footer {
+  text-align: right;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+.modal-footer button {
+  padding: 0.8rem 1.5rem; /* Nút to, rõ ràng hơn */
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-left: 0.75rem;
+  transition: all 0.2s;
+}
+.modal-footer .btn-cancel {
+  background-color: var(--bg-color);
+  color: var(--text-light);
+  border: 1px solid var(--border-color);
+}
+.modal-footer .btn-cancel:hover {
+  background-color: #E9ECEF;
+}
+.modal-footer .btn-save {
   background-color: var(--primary-color);
+  color: white;
+  box-shadow: 0 4px 6px rgba(50,50,93,.11), 0 1px 3px rgba(0,0,0,.08);
+}
+.modal-footer .btn-save:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 14px rgba(50,50,93,.1), 0 3px 6px rgba(0,0,0,.08);
+}
+
+/* --- CSS cho Ô Tìm Kiếm (MỚI) --- */
+.table-toolbar {
+  margin-bottom: 1.5rem;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 400px; /* Giới hạn chiều rộng */
+  padding: 0.85rem 1.25rem;
+  font-size: 0.95rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--widget-bg);
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(94, 114, 228, 0.2);
+}
+
+/* --- Tinh chỉnh Bảng (Table) với font mới --- */
+.styled-table {
+  font-weight: 400; /* Chữ trong bảng mảnh */
+}
+
+.styled-table th {
+  font-weight: 600; /* Tiêu đề bảng đậm */
+}
+
+/* --- Tinh chỉnh Widget & Button (Mềm hơn) --- */
+.widget, .modal-content, .btn-save, .login-button, .sidebar-nav a {
+  transition: all 0.2s ease-out; /* Hiệu ứng chuyển động mềm */
+}
+
+.widget:hover {
+  box-shadow: 0 10px 30px rgba(0,0,0,0.07); /* Đổ bóng đẹp hơn khi hover */
+  transform: translateY(-3px);
+}
+
+/* --- CSS CHO TRANG KHÁCH HÀNG (NÂNG CẤP) --- */
+
+/* 1. Tiêu đề Gradient */
+.gradient-title {
+  font-weight: 700;
+  font-size: 2.25rem; /* To hơn cho nổi bật */
+  background: linear-gradient(90deg, var(--primary-color), #a07aff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  padding-bottom: 5px; /* Thêm chút không gian */
+}
+
+/* 2. Lưới Thẻ Thống Kê (Stat Cards) */
+.stats-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 cột */
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: var(--widget-bg);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  transition: all 0.2s ease-out;
+}
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.07);
+}
+
+.stat-card-icon {
+  font-size: 2rem;
+  padding: 1rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Màu riêng cho icon */
+.stat-card-icon.icon-total {
+  color: #5E72E4; /* Primary */
+  background-color: #F0F2FF;
+}
+.stat-card-icon.icon-new {
+  color: #2DCE89; /* Green */
+  background-color: #EAFBF4;
+}
+.stat-card-icon.icon-source {
+  color: #F3A41A; /* Orange */
+  background-color: #FEF6E8;
+}
+
+.stat-card-info h3 {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+.stat-card-info p {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+.stat-card-info .source-list {
+  font-size: 0.9rem;
+  color: var(--text-color);
+  font-weight: 500;
+}
+.stat-card-info .source-list span {
+  font-weight: 400;
+  color: var(--text-light);
+}
+
+/* 3. Tiêu đề Bảng (Table Header) Nổi bật */
+.styled-table thead tr {
+  background-color: var(--text-color) !important; /* Nền đen/xanh đậm */
+  color: #ffffff !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  border-radius: 0; /* Bỏ border-radius nếu có */
+}
+.styled-table th {
+  padding: 1rem 1.25rem !important;
+}
+
+/* 4. Tag Nguồn (Source Tags) */
+.source-badge {
+  padding: 0.3rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+  display: inline-block;
+  text-align: center;
+  min-width: 80px;
+}
+/* Thêm màu cho các nguồn phổ biến */
+.source-facebook { background-color: #1877F2; }
+.source-zalo { background-color: #0068FF; }
+.source-telegram { background-color: #2AABEE; }
+.source-gioi-thieu { background-color: #2DCE89; }
+.source-khac {
+  background-color: var(--border-color);
+  color: var(--text-light);
+}
+
+/* 5. Thẻ <select> trong Modal */
+.modal-body .form-group select {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 1px solid #CAD1D7;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: 'Inter', sans-serif; /* Đảm bảo dùng font Inter */
+  background-color: white;
+  -webkit-appearance: none; /* Bỏ giao diện mặc định */
+  -moz-appearance: none;
+  appearance: none;
+  /* Thêm icon mũi tên dropdown */
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%238898AA%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.6-3.6%205.4-7.9%205.4-12.9%200-4.9-1.8-9.2-5.4-12.7z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 0.65em auto;
+}
+.modal-body .form-group select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(94, 114, 228, 0.2);
+}
+
+/* --- CSS CHO TRANG CHI TIẾT KHÁCH HÀNG --- */
+
+/* Link tên khách hàng trong bảng */
+.customer-link {
+  font-weight: 600;
+  color: var(--primary-color);
+  text-decoration: none;
+}
+.customer-link:hover {
+  text-decoration: underline;
+}
+
+/* Bố cục trang chi tiết */
+.customer-detail-header {
+  margin-bottom: 2rem;
+}
+.customer-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr; /* 1/3 cho info, 2/3 cho stats/tabs */
+  gap: 1.5rem;
+}
+.customer-info-card {
+  background: var(--widget-bg);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  align-self: flex-start; /* Dính ở trên */
+}
+.customer-info-card h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+.customer-info-card .info-item {
+  margin-bottom: 1rem;
+}
+.customer-info-card .info-item label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-light);
+  display: block;
+}
+.customer-info-card .info-item p {
+  font-size: 1rem;
+  color: var(--text-color);
+  font-weight: 500;
+  white-space: pre-wrap; /* Để hiển thị ghi chú xuống dòng */
+}
+
+/* Thẻ thống kê nhanh */
+.customer-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+/* (Chúng ta có thể tái sử dụng .stat-card từ trang KhachHang) */
+
+/* Hệ thống Tab */
+.tabs-container {
+  background: var(--widget-bg);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  overflow: hidden; /* Quan trọng */
+}
+.tab-nav {
+  display: flex;
+  background-color: #F6F9FC;
+  border-bottom: 1px solid var(--border-color);
+}
+.tab-nav button {
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-light);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 3px solid transparent;
+}
+.tab-nav button:hover {
+  color: var(--text-color);
+}
+.tab-nav button.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+  background-color: var(--widget-bg);
+}
+.tab-content {
+  padding: 1.5rem;
+}
+/* Ẩn tab content không active */
+.tab-pane {
+  display: none;
+}
+.tab-pane.active {
+  display: block;
+}
+
+/* --- Nút Đăng xuất ở Sidebar (MỚI) --- */
+.sidebar-footer {
+  margin-top: auto; /* Đẩy xuống dưới cùng */
+  padding: 1.25rem;
+  border-top: 1px solid var(--border-color);
+}
+.logout-button-sidebar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #F6F9FC; /* Nền xám nhạt */
+  color: var(--pending-color); /* Màu đỏ cam */
+  font-size: 0.925rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.logout-button-sidebar svg {
+  font-size: 1.2rem;
+  stroke-width: 2.5;
+}
+.logout-button-sidebar:hover {
+  background-color: var(--pending-color);
   color: white;
 }
 
-/* --- Content chính --- */
-.main-content {
-  flex: 1;
-  height: 100vh;
+/* --- Cấu trúc Header Trang mới (MỚI) --- */
+/* Đây là div bọc tiêu đề, search, và nút bấm MỚI trong mỗi trang */
+.page-header-container {
   display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
-
-.header {
-  height: 70px;
-  background: var(--header-bg);
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
-  padding: 0 2rem;
-  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  /* Đây là phần "kéo lên" - nó thay thế Header cũ */
+  height: 70px; 
+  margin-bottom: 2rem;
+  /* (Giữ lại CSS cho .dashboard-header nếu bạn muốn) */
 }
 
-.header-user {
+.page-header-actions {
   display: flex;
   align-items: center;
-}
-
-.header-user span {
-  margin-right: 1rem;
-  font-weight: 500;
-}
-.logout-button {
-  width: auto;
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-}
-
-.page-content {
-  padding: 2rem;
-  flex: 1;
-}
-
-/* --- Dashboard Widgets --- */
-.widgets-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
 }
 
-.widget {
-  background: var(--widget-bg);
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+/* CSS cho Search Bar (trước đây là .header-search) (MỚI) */
+.search-bar-container input {
+  border: 1px solid var(--border-color);
+  border-radius: 2rem;
+  padding: 0.75rem 1.25rem;
+  width: 300px;
+  font-size: 0.95rem;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s;
 }
-
-.widget-title {
-  font-size: 1rem;
-  color: var(--text-light);
-  margin-bottom: 0.5rem;
-}
-
-.widget-value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--text-color);
+.search-bar-container input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(94, 114, 228, 0.2);
+  outline: none;
 }

@@ -1,7 +1,7 @@
 // Tạo file tại: api/auth/register.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import dbConnect from '../_lib/dbConnect';
-import User from '../_models/User';
+import dbConnect from '../_lib/dbConnect.ts';
+import User from '../_models/User.ts';
 
 // Vercel sử dụng kiểu của Next.js cho API routes, 
 // nên chúng ta dùng tạm NextApiRequest/NextApiResponse

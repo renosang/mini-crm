@@ -1,8 +1,7 @@
 import React from 'react';
-import Sidebar from './Sidebar';
-import Header from './Header';
+import Sidebar from './Sidebar.tsx';
+// Xóa: import Header from './Header.tsx';
 
-// Định nghĩa kiểu cho props, 'children' là một React Node
 interface LayoutProps {
   children: React.ReactNode;
 }
@@ -12,7 +11,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     <div className="layout">
       <Sidebar />
       <div className="main-content">
-        <Header />
+        {/* === ĐÃ XÓA HEADER RA KHỎI ĐÂY === */}
         <main className="page-content">
           {children}
         </main>

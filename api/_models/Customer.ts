@@ -8,15 +8,19 @@ const CustomerSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      unique: true,
-      sparse: true, // Cho phép nhiều giá trị null, nhưng chỉ 1 email duy nhất
+      // Bỏ unique để linh hoạt hơn, nhiều khách có thể không có email
+      // unique: true, 
+      // sparse: true,
     },
     phone: {
       type: String,
     },
     source: {
-      type: String, // Nguồn khách hàng
+      type: String, // Nguồn khách hàng (Facebook, Zalo, v.v.)
     },
+    notes: {
+      type: String, // Ghi chú thêm
+    }
   },
   { timestamps: true }
 );

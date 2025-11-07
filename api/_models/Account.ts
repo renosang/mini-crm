@@ -1,25 +1,25 @@
+// File: api/_models/Account.ts
 import mongoose from 'mongoose';
 
 const AccountSchema = new mongoose.Schema(
   {
     product_type: {
       type: String,
-      required: [true, 'Vui lòng nhập loại sản phẩm'], // Ví dụ: "Netflix Premium"
+      required: [true, 'Vui lòng nhập loại sản phẩm'],
     },
     account_details: {
-      // Object linh hoạt để chứa thông tin tài khoản
       username: String,
-      password_acc: String, // Đặt tên khác 'password' để tránh xung đột
+      password_acc: String,
       license_key: String,
       pin: String,
     },
     supplier: {
-      type: String, // Nguồn nhập hàng
+      type: String,
     },
     cost: {
       type: Number,
       required: true,
-      default: 0, // Giá nhập
+      default: 0,
     },
     status: {
       type: String,
@@ -35,13 +35,13 @@ const AccountSchema = new mongoose.Schema(
       type: Date,
     },
     valid_until: {
-      type: Date, // Ngày hết hạn của tài khoản
+      type: Date,
     },
     notes: {
       type: String,
     },
   },
-  { timestamps: true } // Tự động thêm createdAt và updatedAt
+  { timestamps: true }
 );
 
 export default mongoose.models.Account || mongoose.model('Account', AccountSchema);

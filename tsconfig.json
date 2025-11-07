@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true, // <-- Đây là cờ (flag) ma thuật
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true, // Vercel sẽ lo việc build, TS không cần
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src", "api"], // Cho TS biết phải xem cả code backend và frontend
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
