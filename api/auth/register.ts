@@ -1,8 +1,10 @@
-// api/auth/register.ts
-import type { NextApiRequest, NextApiResponse } from 'next'; // Dùng tạm kiểu của Next.js cho Vercel
+// Tạo file tại: api/auth/register.ts
+import type { NextApiRequest, NextApiResponse } from 'next';
 import dbConnect from '../_lib/dbConnect';
 import User from '../_models/User';
 
+// Vercel sử dụng kiểu của Next.js cho API routes, 
+// nên chúng ta dùng tạm NextApiRequest/NextApiResponse
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method Not Allowed' });
@@ -12,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { username, password } = req.body;
 
   try {
-    // NHỚ: Ghi rõ role là 'admin'
+    // Ghi rõ role là 'admin'
     const user = await User.create({ username, password, role: 'admin' });
     res.status(201).json({ success: true, message: 'Admin user created!' });
   } catch (error: any) {
