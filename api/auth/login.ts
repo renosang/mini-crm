@@ -2,8 +2,8 @@ import dbConnect from '../_lib/dbConnect.ts';
 import User from '../_models/User.ts';
 import jwt from 'jsonwebtoken';
 
-export default async function handler(req, res) {
-  // Chỉ chấp nhận phương thức POST
+// SỬA LỖI: Thêm : any vào req và res
+export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
@@ -17,39 +17,29 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Tìm user và chọn (select) cả trường password
     const user = await User.findOne({ username }).select('+password');
-
     if (!user) {
       return res.status(401).json({ message: 'Username hoặc password không đúng' });
     }
 
-    // So sánh password
     const isMatch = await user.comparePassword(password);
-
     if (!isMatch) {
       return res.status(401).json({ message: 'Username hoặc password không đúng' });
     }
 
-    // Tạo JWT token
     const token = jwt.sign(
       { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' } // Token hết hạn sau 1 ngày
+      process.env.JWT_SECRET!, // Thêm ! để báo TS là biến này có tồn tại
+      { expiresIn: '1d' }
     );
     
-    // Trả về token và thông tin user (trừ password)
     res.status(200).json({
       success: true,
       token,
-      user: {
-        id: user._id,
-        username: user.username,
-        role: user.role
-      }
+      user: { id: user._id, username: user.username, role: user.role }
     });
 
-  } catch (error) {
+  } catch (error: any) { // SỬA LỖI: Thêm : any vào error
     res.status(500).json({ message: 'Lỗi server', error: error.message });
   }
 }
