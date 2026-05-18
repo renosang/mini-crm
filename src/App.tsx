@@ -12,9 +12,11 @@ import Login from './pages/Login.tsx';
 // ====================================
 import KhachHang from './pages/KhachHang.tsx';
 import BanHang from './pages/BanHang.tsx';
-import HopDong from './pages/HopDong.tsx';
+import BanQuyenCaNhan from './pages/BanQuyenCaNhan.tsx';
+import KhoTaiNguyen from './pages/KhoTaiNguyen.tsx';
 import CustomerDetail from './pages/CustomerDetail.tsx';
-// (Bạn sẽ cần tạo các file này)
+import QuanLyGiaHan from './pages/QuanLyGiaHan.tsx';
+import CaiDat from './pages/CaiDat.tsx';
 
 
 // Component bảo vệ (Protected Route)
@@ -52,20 +54,13 @@ function App() {
         <Route path="/khach-hang" element={<KhachHang />} />
         <Route path="/customers/:id" element={<CustomerDetail />} />
         <Route path="/ban-hang" element={<BanHang />} />
-        <Route path="/hop-dong" element={<HopDong />} />
+        <Route path="/kho-tai-nguyen" element={<KhoTaiNguyen />} />
+        <Route path="/ban-quyen-ca-nhan" element={<BanQuyenCaNhan />} />
         
-        {/* Các trang menu con */}
-        <Route path="/tai-khoan/loai-moi" element={<div>Trang Loại Tài Khoản Mới</div>} />
-        <Route path="/tai-khoan/nhap-don" element={<div>Trang Nhập Tài Khoản Đơn</div>} />
-
         {/* Các trang khác */}
-        <Route path="/giao-dich" element={<div>Trang Giao Dịch</div>} />
-        <Route path="/gia-han" element={<div>Trang Gia Hạn</div>} />
+        <Route path="/gia-han" element={<QuanLyGiaHan />} />
         <Route path="/nha-cung-cap" element={<div>Trang Nhà Cung Cấp</div>} />
-        <Route path="/bao-cao" element={<div>Trang Báo Cáo</div>} />
-        <Route path="/ho-so" element={<div>Trang Hồ Sơ</div>} />
-        <Route path="/cai-dat" element={<div>Trang Cài Đặt</div>} />
-        
+        <Route path="/cai-dat" element={<CaiDat />} />
       </Route>
 
       {/* Route 404 */}

@@ -7,8 +7,10 @@ export default defineConfig({
   server: {
     // Đây là phần quan trọng
     proxy: {
-      // KHÔNG proxy /api, để Vercel tự xử lý nó
-      // Nếu bạn có dòng '/api': { ... } ở đây, hãy XÓA nó đi
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      }
     }
   }
 });

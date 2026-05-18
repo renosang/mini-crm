@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom'; // <-- THÊM IMPORT NÀY
 import api from '../services/api';
-import { FiEdit, FiTrash2, FiUserPlus, FiUsers, FiUserCheck, FiTarget } from 'react-icons/fi';
+import { FiEdit, FiTrash2, FiUserPlus, FiUsers, FiUserCheck, FiTarget, FiFacebook, FiSend, FiMessageCircle, FiLock } from 'react-icons/fi';
 
 // === Định nghĩa kiểu dữ liệu ===
 interface ICustomer {
@@ -10,12 +10,18 @@ interface ICustomer {
   email?: string;
   phone?: string;
   source?: string;
+  facebook?: string;
+  telegram?: string;
+  zalo?: string;
+  status?: string;
   notes?: string;
+  privateNotes?: string;
   createdAt: string;
 }
 
 type CustomerFormData = Omit<ICustomer, '_id' | 'createdAt'>;
 const customerSources = ["Facebook", "Zalo", "Telegram", "Giới thiệu", "Khác"];
+const customerStatuses = ["Bình thường", "VIP", "Tiềm năng", "Cảnh báo"];
 
 interface ICustomerStats {
   totalCustomers: number;
@@ -37,6 +43,19 @@ const SourceBadge: React.FC<{ source?: string }> = ({ source }) => {
   return <span className={className}>{source}</span>;
 };
 
+// === Component hiển thị Tag Trạng thái MMO ===
+const StatusBadge: React.FC<{ status?: string }> = ({ status }) => {
+  const currentStatus = status || 'Bình thường';
+  let className = "status-badge ";
+  switch (currentStatus.toLowerCase()) {
+    case "vip": className += "status-vip"; break;
+    case "tiềm năng": className += "status-tiem-nang"; break;
+    case "cảnh báo": className += "status-canh-bao"; break;
+    default: className += "status-binh-thuong";
+  }
+  return <span className={className}>{currentStatus}</span>;
+};
+
 // === Component Trang Khách Hàng ===
 const KhachHang: React.FC = () => {
   const [customers, setCustomers] = useState<ICustomer[]>([]);
@@ -51,7 +70,12 @@ const KhachHang: React.FC = () => {
     email: '',
     phone: '',
     source: '',
+    facebook: '',
+    telegram: '',
+    zalo: '',
+    status: 'Bình thường',
     notes: '',
+    privateNotes: '',
   });
 
   // --- Hàm tải dữ liệu ---
@@ -91,7 +115,10 @@ const KhachHang: React.FC = () => {
       customer.name.toLowerCase().includes(term) ||
       (customer.email && customer.email.toLowerCase().includes(term)) ||
       (customer.phone && customer.phone.toLowerCase().includes(term)) ||
-      (customer.source && customer.source.toLowerCase().includes(term))
+      (customer.source && customer.source.toLowerCase().includes(term)) ||
+      (customer.telegram && customer.telegram.toLowerCase().includes(term)) ||
+      (customer.zalo && customer.zalo.toLowerCase().includes(term)) ||
+      (customer.status && customer.status.toLowerCase().includes(term))
     );
   });
   
@@ -104,11 +131,27 @@ const KhachHang: React.FC = () => {
         email: customer.email || '',
         phone: customer.phone || '',
         source: customer.source || '',
+        facebook: customer.facebook || '',
+        telegram: customer.telegram || '',
+        zalo: customer.zalo || '',
+        status: customer.status || 'Bình thường',
         notes: customer.notes || '',
+        privateNotes: customer.privateNotes || '',
       });
     } else {
       setEditingCustomer(null);
-      setFormData({ name: '', email: '', phone: '', source: '', notes: '' });
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        source: '',
+        facebook: '',
+        telegram: '',
+        zalo: '',
+        status: 'Bình thường',
+        notes: '',
+        privateNotes: '',
+      });
     }
     setIsModalOpen(true);
   };
@@ -206,7 +249,7 @@ const KhachHang: React.FC = () => {
       <div className="table-toolbar">
         <input
           type="text"
-          placeholder="Tìm kiếm theo Tên, Email, SĐT, Nguồn..."
+          placeholder="Tìm kiếm theo Tên, Email, SĐT, Nguồn, Telegram, Trạng thái..."
           className="search-input"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -223,8 +266,9 @@ const KhachHang: React.FC = () => {
             <thead>
               <tr>
                 <th>Họ và Tên</th>
-                <th>Email</th>
-                <th>Số Điện Thoại</th>
+                <th>Liên hệ</th>
+                <th>Mạng xã hội MMO</th>
+                <th>Trạng thái</th>
                 <th>Nguồn</th>
                 <th>Hành Động</th>
               </tr>
@@ -233,14 +277,39 @@ const KhachHang: React.FC = () => {
               {filteredCustomers.length > 0 ? (
                 filteredCustomers.map(customer => (
                   <tr key={customer._id}>
-                    {/* === SỬA ĐỔI CHÍNH Ở ĐÂY === */}
                     <td>
-                      <Link to={`/customers/${customer._id}`} className="customer-link">
+                      <Link to={`/customers/${customer._id}`} className="customer-link" style={{ fontWeight: 600 }}>
                         {customer.name}
                       </Link>
                     </td>
-                    <td>{customer.email}</td>
-                    <td>{customer.phone}</td>
+                    <td>
+                      <div style={{ fontWeight: 500, fontSize: '0.925rem' }}>{customer.email || '—'}</div>
+                      <div style={{ color: 'var(--text-light)', fontSize: '0.825rem', marginTop: '2px' }}>{customer.phone || '—'}</div>
+                    </td>
+                    <td className="mmo-social-links">
+                      {customer.facebook ? (
+                        <a href={customer.facebook.startsWith('http') ? customer.facebook : `https://facebook.com/${customer.facebook}`} target="_blank" rel="noopener noreferrer" className="mmo-icon-btn mmo-facebook" title="Facebook Messenger">
+                          <FiFacebook />
+                        </a>
+                      ) : (
+                        <span className="mmo-icon-btn mmo-empty" title="Không có Facebook"><FiFacebook /></span>
+                      )}
+                      {customer.telegram ? (
+                        <a href={customer.telegram.startsWith('http') ? customer.telegram : `https://t.me/${customer.telegram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="mmo-icon-btn mmo-telegram" title="Chat Telegram">
+                          <FiSend />
+                        </a>
+                      ) : (
+                        <span className="mmo-icon-btn mmo-empty" title="Không có Telegram"><FiSend /></span>
+                      )}
+                      {customer.zalo ? (
+                        <a href={customer.zalo.startsWith('http') ? customer.zalo : `https://zalo.me/${customer.zalo}`} target="_blank" rel="noopener noreferrer" className="mmo-icon-btn mmo-zalo" title="Chat Zalo">
+                          <FiMessageCircle />
+                        </a>
+                      ) : (
+                        <span className="mmo-icon-btn mmo-empty" title="Không có Zalo"><FiMessageCircle /></span>
+                      )}
+                    </td>
+                    <td><StatusBadge status={customer.status} /></td>
                     <td><SourceBadge source={customer.source} /></td>
                     <td className="action-buttons">
                       <button onClick={() => openModal(customer)} title="Sửa">
@@ -254,7 +323,7 @@ const KhachHang: React.FC = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: 'center', padding: '1.5rem' }}>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>
                     Không tìm thấy khách hàng nào.
                   </td>
                 </tr>
@@ -273,7 +342,7 @@ const KhachHang: React.FC = () => {
               <button onClick={closeModal} className="modal-close-btn">&times;</button>
             </div>
             <form onSubmit={handleSubmit}>
-              <div className="modal-body">
+              <div className="modal-body" style={{ maxHeight: '65vh', overflowY: 'auto', paddingRight: '5px' }}>
                 <div className="form-group">
                   <label htmlFor="name">Họ và Tên (Bắt buộc)</label>
                   <input type="text" id="name" name="name" value={formData.name} onChange={handleFormChange} required />
@@ -286,8 +355,36 @@ const KhachHang: React.FC = () => {
                   <label htmlFor="phone">Số Điện Thoại</label>
                   <input type="text" id="phone" name="phone" value={formData.phone} onChange={handleFormChange} />
                 </div>
+                
+                {/* Các trường MMO mới */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="form-group">
+                    <label htmlFor="facebook">Facebook Link / UID</label>
+                    <input type="text" id="facebook" name="facebook" placeholder="Ví dụ: facebook.com/user" value={formData.facebook} onChange={handleFormChange} />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="telegram">Telegram Username</label>
+                    <input type="text" id="telegram" name="telegram" placeholder="Ví dụ: @username" value={formData.telegram} onChange={handleFormChange} />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="form-group">
+                    <label htmlFor="zalo">Zalo SĐT / Link</label>
+                    <input type="text" id="zalo" name="zalo" placeholder="Ví dụ: 096xxx hoặc link" value={formData.zalo} onChange={handleFormChange} />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="status">Trạng thái MMO</label>
+                    <select id="status" name="status" value={formData.status} onChange={handleFormChange}>
+                      {customerStatuses.map(status => (
+                        <option key={status} value={status}>{status}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
                 <div className="form-group">
-                  <label htmlFor="source">Nguồn</label>
+                  <label htmlFor="source">Nguồn khách hàng</label>
                   <select id="source" name="source" value={formData.source} onChange={handleFormChange}>
                     <option value="">-- Chọn nguồn --</option>
                     {customerSources.map(source => (
@@ -295,9 +392,25 @@ const KhachHang: React.FC = () => {
                     ))}
                   </select>
                 </div>
+
                 <div className="form-group">
-                  <label htmlFor="notes">Ghi chú</label>
-                  <textarea id="notes" name="notes" rows={3} value={formData.notes} onChange={handleFormChange} />
+                  <label htmlFor="notes">Ghi chú công việc</label>
+                  <textarea id="notes" name="notes" rows={2} placeholder="Các ghi chú công việc thông thường..." value={formData.notes} onChange={handleFormChange} />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="privateNotes" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#B27B00' }}>
+                    <FiLock style={{ verticalAlign: 'middle' }} /> Ghi chú bảo mật / cá nhân (Proxy, Accounts, Ví...)
+                  </label>
+                  <textarea 
+                    id="privateNotes" 
+                    name="privateNotes" 
+                    rows={3} 
+                    placeholder="Ví dụ: Proxy 45.12.33.1:8000, tài khoản cấp: admin/123456, ví thanh toán của khách..." 
+                    value={formData.privateNotes} 
+                    onChange={handleFormChange} 
+                    style={{ border: '1px solid rgba(243, 164, 26, 0.3)', backgroundColor: '#FFFDF9' }}
+                  />
                 </div>
               </div>
               <div className="modal-footer">

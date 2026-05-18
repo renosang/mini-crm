@@ -3,30 +3,32 @@
    Dựa trên thiết kế ALTCRM của bạn
 */
 :root {
-  --primary-color: #5E72E4;  /* Màu tím/xanh chủ đạo */
-  --bg-color: #F4F7FA;      /* Màu nền chính (light grey) */
-  --sidebar-bg: #FFFFFF;
-  --header-bg: #FFFFFF;
-  --widget-bg: #FFFFFF;
-  --text-color: #32325d;
-  --text-light: #8898AA;
-  --border-color: #E9ECEF;
-  --shadow: 0 0 2rem 0 rgba(136,152,170,.15);
-  --success-color: #2DCE89;
-  --pending-color: #FB6340;
-  --processing-color: #11CDEF;
+  --primary-color: #0071E3;    /* Apple Blue */
+  --primary-hover: #0077ED;
+  --bg-color: #F5F5F7;        /* Apple Light Gray background */
+  --sidebar-bg: rgba(255, 255, 255, 0.8); /* Translucent Glassmorphism */
+  --header-bg: rgba(255, 255, 255, 0.8);
+  --widget-bg: rgba(255, 255, 255, 0.8);
+  --text-color: #1D1D1F;      /* Apple Jet Black */
+  --text-light: #86868B;      /* Apple Muted Gray */
+  --border-color: rgba(0, 0, 0, 0.05); /* Thin Apple subtle border */
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.04); /* Diffuse modern shadow */
+  --success-color: #34C759;   /* Apple Green */
+  --pending-color: #FF9500;   /* Apple Orange */
+  --processing-color: #AF52DE; /* Apple Purple */
+  --danger-color: #FF3B30;    /* Apple Red */
 
-    /* Bảng màu icon mới */
-  --icon-color-1: #11CDEF; /* Cyan (Gia Hạn) */
-  --icon-color-2: #F3A41A; /* Orange (Tài Khoản) */
-  --icon-color-3: #F5365C; /* Red (Bán Hàng) */
-  --icon-color-4: #2DCE89; /* Green (Khách Hàng) */
-  --icon-color-5: #8965E0; /* Purple (Giao Dịch) */
-  --icon-color-6: #FB6340; /* Orange-Red (Báo Cáo) */
-  --icon-color-7: #32325D; /* Dark (Hợp Đồng) */
-  --icon-color-8: #E67E22; /* Carrot (Nhà Cung Cấp) */
-  --icon-color-9: #9B59B6; /* Amethyst (Hồ Sơ) */
-  --icon-color-10: #8898AA; /* Grey (Cài Đặt) */
+  /* Bảng màu icon mới */
+  --icon-color-1: #0071E3; /* Blue */
+  --icon-color-2: #FF9500; /* Orange */
+  --icon-color-3: #FF3B30; /* Red */
+  --icon-color-4: #34C759; /* Green */
+  --icon-color-5: #AF52DE; /* Purple */
+  --icon-color-6: #FF453A; /* Coral */
+  --icon-color-7: #1D1D1F; /* Dark */
+  --icon-color-8: #BF5AF2; /* Lilac */
+  --icon-color-9: #5E5E62; /* Steel */
+  --icon-color-10: #8E8E93; /* Slate */
 }
 
 /* --- Reset cơ bản --- */
@@ -181,38 +183,39 @@ h1, h2, h3, h4, h5 {
 }
 
 .nav-item[href="/"] svg {
-  color: var(--primary-color); /* Dashboard (Giữ màu chính) */
+  color: var(--primary-color);
 }
 .nav-item[href="/khach-hang"] svg {
-  color: var(--icon-color-4); /* Khách Hàng (Green) */
+  color: var(--icon-color-4); /* Green */
 }
 .nav-item[href="/ban-hang"] svg {
-  color: var(--icon-color-3); /* Bán Hàng (Red) */
+  color: var(--icon-color-3); /* Red */
 }
-.nav-item[href="/hop-dong"] svg {
-  color: var(--icon-color-7); /* Hợp Đồng (Dark) */
+.nav-item[href="/kho-tai-nguyen"] svg {
+  color: var(--icon-color-2); /* Orange */
 }
-/* Nhóm Tài Khoản */
-.nav-group .nav-item svg {
-  color: var(--icon-color-2); /* Tài Khoản (Orange) */
-}
-.nav-item[href="/giao-dich"] svg {
-  color: var(--icon-color-5); /* Giao Dịch (Purple) */
+.nav-item[href="/ban-quyen-ca-nhan"] svg {
+  color: var(--icon-color-8); /* Purple/Lilac */
 }
 .nav-item[href="/gia-han"] svg {
-  color: var(--icon-color-1); /* Gia Hạn (Cyan) */
+  color: var(--icon-color-6); /* Coral/Red */
 }
 .nav-item[href="/nha-cung-cap"] svg {
-  color: var(--icon-color-8); /* Nhà Cung Cấp (Carrot) */
-}
-.nav-item[href="/bao-cao"] svg {
-  color: var(--icon-color-6); /* Báo Cáo (Orange-Red) */
-}
-.nav-item[href="/ho-so"] svg {
-  color: var(--icon-color-9); /* Hồ Sơ (Amethyst) */
+  color: var(--icon-color-1); /* Cyan/Blue */
 }
 .nav-item[href="/cai-dat"] svg {
-  color: var(--icon-color-10); /* Cài Đặt (Grey) */
+  color: var(--icon-color-10); /* Slate/Grey */
+}
+
+/* --- Sidebar Category Header (Apple Style) --- */
+.sidebar-category-header {
+  font-size: 0.72rem;
+  color: var(--text-light);
+  opacity: 0.75;
+  text-transform: uppercase;
+  margin: 1.25rem 0 0.5rem 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
 }
 
 /* --- Menu Con (Submenu) --- */
@@ -570,8 +573,8 @@ h1, h2, h3, h4, h5 {
   background: white;
   padding: 2rem;
   border-radius: 12px; /* Bo góc nhiều hơn */
-  width: 100%;
-  max-width: 550px; /* Rộng hơn 1 chút */
+  width: 90%;
+  max-width: 850px; /* Rộng hơn để hiển thị nội dung thoải mái */
   box-shadow: 0 10px 30px rgba(0,0,0,0.1);
   /* Animation */
   transform: scale(0.9);
@@ -790,39 +793,87 @@ h1, h2, h3, h4, h5 {
   color: var(--text-light);
 }
 
-/* 3. Tiêu đề Bảng (Table Header) Nổi bật */
+/* 3. Tiêu đề Bảng (Table Header) Nổi bật - Apple Design */
 .styled-table thead tr {
-  background-color: var(--text-color) !important; /* Nền đen/xanh đậm */
-  color: #ffffff !important;
-  font-size: 0.9rem !important;
+  background-color: rgba(0, 0, 0, 0.02) !important; /* Trong suốt nhẹ */
+  color: var(--text-light) !important;
+  font-size: 0.85rem !important;
   font-weight: 600 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.5px !important;
-  border-radius: 0; /* Bỏ border-radius nếu có */
+  border-radius: 0;
 }
 .styled-table th {
-  padding: 1rem 1.25rem !important;
+  padding: 1.1rem 1.25rem !important;
+  border-bottom: 2px solid var(--border-color) !important;
 }
 
-/* 4. Tag Nguồn (Source Tags) */
+/* 4. Tag Nguồn (Source Tags) & Trạng thái MMO - Apple Style */
 .source-badge {
-  padding: 0.3rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.85rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 100px;
+  font-size: 0.825rem;
   font-weight: 600;
-  color: white;
   display: inline-block;
   text-align: center;
-  min-width: 80px;
+  min-width: 90px;
 }
-/* Thêm màu cho các nguồn phổ biến */
-.source-facebook { background-color: #1877F2; }
-.source-zalo { background-color: #0068FF; }
-.source-telegram { background-color: #2AABEE; }
-.source-gioi-thieu { background-color: #2DCE89; }
+/* Thêm màu cho các nguồn phổ biến (Soft pastel style) */
+.source-facebook { 
+  background-color: #E8F4FF !important; 
+  color: #1877F2 !important;
+  border: 1px solid rgba(24, 119, 242, 0.1);
+}
+.source-zalo { 
+  background-color: #E5F2FF !important; 
+  color: #0068FF !important;
+  border: 1px solid rgba(0, 104, 255, 0.1);
+}
+.source-telegram { 
+  background-color: #EBF7FF !important; 
+  color: #2AABEE !important;
+  border: 1px solid rgba(42, 171, 238, 0.1);
+}
+.source-gioi-thieu { 
+  background-color: #EAFBF4 !important; 
+  color: #34C759 !important;
+  border: 1px solid rgba(52, 199, 89, 0.1);
+}
 .source-khac {
-  background-color: var(--border-color);
-  color: var(--text-light);
+  background-color: #F5F5F7 !important;
+  color: var(--text-light) !important;
+  border: 1px solid var(--border-color);
+}
+
+/* Badge trạng thái MMO chuyên nghiệp */
+.status-badge {
+  padding: 0.35rem 0.85rem;
+  border-radius: 100px;
+  font-size: 0.825rem;
+  font-weight: 600;
+  display: inline-block;
+  text-align: center;
+  min-width: 90px;
+}
+.status-vip {
+  background-color: #FFF8E6 !important;
+  color: #FF9500 !important;
+  border: 1px solid rgba(255, 149, 0, 0.15);
+}
+.status-tiem-nang {
+  background-color: #F8F2FF !important;
+  color: #AF52DE !important;
+  border: 1px solid rgba(175, 82, 222, 0.15);
+}
+.status-binh-thuong {
+  background-color: #F5F5F7 !important;
+  color: #5E5E62 !important;
+  border: 1px solid var(--border-color);
+}
+.status-canh-bao {
+  background-color: #FFEBEA !important;
+  color: #FF3B30 !important;
+  border: 1px solid rgba(255, 59, 48, 0.15);
 }
 
 /* 5. Thẻ <select> trong Modal */
@@ -1017,4 +1068,439 @@ h1, h2, h3, h4, h5 {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(94, 114, 228, 0.2);
   outline: none;
+}
+
+/* === MMO Social Icons & Confidential Notes (Apple Style) === */
+.mmo-social-links {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mmo-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.mmo-icon-btn:hover {
+  transform: translateY(-2px) scale(1.08);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.mmo-facebook {
+  background-color: #E8F4FF;
+  color: #1877F2;
+  border: 1px solid rgba(24, 119, 242, 0.15);
+}
+.mmo-telegram {
+  background-color: #EBF7FF;
+  color: #2AABEE;
+  border: 1px solid rgba(42, 171, 238, 0.15);
+}
+.mmo-zalo {
+  background-color: #E5F2FF;
+  color: #0068FF;
+  border: 1px solid rgba(0, 104, 255, 0.15);
+}
+.mmo-empty {
+  background-color: #F5F5F7;
+  color: #C2C2C7;
+  border: 1px solid rgba(0,0,0,0.04);
+  cursor: not-allowed;
+}
+
+/* Ghi chú bảo mật / thông tin cá nhân */
+.secure-note-box {
+  background: linear-gradient(135deg, #FFFDF5, #FFF9E6);
+  border: 1px solid rgba(243, 164, 26, 0.2);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-top: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.secure-note-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background-color: #F3A41A;
+}
+
+.secure-note-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #B27B00;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+.secure-note-content {
+  font-size: 0.95rem;
+  color: #5C4A27;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+/* Hiệu ứng Scale down khi click nút */
+.btn-save:active, .login-button:active, .mmo-icon-btn:active, .btn-primary:active, .btn-secondary:active, .btn-cancel:active, .btn-danger:active {
+  transform: scale(0.96);
+  transition: transform 0.1s;
+}
+
+/* ==========================================================================
+   APPLE BUTTON STYLING SYSTEM (UNIFIED)
+   ========================================================================== */
+
+/* Nút cơ bản (Base Button Style) */
+.btn, .login-button, .logout-button, .btn-save, .btn-cancel, .btn-primary, .btn-secondary, .btn-danger, .delete-button, .edit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px; /* Bo góc Apple tiêu chuẩn */
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  border: none;
+  box-sizing: border-box;
+}
+
+/* Nút chính (Primary Action Button - Apple Blue) */
+.btn-primary, .login-button, .btn-save {
+  background-color: var(--primary-color) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+.btn-primary:hover, .login-button:hover, .btn-save:hover {
+  background-color: var(--primary-hover) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 113, 227, 0.2) !important;
+}
+.btn-primary:active, .login-button:active, .btn-save:active {
+  transform: scale(0.97);
+}
+
+/* Nút phụ / Hủy bỏ (Secondary Button - Apple Soft Gray) */
+.btn-secondary, .btn-cancel {
+  background-color: #F5F5F7 !important;
+  color: #1D1D1F !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  font-weight: 500 !important;
+  box-shadow: none !important;
+}
+.btn-secondary:hover, .btn-cancel:hover {
+  background-color: #E8E8ED !important;
+  color: var(--primary-color) !important;
+  border-color: rgba(0, 113, 227, 0.15) !important;
+}
+.btn-secondary:active, .btn-cancel:active {
+  transform: scale(0.97);
+}
+
+/* Nút nguy hiểm / Xóa (Danger Button - Apple Red) */
+.btn-danger, .delete-button {
+  background-color: var(--danger-color) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 1px 2px rgba(255, 59, 48, 0.1) !important;
+}
+.btn-danger:hover, .delete-button:hover {
+  background-color: #E0352A !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 59, 48, 0.2) !important;
+}
+.btn-danger:active, .delete-button:active {
+  transform: scale(0.97);
+}
+
+/* Tinh chỉnh riêng cho form đăng nhập chính */
+.login-form .login-button {
+  width: 100% !important;
+  padding: 0.9rem !important;
+}
+
+/* ==========================================================================
+   UNIFIED TABLE ACTION BUTTONS (MICRO CAPSULES)
+   ========================================================================== */
+.action-buttons button, .btn-edit-sm, .btn-delete-sm, .btn-action-sm {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  padding: 0 !important;
+  margin-right: 6px !important;
+  box-shadow: none !important;
+}
+
+/* Nút Sửa Nhỏ (Light Blue / Blue) */
+.action-buttons button, .btn-edit-sm {
+  background-color: #E1F5FE !important;
+  color: #0288D1 !important;
+}
+.action-buttons button:hover, .btn-edit-sm:hover {
+  background-color: #0288D1 !important;
+  color: #FFFFFF !important;
+  transform: translateY(-1px);
+}
+.action-buttons button:active, .btn-edit-sm:active {
+  transform: scale(0.92);
+}
+
+/* Nút Xóa Nhỏ (Light Red / Red) */
+.action-buttons button.delete, .btn-delete-sm {
+  background-color: #FFEBEA !important;
+  color: #FF3B30 !important;
+}
+.action-buttons button.delete:hover, .btn-delete-sm:hover {
+  background-color: #FF3B30 !important;
+  color: #FFFFFF !important;
+  transform: translateY(-1px);
+}
+.action-buttons button.delete:active, .btn-delete-sm:active {
+  transform: scale(0.92);
+}
+
+/* Nút hành động nhỏ thông dụng (Copy, Link...) */
+.btn-action-sm {
+  background-color: #F5F5F7 !important;
+  color: #1D1D1F !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+.btn-action-sm:hover {
+  background-color: var(--primary-color) !important;
+  color: #FFFFFF !important;
+  border-color: var(--primary-color) !important;
+  transform: translateY(-1px);
+}
+.btn-action-sm:active {
+  transform: scale(0.92);
+}
+
+/* ==========================================================================
+   STATS GRID 4 COLUMNS (APPLE STYLE)
+   ========================================================================== */
+.stats-grid-4 {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 1.25rem !important;
+}
+@media (max-width: 1024px) {
+  .stats-grid-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+@media (max-width: 600px) {
+  .stats-grid-4 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ==========================================================================
+   RENEWAL & REMINDER ACTION BUTTONS (APPLE STYLE CAPSULES)
+   ========================================================================== */
+.btn-renew-action {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  height: 32px !important;
+  padding: 0 14px !important;
+  border-radius: 16px !important;
+  border: none !important;
+  font-weight: 600 !important;
+  font-size: 0.8rem !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  background-color: #E1F5FE !important;
+  color: #0288D1 !important;
+  width: auto !important;
+  box-shadow: none !important;
+  margin-right: 6px !important;
+}
+.btn-renew-action:hover {
+  background-color: #0288D1 !important;
+  color: #FFFFFF !important;
+  transform: translateY(-1px);
+}
+.btn-renew-action:active {
+  transform: scale(0.96);
+}
+
+.btn-remind-action {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  height: 32px !important;
+  padding: 0 14px !important;
+  border-radius: 16px !important;
+  border: none !important;
+  font-weight: 600 !important;
+  font-size: 0.8rem !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  background-color: #0071E3 !important;
+  color: #FFFFFF !important;
+  width: auto !important;
+  box-shadow: 0 2px 4px rgba(0, 113, 227, 0.15) !important;
+}
+.btn-remind-action:hover {
+  background-color: #005BB5 !important;
+  box-shadow: 0 4px 8px rgba(0, 113, 227, 0.25) !important;
+  transform: translateY(-1px);
+}
+.btn-remind-action:active {
+  transform: scale(0.96);
+}
+
+/* ==========================================================================
+   DASHBOARD ENHANCEMENTS & QUICK ACTIONS
+   ========================================================================== */
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+@media (max-width: 1024px) {
+  .quick-actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .quick-actions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.quick-action-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 1.25rem;
+  background-color: rgba(255, 255, 255, 0.85);
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.01);
+}
+.quick-action-card:hover {
+  transform: translateY(-4px);
+  background-color: #FFFFFF;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 113, 227, 0.3);
+}
+.quick-action-card:hover h4 {
+  color: var(--primary-color);
+}
+
+.dashboard-split-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+@media (max-width: 1100px) {
+  .dashboard-split-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dashboard-section-card {
+  background-color: rgba(255, 255, 255, 0.85);
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.dashboard-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.75rem;
+}
+.dashboard-section-header h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dashboard-view-all {
+  font-size: 0.825rem;
+  color: var(--primary-color);
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.dashboard-view-all:hover {
+  opacity: 0.8;
+}
+
+.stat-card.widget {
+  padding: 1.5rem;
+  border-radius: 20px;
+  border: 1px solid rgba(0,0,0,0.02);
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.01);
+}
+.stat-card.widget:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.06);
+}
+.stat-card-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+.stat-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.stat-card-info h3 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }

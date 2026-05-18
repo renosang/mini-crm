@@ -8,7 +8,10 @@ export default async function handler(req: any, res: any) {
   switch (req.method) {
     case 'GET':
       try {
-        const accounts = await Account.find({}).sort({ createdAt: -1 });
+        const accounts = await Account.find({})
+          .populate('customer_id')
+          .populate('slots_assigned.customer_id')
+          .sort({ createdAt: -1 });
         res.status(200).json({ success: true, data: accounts });
       } catch (error: any) { // SỬA LỖI: Thêm : any vào error
         res.status(500).json({ success: false, message: 'Lỗi server' });

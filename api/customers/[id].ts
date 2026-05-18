@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         // 2. Lấy Lịch sử mua hàng (Orders)
-        const orders = await Order.find({ customer_id: id }).sort({ createdAt: -1 });
+        const orders = await Order.find({ customer_id: id }).populate('accounts').sort({ createdAt: -1 });
 
         // 3. Lấy Tài khoản đang sở hữu (Accounts)
         const accounts = await Account.find({ customer_id: id, status: 'sold' });

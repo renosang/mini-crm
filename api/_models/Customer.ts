@@ -18,8 +18,24 @@ const CustomerSchema = new mongoose.Schema(
     source: {
       type: String, // Nguồn khách hàng (Facebook, Zalo, v.v.)
     },
+    facebook: {
+      type: String, // Trang cá nhân Facebook
+    },
+    telegram: {
+      type: String, // Telegram username/link
+    },
+    zalo: {
+      type: String, // Zalo SĐT/link
+    },
+    status: {
+      type: String, // Nhãn/Trạng thái (VIP, Tiềm năng, Bình thường, Cảnh báo)
+      default: 'Bình thường',
+    },
     notes: {
       type: String, // Ghi chú thêm
+    },
+    privateNotes: {
+      type: String, // Thông tin cá nhân/bảo mật (Proxy, tài khoản bàn giao, v.v.)
     }
   },
   { timestamps: true }

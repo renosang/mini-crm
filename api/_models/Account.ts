@@ -21,6 +21,26 @@ const AccountSchema = new mongoose.Schema(
       required: true,
       default: 0,
     },
+    resource_type: {
+      type: String,
+      enum: ['id_pass', 'key', 'slot'],
+      default: 'id_pass',
+    },
+    total_slots: {
+      type: Number,
+      default: 1,
+    },
+    used_slots: {
+      type: Number,
+      default: 0,
+    },
+    slots_assigned: [
+      {
+        customer_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer' },
+        assigned_email: String,
+        assigned_at: { type: Date, default: Date.now }
+      }
+    ],
     status: {
       type: String,
       enum: ['available', 'sold', 'expired', 'banned'],

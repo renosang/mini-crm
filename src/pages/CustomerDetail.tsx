@@ -1,25 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../services/api';
-import { FiUsers, FiShoppingCart, FiCreditCard } from 'react-icons/fi';
+import { FiUsers, FiShoppingCart, FiCreditCard, FiFacebook, FiSend, FiMessageCircle, FiLock, FiSave, FiInfo } from 'react-icons/fi';
+
+// === Component hiển thị Tag Trạng thái MMO ===
+const StatusBadge: React.FC<{ status?: string }> = ({ status }) => {
+  const currentStatus = status || 'Bình thường';
+  let className = "status-badge ";
+  switch (currentStatus.toLowerCase()) {
+    case "vip": className += "status-vip"; break;
+    case "tiềm năng": className += "status-tiem-nang"; break;
+    case "cảnh báo": className += "status-canh-bao"; break;
+    default: className += "status-binh-thuong";
+  }
+  return <span className={className}>{currentStatus}</span>;
+};
 
 // === ĐỊNH NGHĨA KIỂU DỮ LIỆU ===
-// (Đây là các kiểu dữ liệu từ các trang khác, bạn có thể
-//  tạo file riêng ví dụ 'src/types.ts' để import cho gọn)
-interface IOrder {
-  _id: string;
-  total_amount: number;
-  status: string;
-  createdAt: string;
-}
 interface IAccount {
   _id: string;
   product_type: string;
   account_details: {
     username?: string;
+    password_acc?: string;
     license_key?: string;
   };
   valid_until?: string;
+}
+interface IOrder {
+  _id: string;
+  total_amount: number;
+  status: string;
+  createdAt: string;
+  accounts?: IAccount[];
 }
 interface ICustomer {
   _id: string;
@@ -27,7 +40,12 @@ interface ICustomer {
   email?: string;
   phone?: string;
   source?: string;
+  facebook?: string;
+  telegram?: string;
+  zalo?: string;
+  status?: string;
   notes?: string;
+  privateNotes?: string;
 }
 interface ICustomerDetailData {
   customer: ICustomer;
@@ -47,6 +65,11 @@ const CustomerDetail: React.FC = () => {
   const [error, setError] = useState('');
   const [data, setData] = useState<ICustomerDetailData | null>(null);
   
+  // States cho ghi chú bảo mật cá nhân
+  const [privateNotes, setPrivateNotes] = useState('');
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
+
   // State cho Tab
   const [activeTab, setActiveTab] = useState<'history' | 'accounts' | 'notes' | 'reports'>('history');
 
@@ -59,6 +82,7 @@ const CustomerDetail: React.FC = () => {
         const { data } = await api.get<{ success: boolean, data: ICustomerDetailData }>(`/customers/${id}`);
         if (data.success) {
           setData(data.data);
+          setPrivateNotes(data.data.customer.privateNotes || '');
         } else {
           setError('Không tìm thấy dữ liệu.');
         }
@@ -71,6 +95,29 @@ const CustomerDetail: React.FC = () => {
     
     fetchData();
   }, [id]);
+
+  const handleSaveNotes = async () => {
+    if (!id || !data) return;
+    try {
+      setIsSavingNotes(true);
+      setSaveMessage('');
+      const updatedCustomer = { ...data.customer, privateNotes };
+      const response = await api.put(`/customers/${id}`, updatedCustomer);
+      if (response.data.success) {
+        setData({
+          ...data,
+          customer: response.data.data
+        });
+        setSaveMessage('Đã lưu ghi chú bảo mật thành công!');
+        setTimeout(() => setSaveMessage(''), 3000);
+      }
+    } catch (err) {
+      console.error("Lỗi lưu ghi chú:", err);
+      alert('Không thể lưu ghi chú.');
+    } finally {
+      setIsSavingNotes(false);
+    }
+  };
 
   if (loading) return <div>Đang tải chi tiết khách hàng...</div>;
   if (error) return <div style={{ color: 'red' }}>{error}</div>;
@@ -87,26 +134,71 @@ const CustomerDetail: React.FC = () => {
 
       <div className="customer-detail-grid">
         {/* --- KHU VỰC 1A: THẺ THÔNG TIN --- */}
-        <div className="customer-info-card">
-          <h2>{customer.name}</h2>
+        <div className="customer-info-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <h2 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', marginBottom: '0' }}>
+            <span>{customer.name}</span>
+            <StatusBadge status={customer.status} />
+          </h2>
+          
           <div className="info-item">
             <label>Email</label>
-            <p>{customer.email || 'N/A'}</p>
+            <p style={{ fontWeight: 500 }}>{customer.email || 'N/A'}</p>
           </div>
           <div className="info-item">
             <label>Số Điện Thoại</label>
-            <p>{customer.phone || 'N/A'}</p>
+            <p style={{ fontWeight: 500 }}>{customer.phone || 'N/A'}</p>
           </div>
           <div className="info-item">
-            <label>Nguồn</label>
-            <p>{customer.source || 'N/A'}</p>
+            <label>Nguồn khách hàng</label>
+            <p><span className="source-badge source-khac" style={{ minWidth: 'auto', padding: '0.2rem 0.6rem' }}>{customer.source || 'N/A'}</span></p>
           </div>
           <div className="info-item">
-            <label>Ghi Chú</label>
-            <p>{customer.notes || 'Không có ghi chú'}</p>
+            <label>Ghi Chú Công Việc</label>
+            <p style={{ fontSize: '0.925rem', color: 'var(--text-color)', lineHeight: '1.5' }}>{customer.notes || 'Không có ghi chú'}</p>
           </div>
+
+          {/* MMO Social Chat Buttons */}
+          <div className="info-item" style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
+            <label style={{ marginBottom: '0.5rem' }}>Kênh liên lạc MMO</label>
+            <div className="mmo-social-links">
+              {customer.facebook ? (
+                <a href={customer.facebook.startsWith('http') ? customer.facebook : `https://facebook.com/${customer.facebook}`} target="_blank" rel="noopener noreferrer" className="mmo-icon-btn mmo-facebook" title="Facebook Messenger">
+                  <FiFacebook />
+                </a>
+              ) : (
+                <span className="mmo-icon-btn mmo-empty" title="Không có Facebook"><FiFacebook /></span>
+              )}
+              {customer.telegram ? (
+                <a href={customer.telegram.startsWith('http') ? customer.telegram : `https://t.me/${customer.telegram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="mmo-icon-btn mmo-telegram" title="Chat Telegram">
+                  <FiSend />
+                </a>
+              ) : (
+                <span className="mmo-icon-btn mmo-empty" title="Không có Telegram"><FiSend /></span>
+              )}
+              {customer.zalo ? (
+                <a href={customer.zalo.startsWith('http') ? customer.zalo : `https://zalo.me/${customer.zalo}`} target="_blank" rel="noopener noreferrer" className="mmo-icon-btn mmo-zalo" title="Chat Zalo">
+                  <FiMessageCircle />
+                </a>
+              ) : (
+                <span className="mmo-icon-btn mmo-empty" title="Không có Zalo"><FiMessageCircle /></span>
+              )}
+            </div>
+          </div>
+
+          {/* Ghi chú bảo mật nhanh */}
+          {customer.privateNotes && (
+            <div className="secure-note-box">
+              <div className="secure-note-header">
+                <FiLock /> Thông tin bảo mật / Cá nhân
+              </div>
+              <div className="secure-note-content" style={{ fontSize: '0.85rem' }}>
+                {customer.privateNotes}
+              </div>
+            </div>
+          )}
+
           {/* Nút quay lại */}
-          <Link to="/khach-hang" style={{marginTop: '1rem', display: 'inline-block'}}>
+          <Link to="/khach-hang" className="customer-link" style={{ marginTop: '0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontWeight: 600 }}>
             &larr; Quay lại danh sách
           </Link>
         </div>
@@ -157,7 +249,7 @@ const CustomerDetail: React.FC = () => {
                 className={activeTab === 'notes' ? 'active' : ''}
                 onClick={() => setActiveTab('notes')}
               >
-                Ghi Chú
+                Ghi Chú Bảo Mật
               </button>
               <button 
                 className={activeTab === 'reports' ? 'active' : ''}
@@ -172,13 +264,65 @@ const CustomerDetail: React.FC = () => {
                 <div className="table-container">
                   <table className="styled-table">
                     <thead>
-                      <tr><th>Ngày Mua</th><th>Tổng Tiền</th><th>Trạng Thái</th></tr>
+                      <tr>
+                        <th>Mã Đơn</th>
+                        <th>Ngày Mua</th>
+                        <th>Chi Tiết Bàn Giao Tài Nguyên</th>
+                        <th>Tổng Tiền</th>
+                        <th>Trạng Thái</th>
+                      </tr>
                     </thead>
                     <tbody>
                       {orders.map(order => (
                         <tr key={order._id}>
+                          <td>
+                            <Link 
+                              to={`/ban-hang?viewOrder=${order._id}`}
+                              style={{ 
+                                fontFamily: 'monospace', 
+                                color: '#0071E3', 
+                                fontSize: '0.85rem',
+                                fontWeight: 600,
+                                textDecoration: 'underline'
+                              }}
+                              title="Click để xem chi tiết hóa đơn & phân tích lợi nhuận"
+                            >
+                              #{order._id.substring(order._id.length - 6).toUpperCase()}
+                            </Link>
+                          </td>
                           <td>{new Date(order.createdAt).toLocaleDateString('vi-VN')}</td>
-                          <td>{order.total_amount.toLocaleString('vi-VN')} đ</td>
+                          <td>
+                            {order.accounts && order.accounts.length > 0 ? (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                {order.accounts.map((acc, index) => {
+                                  const details = acc.account_details || {};
+                                  const isClientUpgrade = !details.password_acc || details.password_acc === '';
+                                  
+                                  return (
+                                    <div key={acc._id || index} style={{ fontSize: '0.85rem', padding: '6px 10px', backgroundColor: '#F5F5F7', borderRadius: '8px', border: '1px solid #E5E5EA' }}>
+                                      <div style={{ fontWeight: 600, color: '#0071E3' }}>{acc.product_type}</div>
+                                      <div style={{ color: 'var(--text-light)', fontSize: '0.8rem', marginTop: '2px', wordBreak: 'break-all' }}>
+                                        {details.username && (
+                                          <div>Tài khoản: <strong>{details.username}</strong></div>
+                                        )}
+                                        {details.license_key && (
+                                          <div style={{ marginTop: '2px' }}>Key: <code style={{ backgroundColor: '#FFFFFF', padding: '1px 3px', borderRadius: '3px', border: '1px solid #D2D2D7' }}>{details.license_key}</code></div>
+                                        )}
+                                        {isClientUpgrade && (
+                                          <span style={{ display: 'inline-block', color: '#D84315', fontWeight: 600, fontSize: '0.75rem', marginTop: '2px' }}>
+                                            ⚡ Nâng cấp trực tiếp trên TK khách
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <span style={{ color: 'var(--text-light)', fontStyle: 'italic' }}>Không có chi tiết</span>
+                            )}
+                          </td>
+                          <td style={{ fontWeight: 700 }}>{order.total_amount.toLocaleString('vi-VN')} đ</td>
                           <td><span className={`badge badge-${order.status === 'paid' ? 'success' : 'pending'}`}>{order.status}</span></td>
                         </tr>
                       ))}
@@ -207,9 +351,47 @@ const CustomerDetail: React.FC = () => {
                 </div>
               </div>
 
-              {/* Tab 3: Ghi Chú */}
+              {/* Tab 3: Ghi Chú Bảo Mật */}
               <div className={`tab-pane ${activeTab === 'notes' ? 'active' : ''}`}>
-                <p>Khu vực này sẽ có một trình soạn thảo văn bản để thêm ghi chú về khách hàng (sẽ xây dựng sau).</p>
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: '#B27B00', fontSize: '1.1rem' }}>
+                  <FiLock /> Thông tin bảo mật & Cá nhân (MMO Only)
+                </h3>
+                <p style={{ color: 'var(--text-light)', fontSize: '0.875rem', marginBottom: '1rem' }}>
+                  Lưu trữ thông tin nhạy cảm của khách hàng (Proxy, Accounts giao nhận, Ví Crypto...). Chỉ Admin mới có quyền xem và sửa.
+                </p>
+                <textarea
+                  value={privateNotes}
+                  onChange={(e) => setPrivateNotes(e.target.value)}
+                  rows={8}
+                  placeholder="Nhập proxy, tài khoản bàn giao, thông tin cá nhân bảo mật tại đây..."
+                  style={{
+                    width: '100%',
+                    padding: '1rem',
+                    border: '1px solid rgba(243, 164, 26, 0.3)',
+                    borderRadius: '12px',
+                    fontSize: '0.95rem',
+                    fontFamily: 'Inter, sans-serif',
+                    backgroundColor: '#FFFDF9',
+                    marginBottom: '1rem',
+                    outline: 'none',
+                    lineHeight: '1.5'
+                  }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                  <button 
+                    className="login-button" 
+                    style={{ width: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem' }} 
+                    onClick={handleSaveNotes}
+                    disabled={isSavingNotes}
+                  >
+                    <FiSave /> {isSavingNotes ? 'Đang lưu...' : 'Lưu Thay Đổi'}
+                  </button>
+                  {saveMessage && (
+                    <span style={{ color: 'var(--success-color)', fontWeight: 600, fontSize: '0.9rem' }}>
+                      {saveMessage}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Tab 4: Báo Cáo */}
