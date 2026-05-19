@@ -157,7 +157,7 @@ export default async function handler(req: any, res: any) {
     }
 
     const buttonText = isUnpaidInvoice ? 'Thanh Toán' : 'Gia Hạn Ngay';
-    const headerSubtitle = isUnpaidInvoice ? 'Thanh Toán & Bàn Giao Dịch Vụ' : 'Thông Báo Nhắc Nhở Gia Hạn Bản Quyền';
+    const headerSubtitle = isUnpaidInvoice ? 'THANH TOÁN & BÀN GIAO DỊCH VỤ' : 'THÔNG BÁO NHẮC NHỞ GIA HẠN BẢN QUYỀN';
     const bodyDescription = isUnpaidInvoice
       ? 'Chúng tôi xin gửi thông tin bàn giao chi tiết cho các gói dịch vụ bạn đã đăng ký. Vui lòng hoàn tất thanh toán để kích hoạt dịch vụ hoạt động chính thức:'
       : 'Chúng tôi xin gửi thông tin chi tiết và nhắc nhở gia hạn cho các gói bản quyền sắp hết hạn của bạn. Vui lòng kiểm tra và thanh toán gia hạn để đảm bảo dịch vụ không bị gián đoạn:';
@@ -199,10 +199,13 @@ export default async function handler(req: any, res: any) {
       </head>
       <body style="font-family:'SF Pro Display','Helvetica Neue',Helvetica,Arial,sans-serif; background-color:#F5F5F7; margin:0; padding:32px 16px; color:#1D1D1F;">
         <div class="content-wrapper" style="max-width: 660px; margin: 0 auto; background-color: #FFFFFF; border-radius: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.03); overflow: hidden; border: 1px solid rgba(0,0,0,0.04);">
-          <!-- Header Red Fire Theme -->
-          <div class="header-bar" style="background-color: #6B2737; padding: 28px 24px; text-align: center; border-bottom: 1px solid rgba(0, 0, 0, 0.08); color: #FFFFFF;">
-            ${logoBase64 ? `<img src="cid:logo" alt="Logo" style="max-height: 42px; display: block; margin: 0 auto;" />` : `<h1 style="margin: 0; font-size: 22px; font-weight: 600; letter-spacing: 0.5px; color: #FFFFFF;">BEEGADGET.NET</h1>`}
-            <p style="margin: 10px 0 0 0; color: rgba(255, 255, 255, 0.85); font-size: 13px; font-weight: 600; letter-spacing: 0.5px;">${headerSubtitle}</p>
+          <!-- Header Burgundy Theme - Email Compatible -->
+          <div style="background: linear-gradient(135deg, #6B2737 0%, #8B3A4F 100%); padding: 32px 24px 28px; text-align: center; border-bottom: 3px solid rgba(255,193,120,0.25);">
+            <!-- Logo trên nền trắng tròn để hiển thị đúng trong mọi email client -->
+            <div style="width: 64px; height: 64px; background: #FFFFFF; border-radius: 50%; margin: 0 auto 14px auto; line-height: 64px; text-align: center; overflow: hidden; border: 2px solid rgba(255,255,255,0.4);">
+              ${logoBase64 ? `<img src="cid:logo" alt="Logo" style="width: 44px; height: 44px; display: block; margin: 10px auto 0; object-fit: contain;" />` : `<span style="color:#6B2737;font-size:24px;font-weight:700;line-height:64px;">B</span>`}
+            </div>
+            <p style="margin: 0; color: #FFD9A0; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">${headerSubtitle}</p>
           </div>
           
           <!-- Body -->
