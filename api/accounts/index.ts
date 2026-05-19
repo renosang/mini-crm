@@ -1,5 +1,6 @@
 import dbConnect from '../_lib/dbConnect.ts';
 import Account from '../_models/Account.ts';
+import Supplier from '../_models/Supplier.ts';
 
 // SỬA LỖI: Thêm : any vào req và res
 export default async function handler(req: any, res: any) {
@@ -10,6 +11,7 @@ export default async function handler(req: any, res: any) {
       try {
         const accounts = await Account.find({})
           .populate('customer_id')
+          .populate('supplier')
           .populate('slots_assigned.customer_id')
           .sort({ createdAt: -1 });
         res.status(200).json({ success: true, data: accounts });

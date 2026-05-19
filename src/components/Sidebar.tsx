@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import {
   FiHome, FiUsers, FiShoppingCart, FiBox, FiKey,
-  FiClock, FiBriefcase, FiSettings, FiLogOut
+  FiClock, FiBriefcase, FiSettings, FiLogOut, FiChevronRight
 } from 'react-icons/fi';
 
 import logo from '../assets/logo.png';
@@ -11,6 +11,9 @@ import logo from '../assets/logo.png';
 const Sidebar: React.FC = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isCaiDatPage = location.pathname === '/cai-dat';
+  const [settingsOpen, setSettingsOpen] = useState<boolean>(isCaiDatPage);
 
   const handleLogout = () => {
     logout();
@@ -59,9 +62,36 @@ const Sidebar: React.FC = () => {
         <NavLink to="/nha-cung-cap" className="nav-item">
           <FiBriefcase /> Nhà Cung Cấp
         </NavLink>
-        <NavLink to="/cai-dat" className="nav-item">
-          <FiSettings /> Cài Đặt
-        </NavLink>
+        <div 
+          className={`nav-item nav-group-toggle ${isCaiDatPage ? 'active' : ''} ${settingsOpen ? 'open' : ''}`}
+          onClick={() => setSettingsOpen(!settingsOpen)}
+        >
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <FiSettings />
+            <span>Cài Đặt</span>
+          </div>
+          <FiChevronRight className="chevron" />
+        </div>
+        <div className={`sidebar-submenu ${settingsOpen ? 'open' : ''}`}>
+          <Link 
+            to="/cai-dat?tab=smtp"
+            style={{ 
+              color: (isCaiDatPage && (location.search.includes('tab=smtp') || !location.search.includes('tab='))) ? 'var(--primary-color)' : 'var(--text-light)',
+              fontWeight: (isCaiDatPage && (location.search.includes('tab=smtp') || !location.search.includes('tab='))) ? '600' : '500'
+            }}
+          >
+            Cấu hình SMTP
+          </Link>
+          <Link 
+            to="/cai-dat?tab=bank"
+            style={{ 
+              color: (isCaiDatPage && location.search.includes('tab=bank')) ? 'var(--primary-color)' : 'var(--text-light)',
+              fontWeight: (isCaiDatPage && location.search.includes('tab=bank')) ? '600' : '500'
+            }}
+          >
+            Thông tin chuyển khoản
+          </Link>
+        </div>
 
       </nav>
 

@@ -6,6 +6,27 @@ import Setting from '../_models/Setting.ts';
 import nodemailer from 'nodemailer';
 import fs from 'fs';
 import path from 'path';
+import { generateInvoicePDF } from '../_lib/generateInvoicePDF.ts';
+
+function removeVietnameseTones(str: string): string {
+  str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+  str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+  str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+  str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+  str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+  str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+  str = str.replace(/đ/g, "d");
+  str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+  str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+  str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+  str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+  str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+  str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+  str = str.replace(/Đ/g, "D");
+  str = str.replace(/\u0300|\u0301|\u0309|\u0303|\u0323/g, "");
+  str = str.replace(/\u02C6|\u0306|\u031B/g, "");
+  return str;
+}
 
 export default async function handler(req: any, res: any) {
   await dbConnect();
@@ -68,10 +89,32 @@ export default async function handler(req: any, res: any) {
       });
     }
 
+    // Tải cấu hình ngân hàng chuyển khoản để hiển thị trong email
+    const bankSetting = await Setting.findOne({ key: 'bank' });
+    let bankInfo = {
+      bank_id: 'Sacombank',
+      account_no: '060233251669',
+      account_name: 'Nguyễn Thanh Sang',
+      bank_name: 'Sacombank'
+    };
+    if (bankSetting && bankSetting.value) {
+      bankInfo = { ...bankInfo, ...bankSetting.value };
+    }
+
+    const cleanBankId = bankInfo.bank_id.replace(/\s+/g, '');
+    const cleanAccountNo = bankInfo.account_no.replace(/\s+/g, '');
+    const cleanAccountName = encodeURIComponent(removeVietnameseTones(bankInfo.account_name).toUpperCase());
+    const orderNoStr = (id || accountId || 'Retail').toString().substring(18).toUpperCase();
+    const addInfoText = `Thanh toan don hang ${orderNoStr}`;
+    const addInfoStr = encodeURIComponent(addInfoText);
+
+    const emailQrUrl = `https://img.vietqr.io/image/${cleanBankId}-${cleanAccountNo}-compact2.png?amount=${billingAmount}&addInfo=${addInfoStr}&accountName=${cleanAccountName}`;
+    const paymentLink = emailQrUrl;
+
     // Tiêu đề email chuyên nghiệp động
     const emailSubject = isUnpaidInvoice
-      ? `🔔 [MINI CRM] Hóa đơn thanh toán dịch vụ - ${reminderTitle}`
-      : `🔔 [MINI CRM] Thông báo nhắc gia hạn bản quyền - ${reminderTitle}`;
+      ? `🔔 [Beegadget.net] Hóa đơn thanh toán dịch vụ - ${reminderTitle}`
+      : `🔔 [Beegadget.net] Thông báo nhắc gia hạn bản quyền - ${reminderTitle}`;
 
     // Tạo HTML template hóa đơn & gia hạn phong cách Apple tinh tế
     const accountRows = accountsToRemind.map((acc: any) => {
@@ -156,10 +199,10 @@ export default async function handler(req: any, res: any) {
       </head>
       <body style="font-family:'SF Pro Display','Helvetica Neue',Helvetica,Arial,sans-serif; background-color:#F5F5F7; margin:0; padding:32px 16px; color:#1D1D1F;">
         <div class="content-wrapper" style="max-width: 660px; margin: 0 auto; background-color: #FFFFFF; border-radius: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.03); overflow: hidden; border: 1px solid rgba(0,0,0,0.04);">
-          <!-- Header Apple Style -->
-          <div class="header-bar" style="background-color: #FFB700; padding: 28px 24px; text-align: center; border-bottom: 1px solid rgba(0, 0, 0, 0.05);">
-            ${logoBase64 ? `<img src="cid:logo" alt="Logo" style="max-height: 42px; display: block; margin: 0 auto;" />` : `<h1 style="margin: 0; font-size: 22px; font-weight: 600; letter-spacing: 0.5px; color: #1D1D1F;">MINI CRM</h1>`}
-            <p style="margin: 10px 0 0 0; color: rgba(0, 0, 0, 0.65); font-size: 13px; font-weight: 600; letter-spacing: 0.5px;">${headerSubtitle}</p>
+          <!-- Header Red Fire Theme -->
+          <div class="header-bar" style="background-color: #6B2737; padding: 28px 24px; text-align: center; border-bottom: 1px solid rgba(0, 0, 0, 0.08); color: #FFFFFF;">
+            ${logoBase64 ? `<img src="cid:logo" alt="Logo" style="max-height: 42px; display: block; margin: 0 auto;" />` : `<h1 style="margin: 0; font-size: 22px; font-weight: 600; letter-spacing: 0.5px; color: #FFFFFF;">BEEGADGET.NET</h1>`}
+            <p style="margin: 10px 0 0 0; color: rgba(255, 255, 255, 0.85); font-size: 13px; font-weight: 600; letter-spacing: 0.5px;">${headerSubtitle}</p>
           </div>
           
           <!-- Body -->
@@ -175,13 +218,33 @@ export default async function handler(req: any, res: any) {
             
             ${accountRows}
 
-            <!-- Thanh toán -->
-            <div style="margin-top: 20px; padding: 16px; background-color: #FFFDF0; border: 1px solid #FFEBB3; border-radius: 12px; text-align: center;">
-              <p style="margin:0 0 6px 0; font-size:13px; color:#515154;">${isUnpaidInvoice ? 'Số tiền cần thanh toán:' : 'Cần thanh toán gia hạn:'}</p>
-              <h2 style="margin:0 0 10px 0; color:#D27B00; font-size:24px; font-weight:700;">${billingAmount.toLocaleString('vi-VN')} đ</h2>
-              <a href="#" style="display:inline-block; background-color:#0071E3; color:#FFFFFF; padding:10px 24px; border-radius:99px; text-decoration:none; font-weight:600; font-size:13px;">
-                ${buttonText}
-              </a>
+            <!-- Thanh toán & Thông tin chuyển khoản -->
+            <div style="margin-top: 20px; padding: 24px; background-color: #FFFDF0; border: 1px solid #FFEBB3; border-radius: 16px; text-align: center;">
+              <p style="margin:0 0 6px 0; font-size:13px; color:#515154; font-weight:600;">${isUnpaidInvoice ? 'Số tiền cần thanh toán:' : 'Số tiền cần thanh toán gia hạn:'}</p>
+              <h2 style="margin:0 0 16px 0; color:#D27B00; font-size:26px; font-weight:700;">${billingAmount.toLocaleString('vi-VN')} đ</h2>
+              
+              <!-- Khung Thông tin chuyển khoản & VietQR -->
+              <div style="display: inline-block; text-align: left; background: #FFFFFF; border: 1px solid #E5E5EA; border-radius: 12px; padding: 16px; max-width: 320px; margin: 0 auto 16px auto; width: 100%; box-sizing: border-box;">
+                <div style="font-size: 11px; font-weight: 700; color: #86868B; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">THÔNG TIN CHUYỂN KHOẢN</div>
+                
+                <!-- VietQR Image -->
+                <div style="margin: 0 auto 12px auto; padding: 6px; border: 1px solid #E5E5EA; border-radius: 8px; background-color: #FFFFFF; width: 160px; height: 160px;">
+                  <img src="${emailQrUrl}" alt="Mã VietQR" style="width: 160px; height: 160px; display: block;" />
+                </div>
+                
+                <div style="font-size: 12px; line-height: 1.6; border-top: 1px dashed #E5E5EA; padding-top: 10px; color: #1D1D1F;">
+                  <div style="margin-bottom: 4px;">Ngân hàng: <strong>${bankInfo.bank_name} (${bankInfo.bank_id})</strong></div>
+                  <div style="margin-bottom: 4px;">Số tài khoản: <strong style="font-size: 13px; color: #0071E3;">${bankInfo.account_no}</strong></div>
+                  <div style="margin-bottom: 4px;">Chủ tài khoản: <strong>${bankInfo.account_name.toUpperCase()}</strong></div>
+                  <div>Nội dung CK: <strong style="color: #D27B00;">${addInfoText}</strong></div>
+                </div>
+              </div>
+              
+              <div style="margin-top: 8px;">
+                <a href="${paymentLink}" target="_blank" style="display:inline-block; background-color:#0071E3; color:#FFFFFF; padding:11px 28px; border-radius:99px; text-decoration:none; font-weight:600; font-size:13px; box-shadow: 0 4px 12px rgba(0, 113, 227, 0.25);">
+                  ${buttonText} qua App Ngân Hàng
+                </a>
+              </div>
             </div>
 
             <p style="font-size: 12px; line-height: 1.5; color: #86868B; margin: 20px 0 0 0; text-align: center;">
@@ -191,8 +254,8 @@ export default async function handler(req: any, res: any) {
 
           <!-- Footer -->
           <div style="background-color: #F5F5F7; padding: 20px; text-align: center; border-top: 1px solid #E5E5EA; color: #86868B; font-size: 11px;">
-            <p style="margin: 0 0 4px 0;">© 2026 Mini CRM Inc. All rights reserved.</p>
-            <p style="margin: 0;">Bạn nhận được email này vì đã đăng ký mua bản quyền dịch vụ.</p>
+            <p style="margin: 0 0 4px 0;">© 2026 Beegadget.net. All rights reserved.</p>
+            <p style="margin: 0;">Bạn nhận được email này vì đã đăng ký mua bản quyền dịch vụ tại Beegadget.net.</p>
           </div>
         </div>
       </body>
@@ -204,7 +267,7 @@ export default async function handler(req: any, res: any) {
     let smtpPort = process.env.SMTP_PORT;
     let smtpUser = process.env.SMTP_USER;
     let smtpPass = process.env.SMTP_PASS;
-    let smtpFrom = process.env.SMTP_FROM || (smtpUser ? `"MINI CRM" <${smtpUser}>` : '');
+    let smtpFrom = process.env.SMTP_FROM || (smtpUser ? `"Beegadget.net" <${smtpUser}>` : '');
 
     const smtpSetting = await Setting.findOne({ key: 'smtp' });
     if (smtpSetting && smtpSetting.value) {
@@ -218,6 +281,20 @@ export default async function handler(req: any, res: any) {
       }
     }
 
+    const isRenewal = !isUnpaidInvoice;
+    const showTransferInPDF = isUnpaidInvoice || isRenewal;
+
+    // Sinh hóa đơn PDF Apple Style
+    const pdfBuffer = await generateInvoicePDF(
+      customer, 
+      accountsToRemind, 
+      billingAmount, 
+      showTransferInPDF, 
+      id || accountId,
+      isRenewal
+    );
+    const pdfBase64 = pdfBuffer.toString('base64');
+
     // Nếu yêu cầu xem trước trước khi gửi thực tế -> Thế src="cid:logo" bằng Base64 để hiển thị trong React Modal preview
     if (req.query.preview === 'true' || req.body?.preview === true) {
       const previewHtml = htmlContent.replace('src="cid:logo"', `src="${logoBase64}"`);
@@ -227,15 +304,23 @@ export default async function handler(req: any, res: any) {
         message: 'Bản xem trước hóa đơn được tạo thành công.',
         previewHtml: previewHtml,
         recipient: customerEmail,
-        subject: emailSubject
+        subject: emailSubject,
+        pdfBase64: pdfBase64
       });
     }
 
-    const attachments = logoBase64 && fs.existsSync(logoPath) ? [{
-      filename: 'logo.png',
-      path: logoPath,
-      cid: 'logo'
-    }] : [];
+    const attachments = [
+      ...(logoBase64 && fs.existsSync(logoPath) ? [{
+        filename: 'logo.png',
+        path: logoPath,
+        cid: 'logo'
+      }] : []),
+      {
+        filename: `Hoa_Don_Beegadget_${(id || accountId || 'Retail').toString().substring(18).toUpperCase()}.pdf`,
+        content: pdfBuffer,
+        contentType: 'application/pdf'
+      }
+    ];
 
     if (smtpHost && smtpUser && smtpPass) {
       // Cấu hình SMTP đầy đủ -> Gửi email thật!
@@ -260,7 +345,8 @@ export default async function handler(req: any, res: any) {
       return res.status(200).json({ 
         success: true, 
         mode: 'smtp',
-        message: `Đã gửi email nhắc gia hạn thành công đến địa chỉ ${customerEmail} qua SMTP!` 
+        message: `Đã gửi email nhắc gia hạn thành công kèm Hóa đơn PDF đến địa chỉ ${customerEmail} qua SMTP!`,
+        pdfBase64: pdfBase64
       });
     } else {
       // Chưa có cấu hình SMTP -> Trả về bản mô phỏng chế độ xem trước HTML!
@@ -268,10 +354,11 @@ export default async function handler(req: any, res: any) {
       return res.status(200).json({
         success: true,
         mode: 'simulation',
-        message: `Hệ thống đang ở chế độ GIẢ LẬP (Chưa cấu hình SMTP trong file .env).`,
+        message: `Hệ thống đang ở chế độ GIẢ LẬP (Chưa cấu hình SMTP trong file .env). Đã tạo hóa đơn PDF thành công!`,
         previewHtml: previewHtml,
         recipient: customerEmail,
-        subject: emailSubject
+        subject: emailSubject,
+        pdfBase64: pdfBase64
       });
     }
 

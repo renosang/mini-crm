@@ -14,7 +14,9 @@ const AccountSchema = new mongoose.Schema(
       pin: String,
     },
     supplier: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Supplier',
+      default: null,
     },
     cost: {
       type: Number,

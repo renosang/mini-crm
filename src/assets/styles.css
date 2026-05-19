@@ -555,14 +555,15 @@ h1, h2, h3, h4, h5 {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.4); /* Tối hơn 1 chút */
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  /* Animation */
   opacity: 0;
-  animation: fadeIn 0.3s forwards;
+  animation: fadeIn 0.3s forwards cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 @keyframes fadeIn {
@@ -571,32 +572,33 @@ h1, h2, h3, h4, h5 {
 
 .modal-content {
   background: white;
-  padding: 2rem;
-  border-radius: 12px; /* Bo góc nhiều hơn */
+  padding: 2.25rem;
+  border-radius: 20px;
   width: 90%;
-  max-width: 850px; /* Rộng hơn để hiển thị nội dung thoải mái */
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-  /* Animation */
-  transform: scale(0.9);
-  animation: scaleIn 0.3s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  max-width: 850px;
+  box-shadow: 0 30px 70px rgba(0,0,0,0.18), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  transform: scale(0.95) translateY(10px);
+  animation: scaleIn 0.35s forwards cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes scaleIn {
-  to { transform: scale(1); }
+  to { transform: scale(1) translateY(0); }
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: 1.5rem;
+  padding-bottom: 1.15rem;
+  border-bottom: 1px solid #F2F2F7;
+  margin-bottom: 1.75rem;
 }
 .modal-header h2 {
   margin: 0;
-  font-size: 1.5rem;
-  color: var(--text-color);
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #1D1D1F;
 }
 .modal-close-btn {
   background: none;
@@ -611,28 +613,46 @@ h1, h2, h3, h4, h5 {
 }
 
 .modal-body .form-group {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 .modal-body .form-group label {
   font-weight: 600;
   display: block;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
+  margin-bottom: 0.45rem;
+  font-size: 0.8rem;
+  color: #6E6E73;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  transition: color 0.2s ease;
 }
 .modal-body .form-group input,
 .modal-body .form-group textarea {
   width: 100%;
-  padding: 0.85rem 1rem; /* Padding mới */
-  border: 1px solid #CAD1D7; /* Border rõ hơn */
-  border-radius: 6px;
-  font-size: 1rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  padding: 0.85rem 1.1rem;
+  border: 1px solid #E5E5EA;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #1D1D1F;
+  background-color: #FAFAFC;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+.modal-body .form-group input:hover,
+.modal-body .form-group textarea:hover {
+  border-color: #C7C7CC;
+  background-color: #F4F4F6;
 }
 .modal-body .form-group input:focus,
 .modal-body .form-group textarea:focus {
   outline: none;
+  background-color: #FFFFFF;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(94, 114, 228, 0.2);
+  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.12), 0 4px 12px rgba(0, 113, 227, 0.05);
+  transform: translateY(-1px);
+}
+.modal-body .form-group:focus-within label {
+  color: var(--primary-color);
 }
 
 .modal-footer {
@@ -879,25 +899,34 @@ h1, h2, h3, h4, h5 {
 /* 5. Thẻ <select> trong Modal */
 .modal-body .form-group select {
   width: 100%;
-  padding: 0.85rem 1rem;
-  border: 1px solid #CAD1D7;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-family: 'Inter', sans-serif; /* Đảm bảo dùng font Inter */
-  background-color: white;
-  -webkit-appearance: none; /* Bỏ giao diện mặc định */
+  padding: 0.85rem 1.1rem;
+  border: 1px solid #E5E5EA;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #1D1D1F;
+  font-family: 'Inter', sans-serif;
+  background-color: #FAFAFC;
+  -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  /* Thêm icon mũi tên dropdown */
   background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%238898AA%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.6-3.6%205.4-7.9%205.4-12.9%200-4.9-1.8-9.2-5.4-12.7z%22%2F%3E%3C%2Fsvg%3E');
   background-repeat: no-repeat;
-  background-position: right 1rem center;
+  background-position: right 1.1rem center;
   background-size: 0.65em auto;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+.modal-body .form-group select:hover {
+  border-color: #C7C7CC;
+  background-color: #F4F4F6;
 }
 .modal-body .form-group select:focus {
   outline: none;
+  background-color: #FFFFFF;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(94, 114, 228, 0.2);
+  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.12), 0 4px 12px rgba(0, 113, 227, 0.05);
+  transform: translateY(-1px);
 }
 
 /* --- CSS CHO TRANG CHI TIẾT KHÁCH HÀNG --- */

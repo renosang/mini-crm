@@ -4,7 +4,7 @@ import {
   FiBox, FiPlus, FiTrash2, FiSearch, FiCalendar, FiCheckCircle, 
   FiXCircle, FiLock, FiPlusCircle, FiList, FiTrendingUp, 
   FiLayers, FiDollarSign, FiKey, FiAward, FiUsers, FiTag, FiCopy, FiCheck, FiEdit,
-  FiEye, FiEyeOff
+  FiEye, FiEyeOff, FiSend, FiGrid, FiInfo
 } from 'react-icons/fi';
 
 interface IAccount {
@@ -30,17 +30,35 @@ interface IAccount {
   cost: number;
   status: 'available' | 'sold' | 'expired' | 'banned';
   valid_until?: string;
+  supplier?: {
+    _id: string;
+    name: string;
+    telegram?: string;
+  } | null;
   createdAt: string;
+}
+
+interface ISupplier {
+  _id: string;
+  name: string;
+  telegram?: string;
 }
 
 const KhoTaiNguyen: React.FC = () => {
   const [accounts, setAccounts] = useState<IAccount[]>([]);
+  const [suppliers, setSuppliers] = useState<ISupplier[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   
   // States cho Modal thêm/sửa kho mới
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [editingAccount, setEditingAccount] = useState<IAccount | null>(null);
+
+  // Tab của Modal: 'single' (thêm 1 cái) hoặc 'bulk' (nhập hàng loạt)
+  const [activeTab, setActiveTab] = useState<'single' | 'bulk'>('single');
+  
+  // Dữ liệu nhập hàng loạt
+  const [bulkText, setBulkText] = useState<string>('');
 
   // Trạng thái hiển thị mật khẩu riêng lẻ theo dòng
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
@@ -65,12 +83,14 @@ const KhoTaiNguyen: React.FC = () => {
   const [pin, setPin] = useState<string>('');
   const [cost, setCost] = useState<string>('');
   const [validUntil, setValidUntil] = useState<string>('');
+  const [selectedSupplier, setSelectedSupplier] = useState<string>('');
 
   // Tìm kiếm & Lọc thông minh
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [productFilter, setProductFilter] = useState<string>('all');
   const [resourceTypeFilter, setResourceTypeFilter] = useState<string>('all');
+  const [supplierFilter, setSupplierFilter] = useState<string>('all');
 
   // Trạng thái copy
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -78,9 +98,16 @@ const KhoTaiNguyen: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const res = await api.get<{ success: boolean; data: IAccount[] }>('/accounts');
-      if (res.data.success) {
-        setAccounts(res.data.data);
+      const [accountsRes, suppliersRes] = await Promise.all([
+        api.get<{ success: boolean; data: IAccount[] }>('/accounts'),
+        api.get<{ success: boolean; data: ISupplier[] }>('/suppliers')
+      ]);
+
+      if (accountsRes.data.success) {
+        setAccounts(accountsRes.data.data);
+      }
+      if (suppliersRes.data.success) {
+        setSuppliers(suppliersRes.data.data);
       }
     } catch (err) {
       console.error(err);
@@ -103,6 +130,7 @@ const KhoTaiNguyen: React.FC = () => {
   // Kích hoạt chỉnh sửa tài nguyên
   const handleEditClick = (acc: IAccount) => {
     setEditingAccount(acc);
+    setActiveTab('single'); // Khi sửa chỉ cho phép sửa đơn
     
     // Nạp toàn bộ dữ liệu vào Form
     const productOptions = ['Google One 2TB', 'Youtube Premium', 'Spotify Premium', 'Canva Premium', 'Microsoft 365', 'Elsa Speak', 'Duolingo Super', 'WordPress Theme/Plugin Key'];
@@ -118,10 +146,11 @@ const KhoTaiNguyen: React.FC = () => {
     setTotalSlots(String(acc.total_slots || 5));
     setUsername(acc.account_details?.username || '');
     setPasswordAcc(acc.account_details?.password_acc || '');
-    setLicenseKey(acc.account_details?.license_key || '');
+    licenseKey || setLicenseKey(acc.account_details?.license_key || '');
     setPin(acc.account_details?.pin || '');
     setCost(String(acc.cost || 0));
     setValidUntil(acc.valid_until ? acc.valid_until.substring(0, 10) : '');
+    setSelectedSupplier(acc.supplier ? (typeof acc.supplier === 'object' ? acc.supplier._id : acc.supplier) : '');
     
     setIsModalOpen(true);
   };
@@ -129,6 +158,9 @@ const KhoTaiNguyen: React.FC = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingAccount(null);
+    setActiveTab('single');
+    setBulkText('');
+    
     // Reset Form
     setUsername('');
     setPasswordAcc('');
@@ -140,6 +172,7 @@ const KhoTaiNguyen: React.FC = () => {
     setTotalSlots('5');
     setProductType('Google One 2TB');
     setCustomProductType('');
+    setSelectedSupplier('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -148,6 +181,68 @@ const KhoTaiNguyen: React.FC = () => {
     const finalProductType = productType === 'Khác' ? customProductType.trim() : productType;
     if (!finalProductType) return alert('Vui lòng nhập loại tài sản/bản quyền.');
 
+    // CHỨC NĂNG 1: NHẬP HÀNG LOẠT (BULK IMPORT)
+    if (!editingAccount && activeTab === 'bulk') {
+      if (!bulkText.trim()) return alert('Vui lòng nhập danh sách tài nguyên.');
+      
+      const lines = bulkText.split('\n').map(l => l.trim()).filter(Boolean);
+      const parsedAccounts: any[] = [];
+      
+      for (const line of lines) {
+        if (resourceType === 'key') {
+          parsedAccounts.push({
+            product_type: finalProductType,
+            resource_type: 'key',
+            total_slots: 1,
+            account_details: {
+              license_key: line,
+            },
+            cost: Number(cost || 0),
+            valid_until: validUntil || null,
+            supplier: selectedSupplier || null,
+            status: 'available',
+            used_slots: 0
+          });
+        } else if (resourceType === 'id_pass') {
+          // Phân tách bằng dấu gạch đứng '|'
+          const parts = line.split('|').map(p => p.trim());
+          if (parts.length < 2) {
+            return alert(`Dòng tài khoản không hợp lệ (thiếu mật khẩu): "${line}". Định dạng chuẩn: user|pass hoặc user|pass|pin`);
+          }
+          parsedAccounts.push({
+            product_type: finalProductType,
+            resource_type: 'id_pass',
+            total_slots: 1,
+            account_details: {
+              username: parts[0],
+              password_acc: parts[1],
+              pin: parts[2] || '',
+            },
+            cost: Number(cost || 0),
+            valid_until: validUntil || null,
+            supplier: selectedSupplier || null,
+            status: 'available',
+            used_slots: 0
+          });
+        } else {
+          return alert('Hệ thống chỉ hỗ trợ nhập hàng loạt dạng Tài khoản hoặc Key kích hoạt.');
+        }
+      }
+
+      try {
+        const res = await api.post<{ success: boolean }>('/accounts', parsedAccounts);
+        if (res.data.success) {
+          alert(`Nhập kho thành công ${parsedAccounts.length} sản phẩm hàng loạt!`);
+          handleCloseModal();
+          await loadData();
+        }
+      } catch (err) {
+        alert('Không thể nhập hàng loạt tài nguyên. Vui lòng kiểm tra lại dữ liệu.');
+      }
+      return;
+    }
+
+    // CHỨC NĂNG 2: NHẬP ĐƠN / CẬP NHẬT Từng tài nguyên
     const body = {
       product_type: finalProductType,
       resource_type: resourceType,
@@ -159,7 +254,8 @@ const KhoTaiNguyen: React.FC = () => {
         pin: resourceType === 'id_pass' ? pin : ''
       },
       cost: Number(cost || 0),
-      valid_until: validUntil || null
+      valid_until: validUntil || null,
+      supplier: selectedSupplier || null
     };
 
     try {
@@ -225,8 +321,11 @@ const KhoTaiNguyen: React.FC = () => {
     const matchesStatus = statusFilter === 'all' || acc.status === statusFilter;
     const matchesProduct = productFilter === 'all' || acc.product_type === productFilter;
     const matchesResourceType = resourceTypeFilter === 'all' || acc.resource_type === resourceTypeFilter;
+    
+    const accSupplierId = acc.supplier ? (typeof acc.supplier === 'object' ? acc.supplier._id : acc.supplier) : '';
+    const matchesSupplier = supplierFilter === 'all' || accSupplierId === supplierFilter;
 
-    return matchesSearch && matchesStatus && matchesProduct && matchesResourceType;
+    return matchesSearch && matchesStatus && matchesProduct && matchesResourceType && matchesSupplier;
   });
 
   return (
@@ -350,6 +449,19 @@ const KhoTaiNguyen: React.FC = () => {
 
           {/* Cụm Dropdown Lọc bổ trợ & Nút tạo mới */}
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            
+            {/* Lọc theo Nhà Cung Cấp */}
+            <select 
+              value={supplierFilter} 
+              onChange={e => setSupplierFilter(e.target.value)}
+              style={{ padding: '0 1rem', borderRadius: '20px', border: '1px solid var(--border-color)', outline: 'none', minWidth: '150px', height: '40px', fontSize: '0.85rem' }}
+            >
+              <option value="all">Tất cả nhà cung cấp</option>
+              {suppliers.map(s => (
+                <option key={s._id} value={s._id}>{s.name}</option>
+              ))}
+            </select>
+
             <select 
               value={productFilter} 
               onChange={e => setProductFilter(e.target.value)}
@@ -364,7 +476,7 @@ const KhoTaiNguyen: React.FC = () => {
             <select 
               value={statusFilter} 
               onChange={e => setStatusFilter(e.target.value)}
-              style={{ padding: '0 1rem', borderRadius: '20px', border: '1px solid var(--border-color)', outline: 'none', minWidth: '150px', height: '40px', fontSize: '0.85rem' }}
+              style={{ padding: '0 1rem', borderRadius: '20px', border: '1px solid var(--border-color)', outline: 'none', minWidth: '130px', height: '40px', fontSize: '0.85rem' }}
             >
               <option value="all">Tất cả Trạng Thái</option>
               <option value="available">Còn trống</option>
@@ -409,6 +521,25 @@ const KhoTaiNguyen: React.FC = () => {
                       <div style={{ fontSize: '0.72rem', color: 'var(--text-light)', marginTop: '2px' }}>
                         Nhập: {new Date(item.createdAt).toLocaleDateString('vi-VN')}
                       </div>
+                      
+                      {/* HIỂN THỊ ĐỐI TÁC CUNG CẤP VÀ TELEGRAM NỔI BẬT */}
+                      {item.supplier && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.72rem', marginTop: '4px' }}>
+                          <span style={{ color: 'var(--text-light)' }}>Nguồn:</span>
+                          <span style={{ fontWeight: 600, color: '#0071E3' }}>{item.supplier.name}</span>
+                          {item.supplier.telegram && (
+                            <a 
+                              href={item.supplier.telegram.startsWith('http') ? item.supplier.telegram : `https://t.me/${item.supplier.telegram.replace('@', '')}`}
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              style={{ display: 'inline-flex', color: '#0288D1', textDecoration: 'none', marginLeft: '2px' }}
+                              title="Chat Telegram nhanh với nhà cung cấp"
+                            >
+                              <FiSend size={10} />
+                            </a>
+                          )}
+                        </div>
+                      )}
                     </td>
                     <td>
                       {item.resource_type === 'key' ? (
@@ -573,6 +704,62 @@ const KhoTaiNguyen: React.FC = () => {
             <form onSubmit={handleSubmit}>
               <div className="modal-body" style={{ maxHeight: '72vh', overflowY: 'auto' }}>
                 
+                {/* SWITCH TABS (CHỈ KHI THÊM MỚI TÀI NGUYÊN) */}
+                {!editingAccount && (
+                  <div style={{ 
+                    display: 'flex', 
+                    backgroundColor: '#F2F2F7', 
+                    padding: '4px', 
+                    borderRadius: '10px', 
+                    marginBottom: '1.25rem' 
+                  }}>
+                    <button
+                      type="button"
+                      onClick={() => { setActiveTab('single'); setResourceType('id_pass'); }}
+                      style={{
+                        flex: 1,
+                        padding: '8px',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontWeight: activeTab === 'single' ? 600 : 400,
+                        backgroundColor: activeTab === 'single' ? '#FFF' : 'transparent',
+                        color: activeTab === 'single' ? '#1D1D1F' : 'var(--text-light)',
+                        boxShadow: activeTab === 'single' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <FiBox /> Nhập Từng Sản Phẩm
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setActiveTab('bulk'); setResourceType('id_pass'); }}
+                      style={{
+                        flex: 1,
+                        padding: '8px',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontWeight: activeTab === 'bulk' ? 600 : 400,
+                        backgroundColor: activeTab === 'bulk' ? '#FFF' : 'transparent',
+                        color: activeTab === 'bulk' ? '#1D1D1F' : 'var(--text-light)',
+                        boxShadow: activeTab === 'bulk' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <FiGrid /> Nhập Hàng Loạt (Bulk MMO Importer)
+                    </button>
+                  </div>
+                )}
+
                 {/* 1. Chọn loại sản phẩm */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
                   <div className="form-group">
@@ -604,7 +791,23 @@ const KhoTaiNguyen: React.FC = () => {
                   )}
                 </div>
 
-                {/* 2. Apple Segmented Control chọn dạng tài nguyên */}
+                {/* 2. Chọn Nhà Cung Cấp */}
+                <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                  <label htmlFor="acc-supplier">Nhà Cung Cấp (Đối Tác)</label>
+                  <select 
+                    id="acc-supplier" 
+                    value={selectedSupplier} 
+                    onChange={e => setSelectedSupplier(e.target.value)}
+                    style={{ borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none', height: '40px', padding: '0 0.75rem', fontSize: '0.875rem' }}
+                  >
+                    <option value="">-- Chọn nhà cung cấp nguồn hàng (Không bắt buộc) --</option>
+                    {suppliers.map(s => (
+                      <option key={s._id} value={s._id}>{s.name} {s.telegram ? `(@${s.telegram.replace('@','')})` : ''}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* 3. Apple Segmented Control chọn dạng tài nguyên */}
                 <div className="form-group" style={{ marginBottom: '1.25rem' }}>
                   <label style={{ fontWeight: 600, color: 'var(--text-dark)' }}>Dạng Tài Nguyên Kho</label>
                   <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.35rem' }}>
@@ -644,185 +847,259 @@ const KhoTaiNguyen: React.FC = () => {
                     >
                       🎟️ Key Kích Hoạt
                     </button>
-                    <button 
-                      type="button" 
-                      style={{ 
-                        flex: 1, 
-                        padding: '0.65rem', 
-                        borderRadius: '8px', 
-                        border: '1px solid ' + (resourceType === 'slot' ? '#AF52DE' : '#E5E5EA'), 
-                        backgroundColor: resourceType === 'slot' ? '#FAF5FE' : '#FFF', 
-                        color: resourceType === 'slot' ? '#AF52DE' : 'var(--text-dark)',
-                        fontWeight: resourceType === 'slot' ? 600 : 400,
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        fontSize: '0.85rem'
-                      }}
-                      onClick={() => setResourceType('slot')}
-                    >
-                      👥 Gán Slot Bản Quyền
-                    </button>
+                    
+                    {/* CHỈ HIỂN THỊ CHỌN SLOT KHI Ở TAB NHẬP ĐƠN LẺ */}
+                    {activeTab === 'single' && (
+                      <button 
+                        type="button" 
+                        style={{ 
+                          flex: 1, 
+                          padding: '0.65rem', 
+                          borderRadius: '8px', 
+                          border: '1px solid ' + (resourceType === 'slot' ? '#AF52DE' : '#E5E5EA'), 
+                          backgroundColor: resourceType === 'slot' ? '#FAF5FE' : '#FFF', 
+                          color: resourceType === 'slot' ? '#AF52DE' : 'var(--text-dark)',
+                          fontWeight: resourceType === 'slot' ? 600 : 400,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          fontSize: '0.85rem'
+                        }}
+                        onClick={() => setResourceType('slot')}
+                      >
+                        👥 Gán Slot Bản Quyền
+                      </button>
+                    )}
                   </div>
                 </div>
 
-                {/* 3. Khung chi tiết nhập liệu phản hồi theo loại */}
-                <div style={{ border: '1px solid var(--border-color)', padding: '1.25rem', borderRadius: '12px', backgroundColor: '#FAFBFD', marginBottom: '1.25rem' }}>
-                  <h3 style={{ margin: '0 0 1rem 0', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-dark)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    {resourceType === 'key' ? <FiTag style={{ color: '#34C759' }} /> : resourceType === 'slot' ? <FiUsers style={{ color: '#AF52DE' }} /> : <FiLock style={{ color: '#0071E3' }} />}
-                    {resourceType === 'key' ? 'Thông tin Key bản quyền' : resourceType === 'slot' ? 'Thông tin Host Family & Số lượng slot' : 'Thông tin Tài khoản & Mật khẩu'}
-                  </h3>
+                {/* GIAO DIỆN PHỤ THUỘC VÀO ACTIVE TAB */}
+                {activeTab === 'single' ? (
                   
-                  {resourceType === 'key' ? (
-                    /* DẠNG 1: KEY KÍCH HOẠT */
-                    <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label htmlFor="acc-key">License Key / Dòng Key Kích Hoạt</label>
-                      <input 
-                        type="text" 
-                        id="acc-key" 
-                        placeholder="Nhập Key (Ví dụ: WP-KEY-8F8D-9E9C)" 
-                        value={licenseKey} 
-                        onChange={e => setLicenseKey(e.target.value)} 
-                        required={resourceType === 'key'}
-                      />
-                    </div>
-                  ) : resourceType === 'slot' ? (
-                    /* DẠNG 2: GÁN SLOT FAMILY / TEAM */
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem' }}>
-                        <div className="form-group" style={{ marginBottom: 0 }}>
-                          <label htmlFor="acc-user">Tài khoản Host (Email / Username)</label>
-                          <input 
-                            type="text" 
-                            id="acc-user" 
-                            placeholder="Email của tài khoản chủ Family/Team" 
-                            value={username} 
-                            onChange={e => setUsername(e.target.value)} 
-                            required={resourceType === 'slot'}
-                          />
+                  /* A: TAB NHẬP ĐƠN LẺ (SINGLE FORM) */
+                  <div style={{ border: '1px solid var(--border-color)', padding: '1.25rem', borderRadius: '12px', backgroundColor: '#FAFBFD', marginBottom: '1.25rem' }}>
+                    <h3 style={{ margin: '0 0 1rem 0', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-dark)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      {resourceType === 'key' ? <FiTag style={{ color: '#34C759' }} /> : resourceType === 'slot' ? <FiUsers style={{ color: '#AF52DE' }} /> : <FiLock style={{ color: '#0071E3' }} />}
+                      {resourceType === 'key' ? 'Thông tin Key bản quyền' : resourceType === 'slot' ? 'Thông tin Host Family & Số lượng slot' : 'Thông tin Tài khoản & Mật khẩu'}
+                    </h3>
+                    
+                    {resourceType === 'key' ? (
+                      /* DẠNG 1: KEY KÍCH HOẠT */
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label htmlFor="acc-key">License Key / Dòng Key Kích Hoạt</label>
+                        <input 
+                          type="text" 
+                          id="acc-key" 
+                          placeholder="Nhập Key (Ví dụ: WP-KEY-8F8D-9E9C)" 
+                          value={licenseKey} 
+                          onChange={e => setLicenseKey(e.target.value)} 
+                          required={resourceType === 'key' && activeTab === 'single'}
+                        />
+                      </div>
+                    ) : resourceType === 'slot' ? (
+                      /* DẠNG 2: GÁN SLOT FAMILY / TEAM */
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem' }}>
+                          <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label htmlFor="acc-user">Tài khoản Host (Email / Username)</label>
+                            <input 
+                              type="text" 
+                              id="acc-user" 
+                              placeholder="Email của tài khoản chủ Family/Team" 
+                              value={username} 
+                              onChange={e => setUsername(e.target.value)} 
+                              required={resourceType === 'slot' && activeTab === 'single'}
+                            />
+                          </div>
+                          <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label htmlFor="total-slots">Tổng số Slot của Host</label>
+                            <input 
+                              type="number" 
+                              id="total-slots" 
+                              placeholder="Ví dụ: Youtube có 5, Canva có 50..." 
+                              value={totalSlots} 
+                              onChange={e => setTotalSlots(e.target.value)} 
+                              required={resourceType === 'slot' && activeTab === 'single'}
+                              min="1"
+                            />
+                          </div>
                         </div>
-                        <div className="form-group" style={{ marginBottom: 0 }}>
-                          <label htmlFor="total-slots">Tổng số Slot của Host</label>
-                          <input 
-                            type="number" 
-                            id="total-slots" 
-                            placeholder="Ví dụ: Youtube có 5, Canva có 50..." 
-                            value={totalSlots} 
-                            onChange={e => setTotalSlots(e.target.value)} 
-                            required={resourceType === 'slot'}
-                            min="1"
-                          />
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                          <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label htmlFor="acc-pass">Mật khẩu Host (Nếu có)</label>
+                            <div style={{ position: 'relative' }}>
+                              <input 
+                                type={showPasswordInModal ? "text" : "password"} 
+                                id="acc-pass" 
+                                placeholder="Không bắt buộc" 
+                                value={passwordAcc} 
+                                onChange={e => setPasswordAcc(e.target.value)} 
+                                style={{ paddingRight: '40px' }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowPasswordInModal(!showPasswordInModal)}
+                                style={{ 
+                                  position: 'absolute', 
+                                  right: '12px', 
+                                  top: '13px', 
+                                  background: 'none', 
+                                  border: 'none', 
+                                  color: 'var(--text-light)', 
+                                  cursor: 'pointer',
+                                  padding: 0
+                                }}
+                              >
+                                {showPasswordInModal ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                              </button>
+                            </div>
+                          </div>
+                          <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label htmlFor="acc-pin">Mã PIN / Ghi chú Host</label>
+                            <input 
+                              type="text" 
+                              id="acc-pin" 
+                              placeholder="Ghi chú thêm về Host" 
+                              value={pin} 
+                              onChange={e => setPin(e.target.value)} 
+                            />
+                          </div>
                         </div>
                       </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div className="form-group" style={{ marginBottom: 0 }}>
-                          <label htmlFor="acc-pass">Mật khẩu Host (Nếu có)</label>
-                          <div style={{ position: 'relative' }}>
+                    ) : (
+                      /* DẠNG 3: ID:PASS TRUYỀN THỐNG */
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                          <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label htmlFor="acc-user">Tài Khoản / Username</label>
                             <input 
-                              type={showPasswordInModal ? "text" : "password"} 
-                              id="acc-pass" 
-                              placeholder="Không bắt buộc" 
-                              value={passwordAcc} 
-                              onChange={e => setPasswordAcc(e.target.value)} 
-                              style={{ paddingRight: '40px' }}
+                              type="text" 
+                              id="acc-user" 
+                              placeholder="Email hoặc Tên đăng nhập" 
+                              value={username} 
+                              onChange={e => setUsername(e.target.value)} 
+                              required={resourceType === 'id_pass' && activeTab === 'single'}
                             />
-                            <button
-                              type="button"
-                              onClick={() => setShowPasswordInModal(!showPasswordInModal)}
-                              style={{ 
-                                position: 'absolute', 
-                                right: '12px', 
-                                top: '13px', 
-                                background: 'none', 
-                                border: 'none', 
-                                color: 'var(--text-light)', 
-                                cursor: 'pointer',
-                                padding: 0
-                              }}
-                            >
-                              {showPasswordInModal ? <FiEyeOff size={16} /> : <FiEye size={16} />}
-                            </button>
+                          </div>
+                          <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label htmlFor="acc-pass">Mật Khẩu</label>
+                            <div style={{ position: 'relative' }}>
+                              <input 
+                                type={showPasswordInModal ? "text" : "password"} 
+                                id="acc-pass" 
+                                placeholder="Mật khẩu của tài khoản" 
+                                value={passwordAcc} 
+                                onChange={e => setPasswordAcc(e.target.value)} 
+                                required={resourceType === 'id_pass' && activeTab === 'single'}
+                                style={{ paddingRight: '40px' }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowPasswordInModal(!showPasswordInModal)}
+                                style={{ 
+                                  position: 'absolute', 
+                                  right: '12px', 
+                                  top: '13px', 
+                                  background: 'none', 
+                                  border: 'none', 
+                                  color: 'var(--text-light)', 
+                                  cursor: 'pointer',
+                                  padding: 0
+                                }}
+                              >
+                                {showPasswordInModal ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                              </button>
+                            </div>
                           </div>
                         </div>
                         <div className="form-group" style={{ marginBottom: 0 }}>
-                          <label htmlFor="acc-pin">Mã PIN / Ghi chú Host</label>
+                          <label htmlFor="acc-pin">PIN Profile / Ghi chú profile</label>
                           <input 
                             type="text" 
                             id="acc-pin" 
-                            placeholder="Ghi chú thêm về Host" 
+                            placeholder="Ví dụ: Profile 3 - PIN 1234" 
                             value={pin} 
                             onChange={e => setPin(e.target.value)} 
                           />
                         </div>
                       </div>
+                    )}
+                  </div>
+                ) : (
+                  
+                  /* B: TAB NHẬP HÀNG LOẠT (BULK MMO IMPORTER) */
+                  <div style={{ border: '1px solid #34C759', padding: '1.25rem', borderRadius: '12px', backgroundColor: '#F4FBF6', marginBottom: '1.25rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                      <h3 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, color: '#2E7D32', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <FiGrid /> Công Cụ Phân Tách & Nhập Hàng Loạt (Bulk Parsing)
+                      </h3>
+                      <span style={{ 
+                        fontSize: '0.75rem', 
+                        padding: '3px 8px', 
+                        borderRadius: '10px', 
+                        backgroundColor: '#E8F5E9', 
+                        color: '#2E7D32', 
+                        fontWeight: 600 
+                      }}>
+                        Đã phát hiện: {bulkText.split('\n').map(l => l.trim()).filter(Boolean).length} dòng hàng
+                      </span>
                     </div>
-                  ) : (
-                    /* DẠNG 3: ID:PASS TRUYỀN THỐNG */
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div className="form-group" style={{ marginBottom: 0 }}>
-                          <label htmlFor="acc-user">Tài Khoản / Username</label>
-                          <input 
-                            type="text" 
-                            id="acc-user" 
-                            placeholder="Email hoặc Tên đăng nhập" 
-                            value={username} 
-                            onChange={e => setUsername(e.target.value)} 
-                            required={resourceType === 'id_pass'}
-                          />
-                        </div>
-                        <div className="form-group" style={{ marginBottom: 0 }}>
-                          <label htmlFor="acc-pass">Mật Khẩu</label>
-                          <div style={{ position: 'relative' }}>
-                            <input 
-                              type={showPasswordInModal ? "text" : "password"} 
-                              id="acc-pass" 
-                              placeholder="Mật khẩu của tài khoản" 
-                              value={passwordAcc} 
-                              onChange={e => setPasswordAcc(e.target.value)} 
-                              required={resourceType === 'id_pass'}
-                              style={{ paddingRight: '40px' }}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowPasswordInModal(!showPasswordInModal)}
-                              style={{ 
-                                position: 'absolute', 
-                                right: '12px', 
-                                top: '13px', 
-                                background: 'none', 
-                                border: 'none', 
-                                color: 'var(--text-light)', 
-                                cursor: 'pointer',
-                                padding: 0
-                              }}
-                            >
-                              {showPasswordInModal ? <FiEyeOff size={16} /> : <FiEye size={16} />}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="form-group" style={{ marginBottom: 0 }}>
-                        <label htmlFor="acc-pin">PIN Profile / Ghi chú profile</label>
-                        <input 
-                          type="text" 
-                          id="acc-pin" 
-                          placeholder="Ví dụ: Profile 3 - PIN 1234" 
-                          value={pin} 
-                          onChange={e => setPin(e.target.value)} 
-                        />
-                      </div>
+
+                    <div className="form-group" style={{ marginBottom: '0.75rem' }}>
+                      <label htmlFor="bulk-data" style={{ fontWeight: 600, color: '#1D1D1F' }}>
+                        Dán danh sách tài nguyên vào đây (Mỗi dòng một sản phẩm):
+                      </label>
+                      <textarea
+                        id="bulk-data"
+                        rows={8}
+                        value={bulkText}
+                        onChange={e => setBulkText(e.target.value)}
+                        placeholder={
+                          resourceType === 'key' 
+                            ? "WP-KEY-8F8D-9E9C\nWP-KEY-2F3D-4A5B\nWP-KEY-1A2B-3C4D..."
+                            : "username1@gmail.com|password123\nusername2@gmail.com|password456|pin1234\nusername3@gmail.com|password789|pin5678..."
+                        }
+                        style={{
+                          fontFamily: 'monospace',
+                          fontSize: '0.85rem',
+                          lineHeight: '1.5',
+                          borderRadius: '8px',
+                          border: '1px solid #C3E6CB',
+                          padding: '10px',
+                          backgroundColor: '#FFF',
+                          width: '100%',
+                          outline: 'none',
+                          boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)'
+                        }}
+                      />
                     </div>
-                  )}
-                </div>
+
+                    <div style={{ 
+                      fontSize: '0.75rem', 
+                      color: '#555', 
+                      backgroundColor: '#E8F5E9', 
+                      padding: '8px 12px', 
+                      borderRadius: '8px', 
+                      borderLeft: '4px solid #34C759',
+                      lineHeight: '1.4'
+                    }}>
+                      <FiInfo style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+                      <strong>Định dạng chuẩn:</strong><br />
+                      - Với dạng <strong>Tài khoản (ID:Pass)</strong>: Phân tách Username, Password và PIN bằng ký tự gạch đứng <code>|</code>. Ví dụ: <code>tài_khoản|mật_khẩu</code> hoặc <code>tài_khoản|mật_khẩu|mã_pin</code>.<br />
+                      - Với dạng <strong>Key kích hoạt</strong>: Mỗi dòng chỉ chứa chính xác một chuỗi Key kích hoạt.
+                    </div>
+                  </div>
+                )}
 
                 {/* 4. Giá vốn và Hạn sử dụng */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div className="form-group">
-                    <label htmlFor="acc-cost">Giá Vốn Nhập Hàng (đ)</label>
+                    <label htmlFor="acc-cost">
+                      {activeTab === 'bulk' ? 'Giá Vốn Nhập Hàng Từng Unit (đ)' : 'Giá Vốn Nhập Hàng (đ)'}
+                    </label>
                     <input type="number" id="acc-cost" placeholder="Ví dụ: 30000" value={cost} onChange={e => setCost(e.target.value)} required />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="acc-valid">Hạn Sử Dụng</label>
+                    <label htmlFor="acc-valid">Hạn Sử Dụng (Áp dụng chung)</label>
                     <input type="date" id="acc-valid" value={validUntil} onChange={e => setValidUntil(e.target.value)} />
                   </div>
                 </div>
@@ -831,7 +1108,9 @@ const KhoTaiNguyen: React.FC = () => {
               
               <div className="modal-footer">
                 <button type="button" className="btn-cancel" onClick={handleCloseModal}>Hủy bỏ</button>
-                <button type="submit" className="btn-save">{editingAccount ? 'Cập Nhật Ngay' : 'Nhập Kho Ngay'}</button>
+                <button type="submit" className="btn-save">
+                  {editingAccount ? 'Cập Nhật Ngay' : activeTab === 'bulk' ? 'Tiến Hành Nhập Hàng Loạt' : 'Nhập Kho Ngay'}
+                </button>
               </div>
             </form>
           </div>

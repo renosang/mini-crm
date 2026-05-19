@@ -17,6 +17,7 @@ import KhoTaiNguyen from './pages/KhoTaiNguyen.tsx';
 import CustomerDetail from './pages/CustomerDetail.tsx';
 import QuanLyGiaHan from './pages/QuanLyGiaHan.tsx';
 import CaiDat from './pages/CaiDat.tsx';
+import NhaCungCap from './pages/NhaCungCap.tsx';
 
 
 // Component bảo vệ (Protected Route)
@@ -59,7 +60,7 @@ function App() {
         
         {/* Các trang khác */}
         <Route path="/gia-han" element={<QuanLyGiaHan />} />
-        <Route path="/nha-cung-cap" element={<div>Trang Nhà Cung Cấp</div>} />
+        <Route path="/nha-cung-cap" element={<NhaCungCap />} />
         <Route path="/cai-dat" element={<CaiDat />} />
       </Route>
 

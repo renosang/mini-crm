@@ -17,6 +17,9 @@ import ordersHandler from './api/orders/index.ts';
 import personalLicensesHandler from './api/personal-licenses/index.ts';
 import sendOrderReminderHandler from './api/orders/send-reminder.ts';
 import smtpSettingsHandler from './api/settings/smtp.ts';
+import bankSettingsHandler from './api/settings/bank.ts';
+import suppliersHandler from './api/suppliers/index.ts';
+import supplierDetailHandler from './api/suppliers/[id].ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -76,6 +79,15 @@ app.post('/api/orders/send-reminder', mapParams, sendOrderReminderHandler);
 
 app.get('/api/settings/smtp', smtpSettingsHandler);
 app.post('/api/settings/smtp', smtpSettingsHandler);
+
+app.get('/api/settings/bank', bankSettingsHandler);
+app.post('/api/settings/bank', bankSettingsHandler);
+
+app.get('/api/suppliers', suppliersHandler);
+app.post('/api/suppliers', suppliersHandler);
+app.get('/api/suppliers/:id', mapParams, supplierDetailHandler);
+app.put('/api/suppliers/:id', mapParams, supplierDetailHandler);
+app.delete('/api/suppliers/:id', mapParams, supplierDetailHandler);
 
 // In Production, serve the static Vite build from dist/
 const distPath = path.join(__dirname, 'dist');
