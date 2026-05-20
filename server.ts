@@ -22,7 +22,14 @@ import personalLicensesHandler from './api/personal-licenses/index.ts';
 import sendOrderReminderHandler from './api/orders/send-reminder.ts';
 import smtpSettingsHandler from './api/settings/smtp.ts';
 import bankSettingsHandler from './api/settings/bank.ts';
+import generalSettingsHandler from './api/settings/general.ts';
+import invoiceTemplateHandler from './api/settings/invoice-template.ts';
+import renewalSettingsHandler from './api/settings/renewal.ts';
+import accountSettingsHandler from './api/settings/account.ts';
+import emailTemplatesHandler from './api/settings/email-templates.ts';
+import backupSettingsHandler from './api/settings/backup.ts';
 import suppliersHandler from './api/suppliers/index.ts';
+
 import supplierDetailHandler from './api/suppliers/[id].ts';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -90,7 +97,26 @@ app.post('/api/settings/smtp', smtpSettingsHandler);
 app.get('/api/settings/bank', bankSettingsHandler);
 app.post('/api/settings/bank', bankSettingsHandler);
 
+app.get('/api/settings/general', generalSettingsHandler);
+app.post('/api/settings/general', generalSettingsHandler);
+
+app.get('/api/settings/invoice-template', invoiceTemplateHandler);
+app.post('/api/settings/invoice-template', invoiceTemplateHandler);
+
+app.get('/api/settings/renewal', renewalSettingsHandler);
+app.post('/api/settings/renewal', renewalSettingsHandler);
+
+app.get('/api/settings/account', accountSettingsHandler);
+app.post('/api/settings/account', accountSettingsHandler);
+
+app.get('/api/settings/email-templates', emailTemplatesHandler);
+app.post('/api/settings/email-templates', emailTemplatesHandler);
+
+app.get('/api/settings/backup', backupSettingsHandler);
+app.post('/api/settings/backup', backupSettingsHandler);
+
 app.get('/api/suppliers', suppliersHandler);
+
 app.post('/api/suppliers', suppliersHandler);
 app.get('/api/suppliers/:id', mapParams, supplierDetailHandler);
 app.put('/api/suppliers/:id', mapParams, supplierDetailHandler);

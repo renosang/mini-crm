@@ -1,0 +1,146 @@
+{
+  "exportedAt": "2026-05-20T18:13:34.678Z",
+  "version": "1.0",
+  "data": {
+    "customers": [
+      {
+        "_id": "690e43ed0c673ee410dbdb71",
+        "name": "Nguyễn Thanh Sang",
+        "email": "renosang@gmail.com",
+        "phone": "0962979214",
+        "source": "Facebook",
+        "notes": "sa",
+        "createdAt": "2025-11-07T19:09:33.291Z",
+        "updatedAt": "2026-05-20T16:04:48.249Z",
+        "__v": 0,
+        "facebook": "",
+        "privateNotes": "",
+        "status": "VIP",
+        "telegram": "",
+        "zalo": ""
+      },
+      {
+        "_id": "690e46285667a9c5e4249b16",
+        "name": "Nguyễn văn A",
+        "email": "abc@gmail.com",
+        "phone": "91234567",
+        "source": "Telegram",
+        "notes": "d",
+        "createdAt": "2025-11-07T19:19:04.670Z",
+        "updatedAt": "2025-11-07T19:27:31.169Z",
+        "__v": 0
+      }
+    ],
+    "accounts": [
+      {
+        "_id": "6a0ddbe64b67b08636ed56b1",
+        "product_type": "License Key Tool MMO",
+        "account_details": {
+          "username": "",
+          "password_acc": "",
+          "license_key": "Canva Pro",
+          "pin": ""
+        },
+        "supplier": null,
+        "cost": 0,
+        "resource_type": "id_pass",
+        "total_slots": 1,
+        "used_slots": 0,
+        "status": "sold",
+        "customer_id": "690e43ed0c673ee410dbdb71",
+        "sold_at": "2026-05-20T16:05:58.896Z",
+        "valid_until": "2026-09-20T00:00:00.000Z",
+        "notes": "[Gia hạn] ck sacombank",
+        "slots_assigned": [],
+        "createdAt": "2026-05-20T16:05:58.903Z",
+        "updatedAt": "2026-05-20T16:35:02.681Z",
+        "__v": 0
+      }
+    ],
+    "orders": [
+      {
+        "_id": "6a0ddbe64b67b08636ed56b3",
+        "customer_id": "690e43ed0c673ee410dbdb71",
+        "accounts": [
+          "6a0ddbe64b67b08636ed56b1"
+        ],
+        "total_amount": 150000,
+        "status": "pending",
+        "order_date": "2026-05-20T16:05:58.943Z",
+        "createdAt": "2026-05-20T16:05:58.943Z",
+        "updatedAt": "2026-05-20T16:05:58.943Z",
+        "__v": 0
+      },
+      {
+        "_id": "6a0ddf75bea0bc46fbe320d9",
+        "customer_id": "690e43ed0c673ee410dbdb71",
+        "accounts": [
+          "6a0ddbe64b67b08636ed56b1"
+        ],
+        "total_amount": 200000,
+        "status": "pending",
+        "order_date": "2026-05-20T16:21:09.848Z",
+        "createdAt": "2026-05-20T16:21:09.850Z",
+        "updatedAt": "2026-05-20T16:21:09.850Z",
+        "__v": 0
+      },
+      {
+        "_id": "6a0de2b6c0b96c3c52fe3ab9",
+        "customer_id": "690e43ed0c673ee410dbdb71",
+        "accounts": [
+          "6a0ddbe64b67b08636ed56b1"
+        ],
+        "total_amount": 200000,
+        "status": "paid",
+        "order_date": "2026-05-20T16:35:02.718Z",
+        "createdAt": "2026-05-20T16:35:02.719Z",
+        "updatedAt": "2026-05-20T16:35:02.719Z",
+        "__v": 0
+      }
+    ],
+    "suppliers": [],
+    "personalLicenses": [],
+    "settings": [
+      {
+        "_id": "6a0ddd76dfdef7b051f31464",
+        "key": "smtp",
+        "__v": 0,
+        "createdAt": "2026-05-20T16:12:38.335Z",
+        "updatedAt": "2026-05-20T16:12:40.004Z",
+        "value": {
+          "smtp_host": "smtp.gmail.com",
+          "smtp_port": 587,
+          "smtp_user": "renosang@gmail.com",
+          "smtp_pass": "znlg xyxi rqdk rfqc",
+          "smtp_from": "BeeGadget.net"
+        }
+      },
+      {
+        "_id": "6a0ddd7fdfdef7b051f31465",
+        "key": "bank",
+        "__v": 0,
+        "createdAt": "2026-05-20T16:12:47.053Z",
+        "updatedAt": "2026-05-20T16:12:47.053Z",
+        "value": {
+          "bank_id": "Sacombank",
+          "account_no": "060233251669",
+          "account_name": "Nguyễn Thanh Sang",
+          "bank_name": "Sacombank",
+          "bank_logo": "https://api.vietqr.io/img/STB.png"
+        }
+      },
+      {
+        "_id": "6a0df9cadfdef7b051f3146d",
+        "key": "backup",
+        "__v": 0,
+        "createdAt": "2026-05-20T18:13:30.605Z",
+        "updatedAt": "2026-05-20T18:13:32.316Z",
+        "value": {
+          "autoBackup": true,
+          "backupFrequency": "weekly",
+          "lastBackup": null
+        }
+      }
+    ]
+  }
+}

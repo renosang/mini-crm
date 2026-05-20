@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import api from '../services/api';
-import { 
-  FiSettings, FiMail, FiServer, FiKey, FiUser, 
+import {
+  FiSettings, FiMail, FiServer, FiKey, FiUser,
   FiCheckCircle, FiAlertTriangle, FiEye, FiEyeOff, FiInfo, FiSend,
-  FiCreditCard, FiSearch, FiChevronDown, FiCheck
+  FiCreditCard, FiSearch, FiChevronDown, FiCheck,
+  FiGlobe, FiFileText, FiClock, FiShield, FiMessageSquare, FiDownloadCloud,
+  FiLock, FiSave, FiRefreshCw
 } from 'react-icons/fi';
+
 
 interface ISMTPConfig {
   smtp_host: string;
@@ -138,14 +141,257 @@ const CaiDat: React.FC = () => {
     }
   };
 
+  // --- GENERAL STATE ---
+  const [generalConfig, setGeneralConfig] = useState({
+    storeName: 'Mini CRM',
+    taxCode: '',
+    address: '',
+    phone: '',
+    email: '',
+    logo: '',
+    timezone: 'Asia/Ho_Chi_Minh',
+    currency: 'VND'
+  });
+
+  // --- INVOICE TEMPLATE STATE ---
+  const [invoiceConfig, setInvoiceConfig] = useState({
+    title: 'HÓA ĐƠN BÁN HÀNG',
+    footer: 'Cảm ơn quý khách đã mua hàng!',
+    primaryColor: '#0071E3',
+    showLogo: true,
+    showSignature: false,
+    signature: '',
+    notes: ''
+  });
+
+  // --- RENEWAL STATE ---
+  const [renewalConfig, setRenewalConfig] = useState({
+    warningDays: 7,
+    autoRemind: true,
+    maxReminders: 3,
+    autoSuspend: true,
+    suspendAfterDays: 3,
+    defaultRenewalFee: 0,
+    promoMessage: ''
+  });
+
+  // --- ACCOUNT STATE ---
+  const [accountInfo, setAccountInfo] = useState({ username: 'admin', email: '', role: 'admin' });
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [savingAccount, setSavingAccount] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
+
+  // --- EMAIL TEMPLATES STATE ---
+  const [emailTemplates, setEmailTemplates] = useState({
+    handover: { subject: '', body: '' },
+    renewal_reminder: { subject: '', body: '' },
+    thank_you: { subject: '', body: '' }
+  });
+
+  // --- BACKUP STATE ---
+  const [backupConfig, setBackupConfig] = useState({ autoBackup: false, backupFrequency: 'weekly', lastBackup: null as string | null });
+  const [exporting, setExporting] = useState(false);
+  const [savingBackup, setSavingBackup] = useState(false);
+
+  // --- NEW LOAD FUNCTIONS ---
+  const loadGeneralConfig = async () => {
+    try {
+      const res = await api.get<{ success: boolean; data: any }>('/settings/general');
+      if (res.data.success && res.data.data) setGeneralConfig(res.data.data);
+    } catch (err) { console.error(err); }
+  };
+
+  const loadInvoiceConfig = async () => {
+    try {
+      const res = await api.get<{ success: boolean; data: any }>('/settings/invoice-template');
+      if (res.data.success && res.data.data) setInvoiceConfig(res.data.data);
+    } catch (err) { console.error(err); }
+  };
+
+  const loadRenewalConfig = async () => {
+    try {
+      const res = await api.get<{ success: boolean; data: any }>('/settings/renewal');
+      if (res.data.success && res.data.data) setRenewalConfig(res.data.data);
+    } catch (err) { console.error(err); }
+  };
+
+  const loadAccountInfo = async () => {
+    try {
+      const res = await api.get<{ success: boolean; data: any }>('/settings/account');
+      if (res.data.success && res.data.data) setAccountInfo(res.data.data);
+    } catch (err) { console.error(err); }
+  };
+
+  const loadEmailTemplates = async () => {
+    try {
+      const res = await api.get<{ success: boolean; data: any }>('/settings/email-templates');
+      if (res.data.success && res.data.data) setEmailTemplates(res.data.data);
+    } catch (err) { console.error(err); }
+  };
+
+  const loadBackupConfig = async () => {
+    try {
+      const res = await api.get<{ success: boolean; data: any }>('/settings/backup');
+      if (res.data.success && res.data.data) setBackupConfig(res.data.data);
+    } catch (err) { console.error(err); }
+  };
+
   useEffect(() => {
     const init = async () => {
       setLoading(true);
-      await Promise.all([loadConfig(), loadBankConfig(), fetchBanks()]);
+      await Promise.all([
+        loadConfig(), loadBankConfig(), fetchBanks(),
+        loadGeneralConfig(), loadInvoiceConfig(), loadRenewalConfig(),
+        loadAccountInfo(), loadEmailTemplates(), loadBackupConfig()
+      ]);
       setLoading(false);
     };
     init();
   }, []);
+
+  // --- GENERAL HANDLERS ---
+  const handleGeneralChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setGeneralConfig(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveGeneral = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setSaving(true); setMessage(null);
+      const res = await api.post('/settings/general', generalConfig);
+      if (res.data.success) setMessage({ text: 'Lưu cài đặt chung thành công!', type: 'success' });
+    } catch (err: any) {
+      setMessage({ text: err.response?.data?.message || 'Lỗi khi lưu cài đặt chung', type: 'error' });
+    } finally { setSaving(false); }
+  };
+
+  // --- INVOICE HANDLERS ---
+  const handleInvoiceChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+    setInvoiceConfig(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+  };
+
+  const handleSaveInvoice = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setSaving(true); setMessage(null);
+      const res = await api.post('/settings/invoice-template', invoiceConfig);
+      if (res.data.success) setMessage({ text: 'Lưu mẫu hóa đơn thành công!', type: 'success' });
+    } catch (err: any) {
+      setMessage({ text: err.response?.data?.message || 'Lỗi khi lưu mẫu hóa đơn', type: 'error' });
+    } finally { setSaving(false); }
+  };
+
+  // --- RENEWAL HANDLERS ---
+  const handleRenewalChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+    setRenewalConfig(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : (name === 'promoMessage' ? value : Number(value))
+    }));
+  };
+
+  const handleSaveRenewal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setSaving(true); setMessage(null);
+      const res = await api.post('/settings/renewal', renewalConfig);
+      if (res.data.success) setMessage({ text: 'Lưu cấu hình gia hạn thành công!', type: 'success' });
+    } catch (err: any) {
+      setMessage({ text: err.response?.data?.message || 'Lỗi khi lưu cấu hình gia hạn', type: 'error' });
+    } finally { setSaving(false); }
+  };
+
+  // --- ACCOUNT HANDLERS ---
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setSavingAccount(true); setMessage(null);
+      const res = await api.post('/settings/account', { action: 'update-profile', email: accountInfo.email });
+      if (res.data.success) setMessage({ text: 'Cập nhật thông tin thành công!', type: 'success' });
+    } catch (err: any) {
+      setMessage({ text: err.response?.data?.message || 'Lỗi khi cập nhật thông tin', type: 'error' });
+    } finally { setSavingAccount(false); }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      setMessage({ text: 'Mật khẩu mới và xác nhận không khớp', type: 'error' });
+      return;
+    }
+    if (newPassword.length < 6) {
+      setMessage({ text: 'Mật khẩu mới phải có ít nhất 6 ký tự', type: 'error' });
+      return;
+    }
+    try {
+      setSavingPassword(true); setMessage(null);
+      const res = await api.post('/settings/account', { action: 'change-password', currentPassword, newPassword });
+      if (res.data.success) {
+        setMessage({ text: 'Đổi mật khẩu thành công!', type: 'success' });
+        setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
+      }
+    } catch (err: any) {
+      setMessage({ text: err.response?.data?.message || 'Lỗi khi đổi mật khẩu', type: 'error' });
+    } finally { setSavingPassword(false); }
+  };
+
+  // --- EMAIL TEMPLATES HANDLERS ---
+  const handleTemplateChange = (type: 'handover' | 'renewal_reminder' | 'thank_you', field: 'subject' | 'body', value: string) => {
+    setEmailTemplates(prev => ({
+      ...prev,
+      [type]: { ...prev[type], [field]: value }
+    }));
+  };
+
+  const handleSaveTemplates = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setSaving(true); setMessage(null);
+      const res = await api.post('/settings/email-templates', emailTemplates);
+      if (res.data.success) setMessage({ text: 'Lưu mẫu email thành công!', type: 'success' });
+    } catch (err: any) {
+      setMessage({ text: err.response?.data?.message || 'Lỗi khi lưu mẫu email', type: 'error' });
+    } finally { setSaving(false); }
+  };
+
+  // --- BACKUP HANDLERS ---
+  const handleExportData = async () => {
+    try {
+      setExporting(true); setMessage(null);
+      const res = await api.get('/settings/backup?action=export');
+      if (res.data.success && res.data.data) {
+        const blob = new Blob([JSON.stringify(res.data.data, null, 2)], { type: 'application/json' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `mini-crm-backup-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        await api.post('/settings/backup', { action: 'update-last-backup' });
+        setMessage({ text: 'Xuất dữ liệu thành công!', type: 'success' });
+      }
+    } catch (err: any) {
+      setMessage({ text: err.response?.data?.message || 'Lỗi khi xuất dữ liệu', type: 'error' });
+    } finally { setExporting(false); }
+  };
+
+  const handleSaveBackupConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setSavingBackup(true); setMessage(null);
+      const res = await api.post('/settings/backup', backupConfig);
+      if (res.data.success) setMessage({ text: 'Lưu cấu hình sao lưu thành công!', type: 'success' });
+    } catch (err: any) {
+      setMessage({ text: err.response?.data?.message || 'Lỗi khi lưu cấu hình sao lưu', type: 'error' });
+    } finally { setSavingBackup(false); }
+  };
+
 
   // Thay đổi input form SMTP
   const handleSMTPInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -168,9 +414,9 @@ const CaiDat: React.FC = () => {
       }
     } catch (err: any) {
       console.error(err);
-      setMessage({ 
-        text: err.response?.data?.message || 'Có lỗi xảy ra khi lưu cấu hình SMTP.', 
-        type: 'error' 
+      setMessage({
+        text: err.response?.data?.message || 'Có lỗi xảy ra khi lưu cấu hình SMTP.',
+        type: 'error'
       });
     } finally {
       setSaving(false);
@@ -198,9 +444,9 @@ const CaiDat: React.FC = () => {
       }
     } catch (err: any) {
       console.error(err);
-      setMessage({ 
-        text: err.response?.data?.message || 'Kết nối SMTP thất bại. Vui lòng kiểm tra lại thông tin.', 
-        type: 'error' 
+      setMessage({
+        text: err.response?.data?.message || 'Kết nối SMTP thất bại. Vui lòng kiểm tra lại thông tin.',
+        type: 'error'
       });
     } finally {
       setTesting(false);
@@ -236,9 +482,9 @@ const CaiDat: React.FC = () => {
       }
     } catch (err: any) {
       console.error(err);
-      setMessage({ 
-        text: err.response?.data?.message || 'Có lỗi xảy ra khi lưu cấu hình chuyển khoản.', 
-        type: 'error' 
+      setMessage({
+        text: err.response?.data?.message || 'Có lỗi xảy ra khi lưu cấu hình chuyển khoản.',
+        type: 'error'
       });
     } finally {
       setSavingBank(false);
@@ -246,7 +492,7 @@ const CaiDat: React.FC = () => {
   };
 
   // Lọc danh sách ngân hàng dựa trên từ khóa tìm kiếm
-  const filteredBanks = banksList.filter(bank => 
+  const filteredBanks = banksList.filter(bank =>
     bank.shortName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     bank.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     bank.code.toLowerCase().includes(searchQuery.toLowerCase())
@@ -256,27 +502,32 @@ const CaiDat: React.FC = () => {
   const cleanBankId = bankConfig.bank_id.replace(/\s+/g, '');
   const cleanAccountNo = bankConfig.account_no.replace(/\s+/g, '');
   const cleanAccountName = encodeURIComponent(removeVietnameseTones(bankConfig.account_name).toUpperCase());
-  
+
   const liveQrUrl = cleanBankId && cleanAccountNo
     ? `https://img.vietqr.io/image/${cleanBankId}-${cleanAccountNo}-compact2.png?amount=50000&addInfo=DEMO%20THANH%20TOAN&accountName=${cleanAccountName}`
     : '';
 
   return (
     <div style={{ padding: '0 0.5rem', maxWidth: '1200px', margin: '0 auto' }}>
-      
+
       {/* Tiêu đề Apple Style */}
       <div className="customer-detail-header" style={{ marginBottom: '1.25rem' }}>
         <h1 className="gradient-title">Cài Đặt Hệ Thống</h1>
         <p>
-          {activeTab === 'smtp' 
-            ? 'Cấu hình máy chủ SMTP Gmail để tự động gửi thông báo hóa đơn, nhắc nợ và bàn giao tài nguyên cho khách hàng'
-            : 'Cấu hình tài khoản ngân hàng nhận tiền thụ hưởng. Hệ thống sẽ tự tạo mã VietQR khớp số tiền và cú pháp trên hóa đơn PDF'}
+          {activeTab === 'smtp' && 'Cấu hình máy chủ SMTP Gmail để tự động gửi thông báo hóa đơn, nhắc nợ và bàn giao tài nguyên cho khách hàng'}
+          {activeTab === 'bank' && 'Cấu hình tài khoản ngân hàng nhận tiền thụ hưởng. Hệ thống sẽ tự tạo mã VietQR khớp số tiền và cú pháp trên hóa đơn PDF'}
+          {activeTab === 'general' && 'Cập nhật thông tin doanh nghiệp, logo, mã số thuế, địa chỉ, múi giờ và đơn vị tiền tệ'}
+          {activeTab === 'invoice' && 'Tùy chỉnh giao diện hóa đơn PDF: tiêu đề, màu sắc, chữ ký và ghi chú'}
+          {activeTab === 'renewal' && 'Cấu hình cảnh báo gia hạn, nhắc nợ tự động và tạm ngưng tài khoản khi quá hạn'}
+          {activeTab === 'account' && 'Quản lý thông tin tài khoản Admin, thay đổi email và đổi mật khẩu đăng nhập'}
+          {activeTab === 'email-templates' && 'Tùy chỉnh nội dung email gửi cho khách hàng: bàn giao, nhắc gia hạn và cảm ơn'}
+          {activeTab === 'backup' && 'Sao lưu và xuất dữ liệu toàn bộ hệ thống để đảm bảo an toàn thông tin'}
         </p>
       </div>
 
       {/* Tab Selector */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '1.75rem', borderBottom: '1px solid #E5E5EA', paddingBottom: '0.6rem' }}>
-        <button 
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '1.75rem', borderBottom: '1px solid #E5E5EA', paddingBottom: '0.6rem', flexWrap: 'wrap' }}>
+        <button
           onClick={() => setSearchParams({ tab: 'smtp' })}
           style={{
             padding: '8px 16px',
@@ -294,9 +545,9 @@ const CaiDat: React.FC = () => {
             transition: 'all 0.2s'
           }}
         >
-          <FiServer /> Cấu Hình SMTP Email
+          <FiServer /> SMTP Email
         </button>
-        <button 
+        <button
           onClick={() => setSearchParams({ tab: 'bank' })}
           style={{
             padding: '8px 16px',
@@ -314,18 +565,139 @@ const CaiDat: React.FC = () => {
             transition: 'all 0.2s'
           }}
         >
-          <FiCreditCard /> Cài Đặt Chuyển Khoản (VietQR)
+          <FiCreditCard /> Chuyển Khoản (VietQR)
+        </button>
+        <button
+          onClick={() => setSearchParams({ tab: 'general' })}
+          style={{
+            padding: '8px 16px',
+            border: 'none',
+            background: activeTab === 'general' ? 'var(--primary-color)' : 'none',
+            color: activeTab === 'general' ? 'white' : 'var(--text-light)',
+            fontWeight: 600,
+            borderRadius: '10px',
+            cursor: 'pointer',
+            fontSize: '0.85rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            boxShadow: activeTab === 'general' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
+            transition: 'all 0.2s'
+          }}
+        >
+          <FiGlobe /> Cài Đặt Chung
+        </button>
+        <button
+          onClick={() => setSearchParams({ tab: 'invoice' })}
+          style={{
+            padding: '8px 16px',
+            border: 'none',
+            background: activeTab === 'invoice' ? 'var(--primary-color)' : 'none',
+            color: activeTab === 'invoice' ? 'white' : 'var(--text-light)',
+            fontWeight: 600,
+            borderRadius: '10px',
+            cursor: 'pointer',
+            fontSize: '0.85rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            boxShadow: activeTab === 'invoice' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
+            transition: 'all 0.2s'
+          }}
+        >
+          <FiFileText /> Mẫu Hóa Đơn
+        </button>
+        <button
+          onClick={() => setSearchParams({ tab: 'renewal' })}
+          style={{
+            padding: '8px 16px',
+            border: 'none',
+            background: activeTab === 'renewal' ? 'var(--primary-color)' : 'none',
+            color: activeTab === 'renewal' ? 'white' : 'var(--text-light)',
+            fontWeight: 600,
+            borderRadius: '10px',
+            cursor: 'pointer',
+            fontSize: '0.85rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            boxShadow: activeTab === 'renewal' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
+            transition: 'all 0.2s'
+          }}
+        >
+          <FiClock /> Gia Hạn
+        </button>
+        <button
+          onClick={() => setSearchParams({ tab: 'account' })}
+          style={{
+            padding: '8px 16px',
+            border: 'none',
+            background: activeTab === 'account' ? 'var(--primary-color)' : 'none',
+            color: activeTab === 'account' ? 'white' : 'var(--text-light)',
+            fontWeight: 600,
+            borderRadius: '10px',
+            cursor: 'pointer',
+            fontSize: '0.85rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            boxShadow: activeTab === 'account' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
+            transition: 'all 0.2s'
+          }}
+        >
+          <FiShield /> Admin
+        </button>
+        <button
+          onClick={() => setSearchParams({ tab: 'email-templates' })}
+          style={{
+            padding: '8px 16px',
+            border: 'none',
+            background: activeTab === 'email-templates' ? 'var(--primary-color)' : 'none',
+            color: activeTab === 'email-templates' ? 'white' : 'var(--text-light)',
+            fontWeight: 600,
+            borderRadius: '10px',
+            cursor: 'pointer',
+            fontSize: '0.85rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            boxShadow: activeTab === 'email-templates' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
+            transition: 'all 0.2s'
+          }}
+        >
+          <FiMessageSquare /> Mẫu Email
+        </button>
+        <button
+          onClick={() => setSearchParams({ tab: 'backup' })}
+          style={{
+            padding: '8px 16px',
+            border: 'none',
+            background: activeTab === 'backup' ? 'var(--primary-color)' : 'none',
+            color: activeTab === 'backup' ? 'white' : 'var(--text-light)',
+            fontWeight: 600,
+            borderRadius: '10px',
+            cursor: 'pointer',
+            fontSize: '0.85rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            boxShadow: activeTab === 'backup' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
+            transition: 'all 0.2s'
+          }}
+        >
+          <FiDownloadCloud /> Sao Lưu
         </button>
       </div>
 
+
       {/* Thông báo trạng thái */}
       {message && (
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '10px', 
-          padding: '1rem', 
-          borderRadius: '12px', 
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          padding: '1rem',
+          borderRadius: '12px',
           marginBottom: '1.5rem',
           backgroundColor: message.type === 'success' ? '#EBF9EB' : '#FFEBEA',
           color: message.type === 'success' ? '#2E7D32' : '#FF3B30',
@@ -353,18 +725,18 @@ const CaiDat: React.FC = () => {
                     <h2 style={{ fontSize: '1.2rem', color: '#1D1D1F', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
                       <FiServer style={{ color: '#0071E3' }} /> Máy Chủ Gửi Email (SMTP)
                     </h2>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={applyGmailDefaults}
-                      style={{ 
-                        backgroundColor: '#F5F5F7', 
-                        color: '#0071E3', 
-                        border: '1px solid rgba(0,0,0,0.05)', 
-                        padding: '6px 12px', 
-                        borderRadius: '14px', 
-                        fontSize: '0.75rem', 
-                        fontWeight: 600, 
-                        cursor: 'pointer' 
+                      style={{
+                        backgroundColor: '#F5F5F7',
+                        color: '#0071E3',
+                        border: '1px solid rgba(0,0,0,0.05)',
+                        padding: '6px 12px',
+                        borderRadius: '14px',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        cursor: 'pointer'
                       }}
                     >
                       Mặc định Gmail
@@ -375,9 +747,9 @@ const CaiDat: React.FC = () => {
                     <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
                       <div className="form-group" style={{ marginBottom: 0 }}>
                         <label htmlFor="smtp_host" style={{ fontSize: '0.8rem', fontWeight: 600 }}>SMTP Server Host:</label>
-                        <input 
-                          type="text" 
-                          id="smtp_host" 
+                        <input
+                          type="text"
+                          id="smtp_host"
                           name="smtp_host"
                           value={smtpConfig.smtp_host}
                           onChange={handleSMTPInputChange}
@@ -389,8 +761,8 @@ const CaiDat: React.FC = () => {
 
                       <div className="form-group" style={{ marginBottom: 0 }}>
                         <label htmlFor="smtp_port" style={{ fontSize: '0.8rem', fontWeight: 600 }}>Cổng kết nối (Port):</label>
-                        <select 
-                          id="smtp_port" 
+                        <select
+                          id="smtp_port"
                           name="smtp_port"
                           value={smtpConfig.smtp_port}
                           onChange={handleSMTPInputChange}
@@ -406,9 +778,9 @@ const CaiDat: React.FC = () => {
                       <label htmlFor="smtp_user" style={{ fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <FiUser size={12} /> Tài khoản Gmail:
                       </label>
-                      <input 
-                        type="email" 
-                        id="smtp_user" 
+                      <input
+                        type="email"
+                        id="smtp_user"
                         name="smtp_user"
                         value={smtpConfig.smtp_user}
                         onChange={handleSMTPInputChange}
@@ -423,9 +795,9 @@ const CaiDat: React.FC = () => {
                         <FiKey size={12} /> Mật khẩu ứng dụng (App Password):
                       </label>
                       <div style={{ position: 'relative' }}>
-                        <input 
-                          type={showPassword ? "text" : "password"} 
-                          id="smtp_pass" 
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          id="smtp_pass"
                           name="smtp_pass"
                           value={smtpConfig.smtp_pass}
                           onChange={handleSMTPInputChange}
@@ -433,8 +805,8 @@ const CaiDat: React.FC = () => {
                           required
                           style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 3.2rem 0 10px', width: '100%', outline: 'none' }}
                         />
-                        <button 
-                          type="button" 
+                        <button
+                          type="button"
                           onClick={() => setShowPassword(!showPassword)}
                           style={{ position: 'absolute', right: '12px', top: '10px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-light)' }}
                         >
@@ -447,9 +819,9 @@ const CaiDat: React.FC = () => {
                       <label htmlFor="smtp_from" style={{ fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <FiMail size={12} /> Tên Người Gửi hiển thị:
                       </label>
-                      <input 
-                        type="text" 
-                        id="smtp_from" 
+                      <input
+                        type="text"
+                        id="smtp_from"
                         name="smtp_from"
                         value={smtpConfig.smtp_from}
                         onChange={handleSMTPInputChange}
@@ -461,8 +833,8 @@ const CaiDat: React.FC = () => {
                       </small>
                     </div>
 
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       className="btn-save"
                       disabled={saving}
                       style={{ width: '100%', height: '44px', fontWeight: 600, borderRadius: '12px' }}
@@ -476,27 +848,27 @@ const CaiDat: React.FC = () => {
                   <h2 style={{ fontSize: '1.1rem', color: '#1D1D1F', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.25rem', borderBottom: '1px solid #F5F5F7', paddingBottom: '0.75rem' }}>
                     <FiSend style={{ color: '#34C759' }} /> Kiểm Tra Gửi Thử (SMTP Test)
                   </h2>
-                  
+
                   <form onSubmit={handleTestConnection}>
                     <div style={{ display: 'flex', gap: '0.75rem' }}>
-                      <input 
-                        type="email" 
-                        placeholder="Nhập email nhận thử (e.g. gmail của bạn)..." 
+                      <input
+                        type="email"
+                        placeholder="Nhập email nhận thử (e.g. gmail của bạn)..."
                         value={testRecipient}
                         onChange={e => setTestRecipient(e.target.value)}
                         required
                         style={{ flex: 1, height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 12px', outline: 'none' }}
                       />
-                      <button 
-                        type="submit" 
+                      <button
+                        type="submit"
                         disabled={testing}
-                        style={{ 
-                          backgroundColor: '#34C759', 
-                          color: '#FFF', 
-                          border: 'none', 
-                          padding: '0 20px', 
-                          borderRadius: '8px', 
-                          fontWeight: 600, 
+                        style={{
+                          backgroundColor: '#34C759',
+                          color: '#FFF',
+                          border: 'none',
+                          padding: '0 20px',
+                          borderRadius: '8px',
+                          fontWeight: 600,
                           fontSize: '0.85rem',
                           cursor: 'pointer',
                           display: 'flex',
@@ -545,7 +917,7 @@ const CaiDat: React.FC = () => {
           {/* TAB 2: CÀI ĐẶT CHUYỂN KHOẢN (VIETQR) */}
           {activeTab === 'bank' && (
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.75rem' }}>
-              
+
               {/* Form Cấu hình */}
               <div className="table-card widget" style={{ padding: '1.75rem', borderRadius: '20px', backgroundColor: '#FFF' }}>
                 <h2 style={{ fontSize: '1.2rem', color: '#1D1D1F', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem', borderBottom: '1px solid #F5F5F7', paddingBottom: '0.75rem' }}>
@@ -553,13 +925,13 @@ const CaiDat: React.FC = () => {
                 </h2>
 
                 <form onSubmit={handleSaveBankConfig}>
-                  
+
                   {/* Select Bank (Custom Searchable Dropdown với Logo) */}
                   <div className="form-group" style={{ marginBottom: '1.25rem', position: 'relative' }}>
                     <label style={{ fontSize: '0.8rem', fontWeight: 600, display: 'block', marginBottom: '6px' }}>Chọn ngân hàng:</label>
-                    
+
                     {/* Toggler Button */}
-                    <div 
+                    <div
                       onClick={() => setDropdownOpen(!dropdownOpen)}
                       style={{
                         height: '46px',
@@ -589,7 +961,7 @@ const CaiDat: React.FC = () => {
 
                     {/* Dropdown List */}
                     {dropdownOpen && (
-                      <div 
+                      <div
                         style={{
                           position: 'absolute',
                           top: '100%',
@@ -609,9 +981,9 @@ const CaiDat: React.FC = () => {
                         {/* Search Input inside Dropdown */}
                         <div style={{ padding: '8px', borderBottom: '1px solid #E5E5EA', display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: '#F5F5F7', borderRadius: '10px 10px 0 0' }}>
                           <FiSearch style={{ color: 'var(--text-light)' }} />
-                          <input 
-                            type="text" 
-                            placeholder="Tìm kiếm ngân hàng..." 
+                          <input
+                            type="text"
+                            placeholder="Tìm kiếm ngân hàng..."
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
                             style={{
@@ -628,9 +1000,9 @@ const CaiDat: React.FC = () => {
 
                         {/* Banks Scroll Area */}
                         <div style={{ overflowY: 'auto', flex: 1, padding: '4px' }}>
-                          
+
                           {/* Option Khác / Tự nhập */}
-                          <div 
+                          <div
                             onClick={() => {
                               setBankConfig(prev => ({
                                 ...prev,
@@ -663,7 +1035,7 @@ const CaiDat: React.FC = () => {
                             filteredBanks.map(bank => {
                               const isSelected = bankConfig.bank_id === bank.code;
                               return (
-                                <div 
+                                <div
                                   key={bank.id}
                                   onClick={() => {
                                     setBankConfig(prev => ({
@@ -710,8 +1082,8 @@ const CaiDat: React.FC = () => {
 
                   {/* Backdrop to close dropdown */}
                   {dropdownOpen && (
-                    <div 
-                      onClick={() => setDropdownOpen(false)} 
+                    <div
+                      onClick={() => setDropdownOpen(false)}
                       style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 150, background: 'none' }}
                     />
                   )}
@@ -721,8 +1093,8 @@ const CaiDat: React.FC = () => {
                     <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1rem', marginBottom: '1.25rem', backgroundColor: '#F5F5F7', padding: '1rem', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
                       <div className="form-group" style={{ marginBottom: 0 }}>
                         <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Tên ngân hàng đầy đủ:</label>
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           name="bank_name"
                           value={bankConfig.bank_name === 'Ngân hàng khác' ? '' : bankConfig.bank_name}
                           onChange={handleBankInputChange}
@@ -733,8 +1105,8 @@ const CaiDat: React.FC = () => {
                       </div>
                       <div className="form-group" style={{ marginBottom: 0 }}>
                         <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Mã ngân hàng (VietQR):</label>
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           name="bank_id"
                           value={bankConfig.bank_id === 'Custom' ? '' : bankConfig.bank_id}
                           onChange={handleBankInputChange}
@@ -749,9 +1121,9 @@ const CaiDat: React.FC = () => {
                   {/* Số Tài Khoản */}
                   <div className="form-group" style={{ marginBottom: '1.25rem' }}>
                     <label htmlFor="account_no" style={{ fontSize: '0.8rem', fontWeight: 600 }}>Số tài khoản nhận tiền:</label>
-                    <input 
-                      type="text" 
-                      id="account_no" 
+                    <input
+                      type="text"
+                      id="account_no"
                       name="account_no"
                       value={bankConfig.account_no}
                       onChange={handleBankInputChange}
@@ -764,9 +1136,9 @@ const CaiDat: React.FC = () => {
                   {/* Tên Chủ Tài Khoản */}
                   <div className="form-group" style={{ marginBottom: '1.75rem' }}>
                     <label htmlFor="account_name" style={{ fontSize: '0.8rem', fontWeight: 600 }}>Tên chủ tài khoản (Viết hoa không dấu):</label>
-                    <input 
-                      type="text" 
-                      id="account_name" 
+                    <input
+                      type="text"
+                      id="account_name"
                       name="account_name"
                       value={bankConfig.account_name}
                       onChange={e => {
@@ -785,8 +1157,8 @@ const CaiDat: React.FC = () => {
                     </small>
                   </div>
 
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className="btn-save"
                     disabled={savingBank}
                     style={{ width: '100%', height: '44px', fontWeight: 600, borderRadius: '12px' }}
@@ -798,12 +1170,12 @@ const CaiDat: React.FC = () => {
 
               {/* Live Preview Panel (Right Column) */}
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <div 
-                  className="table-card widget" 
-                  style={{ 
-                    padding: '1.5rem', 
-                    borderRadius: '20px', 
-                    backgroundColor: '#FFFDF0', 
+                <div
+                  className="table-card widget"
+                  style={{
+                    padding: '1.5rem',
+                    borderRadius: '20px',
+                    backgroundColor: '#FFFDF0',
                     border: '1px solid #FFEBB3',
                     display: 'flex',
                     flexDirection: 'column',
@@ -814,12 +1186,12 @@ const CaiDat: React.FC = () => {
                   <h3 style={{ fontSize: '1rem', color: '#D27B00', display: 'flex', alignItems: 'center', gap: '6px', margin: '0 0 1rem 0', width: '100%', borderBottom: '1px solid #FFEBB3', paddingBottom: '0.5rem' }}>
                     <FiInfo /> Live Preview: QR Thanh Toán
                   </h3>
-                  
+
                   {liveQrUrl ? (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-                      
+
                       {/* Thẻ mô phỏng hóa đơn */}
-                      <div 
+                      <div
                         style={{
                           backgroundColor: '#FFF',
                           border: '1px solid #E5E5EA',
@@ -841,9 +1213,9 @@ const CaiDat: React.FC = () => {
 
                         {/* VietQR Code Frame */}
                         <div style={{ padding: '6px', border: '1px solid #E5E5EA', borderRadius: '8px', backgroundColor: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <img 
-                            src={liveQrUrl} 
-                            alt="VietQR Live Preview" 
+                          <img
+                            src={liveQrUrl}
+                            alt="VietQR Live Preview"
                             style={{ width: '160px', height: '160px', objectFit: 'contain' }}
                             onError={(e) => {
                               // Fallback if image fails to load
@@ -875,6 +1247,336 @@ const CaiDat: React.FC = () => {
 
             </div>
           )}
+
+          {/* TAB 3: CÀI ĐẶT CHUNG */}
+          {activeTab === 'general' && (
+            <div className="table-card widget" style={{ padding: '1.75rem', borderRadius: '20px', backgroundColor: '#FFF' }}>
+              <h2 style={{ fontSize: '1.2rem', color: '#1D1D1F', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem', borderBottom: '1px solid #F5F5F7', paddingBottom: '0.75rem' }}>
+                <FiGlobe style={{ color: '#0071E3' }} /> Cài Đặt Chung
+              </h2>
+              <form onSubmit={handleSaveGeneral}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Tên cửa hàng / Doanh nghiệp:</label>
+                    <input type="text" name="storeName" value={generalConfig.storeName} onChange={handleGeneralChange} placeholder="e.g. Mini CRM" required style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                  </div>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Mã số thuế:</label>
+                    <input type="text" name="taxCode" value={generalConfig.taxCode} onChange={handleGeneralChange} placeholder="e.g. 0123456789" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                  </div>
+                </div>
+                <div className="form-group" style={{ marginBottom: '1rem' }}>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Địa chỉ:</label>
+                  <input type="text" name="address" value={generalConfig.address} onChange={handleGeneralChange} placeholder="Nhập địa chỉ doanh nghiệp" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Số điện thoại:</label>
+                    <input type="text" name="phone" value={generalConfig.phone} onChange={handleGeneralChange} placeholder="e.g. 0987654321" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                  </div>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Email:</label>
+                    <input type="email" name="email" value={generalConfig.email} onChange={handleGeneralChange} placeholder="e.g. info@example.com" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Múi giờ:</label>
+                    <select name="timezone" value={generalConfig.timezone} onChange={handleGeneralChange} style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }}>
+                      <option value="Asia/Ho_Chi_Minh">Asia/Ho_Chi_Minh (GMT+7)</option>
+                      <option value="Asia/Bangkok">Asia/Bangkok (GMT+7)</option>
+                      <option value="Asia/Singapore">Asia/Singapore (GMT+8)</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Đơn vị tiền tệ:</label>
+                    <select name="currency" value={generalConfig.currency} onChange={handleGeneralChange} style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }}>
+                      <option value="VND">VND (₫)</option>
+                      <option value="USD">USD ($)</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>URL Logo:</label>
+                    <input type="text" name="logo" value={generalConfig.logo} onChange={handleGeneralChange} placeholder="https://..." style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                  </div>
+                </div>
+                <button type="submit" className="btn-save" disabled={saving} style={{ width: '100%', height: '44px', fontWeight: 600, borderRadius: '12px' }}>
+                  {saving ? 'Đang lưu...' : 'Lưu Cài Đặt Chung'}
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* TAB 4: MẪU HÓA ĐƠN PDF */}
+          {activeTab === 'invoice' && (
+            <div className="table-card widget" style={{ padding: '1.75rem', borderRadius: '20px', backgroundColor: '#FFF' }}>
+              <h2 style={{ fontSize: '1.2rem', color: '#1D1D1F', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem', borderBottom: '1px solid #F5F5F7', paddingBottom: '0.75rem' }}>
+                <FiFileText style={{ color: '#0071E3' }} /> Mẫu Hóa Đơn PDF
+              </h2>
+              <form onSubmit={handleSaveInvoice}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Tiêu đề hóa đơn:</label>
+                    <input type="text" name="title" value={invoiceConfig.title} onChange={handleInvoiceChange} placeholder="e.g. HÓA ĐƠN BÁN HÀNG" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                  </div>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Màu chủ đạo:</label>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <input type="color" name="primaryColor" value={invoiceConfig.primaryColor} onChange={handleInvoiceChange} style={{ width: '44px', height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '2px', cursor: 'pointer' }} />
+                      <input type="text" name="primaryColor" value={invoiceConfig.primaryColor} onChange={handleInvoiceChange} style={{ flex: 1, height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', outline: 'none' }} />
+                    </div>
+                  </div>
+                </div>
+                <div className="form-group" style={{ marginBottom: '1rem' }}>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Chân trang (Footer):</label>
+                  <input type="text" name="footer" value={invoiceConfig.footer} onChange={handleInvoiceChange} placeholder="e.g. Cảm ơn quý khách đã mua hàng!" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                </div>
+                <div className="form-group" style={{ marginBottom: '1rem' }}>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Ghi chú:</label>
+                  <textarea name="notes" value={invoiceConfig.notes} onChange={handleInvoiceChange} placeholder="Ghi chú thêm trên hóa đơn..." rows={3} style={{ borderRadius: '8px', border: '1px solid var(--border-color)', padding: '10px', width: '100%', outline: 'none', resize: 'vertical' }} />
+                </div>
+                <div style={{ display: 'flex', gap: '2rem', marginBottom: '1.5rem', alignItems: 'center' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', cursor: 'pointer' }}>
+                    <input type="checkbox" name="showLogo" checked={invoiceConfig.showLogo} onChange={handleInvoiceChange} />
+                    <span>Hiển thị Logo</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', cursor: 'pointer' }}>
+                    <input type="checkbox" name="showSignature" checked={invoiceConfig.showSignature} onChange={handleInvoiceChange} />
+                    <span>Hiển thị Chữ ký</span>
+                  </label>
+                </div>
+                {invoiceConfig.showSignature && (
+                  <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Nội dung chữ ký:</label>
+                    <textarea name="signature" value={invoiceConfig.signature} onChange={handleInvoiceChange} placeholder="Người bán: ..." rows={2} style={{ borderRadius: '8px', border: '1px solid var(--border-color)', padding: '10px', width: '100%', outline: 'none', resize: 'vertical' }} />
+                  </div>
+                )}
+                <button type="submit" className="btn-save" disabled={saving} style={{ width: '100%', height: '44px', fontWeight: 600, borderRadius: '12px' }}>
+                  {saving ? 'Đang lưu...' : 'Lưu Mẫu Hóa Đơn'}
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* TAB 5: CẤU HÌNH GIA HẠN */}
+          {activeTab === 'renewal' && (
+            <div className="table-card widget" style={{ padding: '1.75rem', borderRadius: '20px', backgroundColor: '#FFF' }}>
+              <h2 style={{ fontSize: '1.2rem', color: '#1D1D1F', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem', borderBottom: '1px solid #F5F5F7', paddingBottom: '0.75rem' }}>
+                <FiClock style={{ color: '#0071E3' }} /> Cấu Hình Gia Hạn
+              </h2>
+              <form onSubmit={handleSaveRenewal}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Số ngày cảnh báo trước khi hết hạn:</label>
+                    <input type="number" name="warningDays" value={renewalConfig.warningDays} onChange={handleRenewalChange} min={1} max={60} style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                  </div>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Tối đa số lần nhắc:</label>
+                    <input type="number" name="maxReminders" value={renewalConfig.maxReminders} onChange={handleRenewalChange} min={1} max={20} style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Số ngày sau hết hạn sẽ tạm ngưng:</label>
+                    <input type="number" name="suspendAfterDays" value={renewalConfig.suspendAfterDays} onChange={handleRenewalChange} min={0} max={90} style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                  </div>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Phí gia hạn mặc định (VNĐ):</label>
+                    <input type="number" name="defaultRenewalFee" value={renewalConfig.defaultRenewalFee} onChange={handleRenewalChange} min={0} style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem', alignItems: 'center' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', cursor: 'pointer' }}>
+                    <input type="checkbox" name="autoRemind" checked={renewalConfig.autoRemind} onChange={handleRenewalChange} />
+                    <span>Tự động nhắc gia hạn</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', cursor: 'pointer' }}>
+                    <input type="checkbox" name="autoSuspend" checked={renewalConfig.autoSuspend} onChange={handleRenewalChange} />
+                    <span>Tự động tạm ngưng khi quá hạn</span>
+                  </label>
+                </div>
+                <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Tin nhắn khuyến mãi (kèm email nhắc):</label>
+                  <textarea name="promoMessage" value={renewalConfig.promoMessage} onChange={handleRenewalChange} placeholder="e.g. Giảm 10% phí gia hạn khi thanh toán trước hạn..." rows={2} style={{ borderRadius: '8px', border: '1px solid var(--border-color)', padding: '10px', width: '100%', outline: 'none', resize: 'vertical' }} />
+                </div>
+                <button type="submit" className="btn-save" disabled={saving} style={{ width: '100%', height: '44px', fontWeight: 600, borderRadius: '12px' }}>
+                  {saving ? 'Đang lưu...' : 'Lưu Cấu Hình Gia Hạn'}
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* TAB 6: TÀI KHOẢN ADMIN */}
+          {activeTab === 'account' && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.75rem' }}>
+              <div className="table-card widget" style={{ padding: '1.75rem', borderRadius: '20px', backgroundColor: '#FFF' }}>
+                <h2 style={{ fontSize: '1.2rem', color: '#1D1D1F', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem', borderBottom: '1px solid #F5F5F7', paddingBottom: '0.75rem' }}>
+                  <FiUser style={{ color: '#0071E3' }} /> Thông Tin Cá Nhân
+                </h2>
+                <form onSubmit={handleSaveProfile}>
+                  <div className="form-group" style={{ marginBottom: '1rem' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Tên đăng nhập:</label>
+                    <input type="text" value={accountInfo.username} disabled style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none', backgroundColor: '#F5F5F7', color: '#86868B' }} />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: '1rem' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Email:</label>
+                    <input type="email" value={accountInfo.email} onChange={e => setAccountInfo(prev => ({ ...prev, email: e.target.value }))} placeholder="admin@example.com" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Vai trò:</label>
+                    <input type="text" value={accountInfo.role === 'admin' ? 'Quản trị viên' : 'Nhân viên'} disabled style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none', backgroundColor: '#F5F5F7', color: '#86868B' }} />
+                  </div>
+                  <button type="submit" className="btn-save" disabled={savingAccount} style={{ width: '100%', height: '44px', fontWeight: 600, borderRadius: '12px' }}>
+                    {savingAccount ? 'Đang lưu...' : <><FiSave style={{ marginRight: '6px' }} /> Cập Nhật Thông Tin</>}
+                  </button>
+                </form>
+              </div>
+
+              <div className="table-card widget" style={{ padding: '1.75rem', borderRadius: '20px', backgroundColor: '#FFF' }}>
+                <h2 style={{ fontSize: '1.2rem', color: '#1D1D1F', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem', borderBottom: '1px solid #F5F5F7', paddingBottom: '0.75rem' }}>
+                  <FiLock style={{ color: '#FF9500' }} /> Đổi Mật Khẩu
+                </h2>
+                <form onSubmit={handleChangePassword}>
+                  <div className="form-group" style={{ marginBottom: '1rem' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Mật khẩu hiện tại:</label>
+                    <input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} placeholder="Nhập mật khẩu hiện tại" required style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: '1rem' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Mật khẩu mới:</label>
+                    <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Ít nhất 6 ký tự" required minLength={6} style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Xác nhận mật khẩu mới:</label>
+                    <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Nhập lại mật khẩu mới" required minLength={6} style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                  </div>
+                  <button type="submit" className="btn-save" disabled={savingPassword} style={{ width: '100%', height: '44px', fontWeight: 600, borderRadius: '12px', backgroundColor: '#FF9500' }}>
+                    {savingPassword ? 'Đang đổi mật khẩu...' : <><FiRefreshCw style={{ marginRight: '6px' }} /> Đổi Mật Khẩu</>}
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 7: MẪU EMAIL */}
+          {activeTab === 'email-templates' && (
+            <div className="table-card widget" style={{ padding: '1.75rem', borderRadius: '20px', backgroundColor: '#FFF' }}>
+              <h2 style={{ fontSize: '1.2rem', color: '#1D1D1F', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem', borderBottom: '1px solid #F5F5F7', paddingBottom: '0.75rem' }}>
+                <FiMessageSquare style={{ color: '#0071E3' }} /> Mẫu Email Tự Động
+              </h2>
+              <form onSubmit={handleSaveTemplates}>
+                {/* Handover Template */}
+                <div style={{ marginBottom: '2rem', padding: '1rem', backgroundColor: '#F5F5F7', borderRadius: '12px' }}>
+                  <h3 style={{ fontSize: '1rem', color: '#1D1D1F', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <FiMail style={{ color: '#34C759' }} /> Email Bàn Giao Tài Khoản
+                  </h3>
+                  <div className="form-group" style={{ marginBottom: '0.75rem' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Tiêu đề:</label>
+                    <input type="text" value={emailTemplates.handover.subject} onChange={e => handleTemplateChange('handover', 'subject', e.target.value)} placeholder="🎉 Bàn giao tài khoản - {{customer_name}}" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                  </div>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Nội dung:</label>
+                    <textarea value={emailTemplates.handover.body} onChange={e => handleTemplateChange('handover', 'body', e.target.value)} placeholder="Xin chào {{customer_name}},..." rows={4} style={{ borderRadius: '8px', border: '1px solid var(--border-color)', padding: '10px', width: '100%', outline: 'none', resize: 'vertical', fontFamily: 'monospace', fontSize: '0.85rem' }} />
+                  </div>
+                  <small style={{ color: '#86868B', fontSize: '0.75rem' }}>Biến hỗ trợ: {'{{customer_name}}'}, {'{{store_name}}'}, {'{{account_info}}'}, {'{{expiry_date}}'}</small>
+                </div>
+
+                {/* Renewal Reminder Template */}
+                <div style={{ marginBottom: '2rem', padding: '1rem', backgroundColor: '#FFFDF0', borderRadius: '12px', border: '1px solid #FFEBB3' }}>
+                  <h3 style={{ fontSize: '1rem', color: '#D27B00', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <FiClock style={{ color: '#FF9500' }} /> Email Nhắc Gia Hạn
+                  </h3>
+                  <div className="form-group" style={{ marginBottom: '0.75rem' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Tiêu đề:</label>
+                    <input type="text" value={emailTemplates.renewal_reminder.subject} onChange={e => handleTemplateChange('renewal_reminder', 'subject', e.target.value)} placeholder="⚠️ Nhắc gia hạn - {{customer_name}}" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                  </div>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Nội dung:</label>
+                    <textarea value={emailTemplates.renewal_reminder.body} onChange={e => handleTemplateChange('renewal_reminder', 'body', e.target.value)} placeholder="Xin chào {{customer_name}},..." rows={4} style={{ borderRadius: '8px', border: '1px solid var(--border-color)', padding: '10px', width: '100%', outline: 'none', resize: 'vertical', fontFamily: 'monospace', fontSize: '0.85rem' }} />
+                  </div>
+                  <small style={{ color: '#86868B', fontSize: '0.75rem' }}>Biến hỗ trợ: {'{{customer_name}}'}, {'{{store_name}}'}, {'{{expiry_date}}'}</small>
+                </div>
+
+                {/* Thank You Template */}
+                <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#EBF9EB', borderRadius: '12px', border: '1px solid #C8E6C9' }}>
+                  <h3 style={{ fontSize: '1rem', color: '#2E7D32', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <FiCheckCircle style={{ color: '#34C759' }} /> Email Cảm Ơn
+                  </h3>
+                  <div className="form-group" style={{ marginBottom: '0.75rem' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Tiêu đề:</label>
+                    <input type="text" value={emailTemplates.thank_you.subject} onChange={e => handleTemplateChange('thank_you', 'subject', e.target.value)} placeholder="🙏 Cảm ơn - {{customer_name}}" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                  </div>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Nội dung:</label>
+                    <textarea value={emailTemplates.thank_you.body} onChange={e => handleTemplateChange('thank_you', 'body', e.target.value)} placeholder="Xin chào {{customer_name}},..." rows={4} style={{ borderRadius: '8px', border: '1px solid var(--border-color)', padding: '10px', width: '100%', outline: 'none', resize: 'vertical', fontFamily: 'monospace', fontSize: '0.85rem' }} />
+                  </div>
+                  <small style={{ color: '#86868B', fontSize: '0.75rem' }}>Biến hỗ trợ: {'{{customer_name}}'}, {'{{store_name}}'}</small>
+                </div>
+
+                <button type="submit" className="btn-save" disabled={saving} style={{ width: '100%', height: '44px', fontWeight: 600, borderRadius: '12px' }}>
+                  {saving ? 'Đang lưu...' : 'Lưu Tất Cả Mẫu Email'}
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* TAB 8: SAO LƯU DỮ LIỆU */}
+          {activeTab === 'backup' && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.75rem' }}>
+              <div className="table-card widget" style={{ padding: '1.75rem', borderRadius: '20px', backgroundColor: '#FFF' }}>
+                <h2 style={{ fontSize: '1.2rem', color: '#1D1D1F', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem', borderBottom: '1px solid #F5F5F7', paddingBottom: '0.75rem' }}>
+                  <FiDownloadCloud style={{ color: '#0071E3' }} /> Xuất Dữ Liệu
+                </h2>
+                <div style={{ marginBottom: '1.5rem', color: '#515154', fontSize: '0.9rem', lineHeight: '1.6' }}>
+                  <p style={{ margin: '0 0 0.75rem 0' }}>Xuất toàn bộ dữ liệu hệ thống bao gồm:</p>
+                  <ul style={{ margin: '0 0 0.75rem 0', paddingLeft: '1.25rem' }}>
+                    <li>Khách hàng</li>
+                    <li>Tài khoản / Tài nguyên</li>
+                    <li>Đơn hàng & Hóa đơn</li>
+                    <li>Nhà cung cấp</li>
+                    <li>Bản quyền cá nhân</li>
+                    <li>Cài đặt hệ thống</li>
+                  </ul>
+                  <p style={{ margin: 0 }}>Dữ liệu sẽ được tải xuống dưới dạng file JSON.</p>
+                </div>
+                <button onClick={handleExportData} disabled={exporting} style={{ width: '100%', height: '44px', fontWeight: 600, borderRadius: '12px', border: 'none', backgroundColor: '#0071E3', color: '#FFF', cursor: 'pointer', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <FiDownloadCloud /> {exporting ? 'Đang xuất dữ liệu...' : 'Xuất Dữ Liệu Ngay'}
+                </button>
+              </div>
+
+              <div className="table-card widget" style={{ padding: '1.75rem', borderRadius: '20px', backgroundColor: '#FFF' }}>
+                <h2 style={{ fontSize: '1.2rem', color: '#1D1D1F', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem', borderBottom: '1px solid #F5F5F7', paddingBottom: '0.75rem' }}>
+                  <FiSettings style={{ color: '#FF9500' }} /> Cấu Hình Sao Lưu
+                </h2>
+                <form onSubmit={handleSaveBackupConfig}>
+                  <div className="form-group" style={{ marginBottom: '1rem' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', cursor: 'pointer', marginBottom: '1rem' }}>
+                      <input type="checkbox" checked={backupConfig.autoBackup} onChange={e => setBackupConfig(prev => ({ ...prev, autoBackup: e.target.checked }))} />
+                      <span>Tự động sao lưu</span>
+                    </label>
+                  </div>
+                  {backupConfig.autoBackup && (
+                    <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                      <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Tần suất sao lưu:</label>
+                      <select value={backupConfig.backupFrequency} onChange={e => setBackupConfig(prev => ({ ...prev, backupFrequency: e.target.value }))} style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }}>
+                        <option value="daily">Hàng ngày</option>
+                        <option value="weekly">Hàng tuần</option>
+                        <option value="monthly">Hàng tháng</option>
+                      </select>
+                    </div>
+                  )}
+                  {backupConfig.lastBackup && (
+                    <div style={{ marginBottom: '1.5rem', padding: '0.75rem', backgroundColor: '#EBF9EB', borderRadius: '8px', color: '#2E7D32', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <FiCheckCircle size={14} />
+                      <span>Lần sao lưu gần nhất: {new Date(backupConfig.lastBackup).toLocaleString('vi-VN')}</span>
+                    </div>
+                  )}
+                  <button type="submit" className="btn-save" disabled={savingBackup} style={{ width: '100%', height: '44px', fontWeight: 600, borderRadius: '12px' }}>
+                    {savingBackup ? 'Đang lưu...' : 'Lưu Cấu Hình Sao Lưu'}
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -883,3 +1585,5 @@ const CaiDat: React.FC = () => {
 };
 
 export default CaiDat;
+
+

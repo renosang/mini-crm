@@ -62,7 +62,7 @@ const Sidebar: React.FC = () => {
         <NavLink to="/nha-cung-cap" className="nav-item">
           <FiBriefcase /> Nhà Cung Cấp
         </NavLink>
-        <div 
+        <div
           className={`nav-item nav-group-toggle ${isCaiDatPage ? 'active' : ''} ${settingsOpen ? 'open' : ''}`}
           onClick={() => setSettingsOpen(!settingsOpen)}
         >
@@ -73,24 +73,79 @@ const Sidebar: React.FC = () => {
           <FiChevronRight className="chevron" />
         </div>
         <div className={`sidebar-submenu ${settingsOpen ? 'open' : ''}`}>
-          <Link 
+          <Link
             to="/cai-dat?tab=smtp"
-            style={{ 
+            style={{
               color: (isCaiDatPage && (location.search.includes('tab=smtp') || !location.search.includes('tab='))) ? 'var(--primary-color)' : 'var(--text-light)',
               fontWeight: (isCaiDatPage && (location.search.includes('tab=smtp') || !location.search.includes('tab='))) ? '600' : '500'
             }}
           >
             Cấu hình SMTP
           </Link>
-          <Link 
+          <Link
             to="/cai-dat?tab=bank"
-            style={{ 
+            style={{
               color: (isCaiDatPage && location.search.includes('tab=bank')) ? 'var(--primary-color)' : 'var(--text-light)',
               fontWeight: (isCaiDatPage && location.search.includes('tab=bank')) ? '600' : '500'
             }}
           >
             Thông tin chuyển khoản
           </Link>
+          <Link
+            to="/cai-dat?tab=general"
+            style={{
+              color: (isCaiDatPage && location.search.includes('tab=general')) ? 'var(--primary-color)' : 'var(--text-light)',
+              fontWeight: (isCaiDatPage && location.search.includes('tab=general')) ? '600' : '500'
+            }}
+          >
+            Cài đặt chung
+          </Link>
+          <Link
+            to="/cai-dat?tab=invoice"
+            style={{
+              color: (isCaiDatPage && location.search.includes('tab=invoice')) ? 'var(--primary-color)' : 'var(--text-light)',
+              fontWeight: (isCaiDatPage && location.search.includes('tab=invoice')) ? '600' : '500'
+            }}
+          >
+            Mẫu hóa đơn PDF
+          </Link>
+          <Link
+            to="/cai-dat?tab=renewal"
+            style={{
+              color: (isCaiDatPage && location.search.includes('tab=renewal')) ? 'var(--primary-color)' : 'var(--text-light)',
+              fontWeight: (isCaiDatPage && location.search.includes('tab=renewal')) ? '600' : '500'
+            }}
+          >
+            Cấu hình gia hạn
+          </Link>
+          <Link
+            to="/cai-dat?tab=account"
+            style={{
+              color: (isCaiDatPage && location.search.includes('tab=account')) ? 'var(--primary-color)' : 'var(--text-light)',
+              fontWeight: (isCaiDatPage && location.search.includes('tab=account')) ? '600' : '500'
+            }}
+          >
+            Tài khoản Admin
+          </Link>
+          <Link
+            to="/cai-dat?tab=email-templates"
+            style={{
+              color: (isCaiDatPage && location.search.includes('tab=email-templates')) ? 'var(--primary-color)' : 'var(--text-light)',
+              fontWeight: (isCaiDatPage && location.search.includes('tab=email-templates')) ? '600' : '500'
+            }}
+          >
+            Mẫu Email
+          </Link>
+          <Link
+            to="/cai-dat?tab=backup"
+            style={{
+              color: (isCaiDatPage && location.search.includes('tab=backup')) ? 'var(--primary-color)' : 'var(--text-light)',
+              fontWeight: (isCaiDatPage && location.search.includes('tab=backup')) ? '600' : '500'
+            }}
+          >
+            Sao lưu dữ liệu
+          </Link>
+
         </div>
 
       </nav>

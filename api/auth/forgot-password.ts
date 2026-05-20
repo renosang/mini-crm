@@ -28,7 +28,7 @@ export default async function handler(req: any, res: any) {
                 { username: username.trim() },
                 { email: username.trim() }
             ]
-        }).select('+password');
+        });
 
         if (!user) {
             return res.status(404).json({ message: 'Tài khoản không tồn tại trong hệ thống' });

@@ -51,14 +51,18 @@ export default async function handler(req: any, res: any) {
             return res.status(400).json({ message: 'Mã xác nhận không chính xác. Vui lòng kiểm tra lại.' });
         }
 
-        // Set the new password (Mongoose pre('save') hook will hash it automatically)
-        user.password = newPassword;
+        // Hash password manually and save via updateOne to avoid pre('save') hook double-hashing
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-        // Clear reset fields
-        user.resetCode = undefined;
-        user.resetCodeExpires = undefined;
-
-        await user.save();
+        // Use updateOne to bypass Mongoose pre('save') hook which would double-hash
+        await User.updateOne(
+            { _id: user._id },
+            {
+                $set: { password: hashedPassword },
+                $unset: { resetCode: "", resetCodeExpires: "" }
+            }
+        );
 
         console.log(`[Reset Password] Password reset successful for ${username}`);
 
