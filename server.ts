@@ -7,12 +7,16 @@ import { fileURLToPath } from 'url';
 // Import handlers
 import loginHandler from './api/auth/login.ts';
 import registerHandler from './api/auth/register.ts';
+import forgotPasswordHandler from './api/auth/forgot-password.ts';
+import resetPasswordHandler from './api/auth/reset-password.ts';
 import customersHandler from './api/customers/index.ts';
 import customerStatsHandler from './api/customers/stats.ts';
 import customerDetailHandler from './api/customers/[id].ts';
 import dashboardStatsHandler from './api/dashboard/stats.ts';
 import accountsHandler from './api/accounts/index.ts';
 import accountDetailHandler from './api/accounts/[id].ts';
+import renewHandler from './api/accounts/renew.ts';
+
 import ordersHandler from './api/orders/index.ts';
 import personalLicensesHandler from './api/personal-licenses/index.ts';
 import sendOrderReminderHandler from './api/orders/send-reminder.ts';
@@ -46,6 +50,8 @@ const mapParams = (req: any, res: any, next: any) => {
 // Register API routes
 app.post('/api/auth/login', loginHandler);
 app.post('/api/auth/register', registerHandler);
+app.post('/api/auth/forgot-password', forgotPasswordHandler);
+app.post('/api/auth/reset-password', resetPasswordHandler);
 
 app.get('/api/customers/stats', customerStatsHandler);
 app.get('/api/customers', customersHandler);
@@ -62,6 +68,7 @@ app.post('/api/accounts', accountsHandler);
 app.get('/api/accounts/:id', mapParams, accountDetailHandler);
 app.put('/api/accounts/:id', mapParams, accountDetailHandler);
 app.delete('/api/accounts/:id', mapParams, accountDetailHandler);
+app.post('/api/accounts/:id/renew', mapParams, renewHandler);
 
 app.get('/api/orders', ordersHandler);
 app.get('/api/orders/:id', mapParams, ordersHandler);
@@ -105,5 +112,5 @@ app.listen(PORT, () => {
   console.log(`   - API Base: http://localhost:${PORT}/api`);
   console.log(`   - Mode: ${process.env.NODE_ENV || 'development'}`);
   console.log(`==================================================\n`);
-// Forced restart comment to apply override settings
+  // Forced restart comment to apply override settings
 });

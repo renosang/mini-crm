@@ -1,4 +1,3 @@
-// File: api/_models/User.ts
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
@@ -18,6 +17,19 @@ const UserSchema = new mongoose.Schema({
     enum: ['admin', 'staff'],
     default: 'staff',
   },
+  email: {
+    type: String,
+    sparse: true,
+  },
+  // Forgot password fields
+  resetCode: {
+    type: String,
+    select: false,
+  },
+  resetCodeExpires: {
+    type: Date,
+    select: false,
+  },
 });
 
 // Hash password trước khi lưu
@@ -31,7 +43,7 @@ UserSchema.pre('save', async function (next) {
 });
 
 // Thêm phương thức để so sánh password
-UserSchema.methods.comparePassword = async function (enteredPassword) {
+UserSchema.methods.comparePassword = async function (enteredPassword: string) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 

@@ -1,34 +1,56 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 /* :root (Biến màu)
    Dựa trên thiết kế ALTCRM của bạn
 */
 :root {
-  --primary-color: #0071E3;    /* Apple Blue */
+  --primary-color: #0071E3;
+  /* Apple Blue */
   --primary-hover: #0077ED;
-  --bg-color: #F5F5F7;        /* Apple Light Gray background */
-  --sidebar-bg: rgba(255, 255, 255, 0.8); /* Translucent Glassmorphism */
+  --bg-color: #F5F5F7;
+  /* Apple Light Gray background */
+  --sidebar-bg: rgba(255, 255, 255, 0.8);
+  /* Translucent Glassmorphism */
   --header-bg: rgba(255, 255, 255, 0.8);
   --widget-bg: rgba(255, 255, 255, 0.8);
-  --text-color: #1D1D1F;      /* Apple Jet Black */
-  --text-light: #86868B;      /* Apple Muted Gray */
-  --border-color: rgba(0, 0, 0, 0.05); /* Thin Apple subtle border */
-  --shadow: 0 8px 30px rgba(0, 0, 0, 0.04); /* Diffuse modern shadow */
-  --success-color: #34C759;   /* Apple Green */
-  --pending-color: #FF9500;   /* Apple Orange */
-  --processing-color: #AF52DE; /* Apple Purple */
-  --danger-color: #FF3B30;    /* Apple Red */
+  --text-color: #1D1D1F;
+  /* Apple Jet Black */
+  --text-light: #86868B;
+  /* Apple Muted Gray */
+  --border-color: rgba(0, 0, 0, 0.05);
+  /* Thin Apple subtle border */
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  /* Diffuse modern shadow */
+  --success-color: #34C759;
+  /* Apple Green */
+  --pending-color: #FF9500;
+  /* Apple Orange */
+  --processing-color: #AF52DE;
+  /* Apple Purple */
+  --danger-color: #FF3B30;
+  /* Apple Red */
 
   /* Bảng màu icon mới */
-  --icon-color-1: #0071E3; /* Blue */
-  --icon-color-2: #FF9500; /* Orange */
-  --icon-color-3: #FF3B30; /* Red */
-  --icon-color-4: #34C759; /* Green */
-  --icon-color-5: #AF52DE; /* Purple */
-  --icon-color-6: #FF453A; /* Coral */
-  --icon-color-7: #1D1D1F; /* Dark */
-  --icon-color-8: #BF5AF2; /* Lilac */
-  --icon-color-9: #5E5E62; /* Steel */
-  --icon-color-10: #8E8E93; /* Slate */
+  --icon-color-1: #0071E3;
+  /* Blue */
+  --icon-color-2: #FF9500;
+  /* Orange */
+  --icon-color-3: #FF3B30;
+  /* Red */
+  --icon-color-4: #34C759;
+  /* Green */
+  --icon-color-5: #AF52DE;
+  /* Purple */
+  --icon-color-6: #FF453A;
+  /* Coral */
+  --icon-color-7: #1D1D1F;
+  /* Dark */
+  --icon-color-8: #BF5AF2;
+  /* Lilac */
+  --icon-color-9: #5E5E62;
+  /* Steel */
+  --icon-color-10: #8E8E93;
+  /* Slate */
 }
 
 /* --- Reset cơ bản --- */
@@ -43,14 +65,20 @@ body {
     Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   background-color: var(--bg-color);
   color: var(--text-color);
-  font-weight: 400; /* Font mảnh hơn cho chữ thường */
+  font-weight: 400;
+  /* Font mảnh hơn cho chữ thường */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, h5 {
+h1,
+h2,
+h3,
+h4,
+h5 {
   color: var(--text-color);
-  font-weight: 600; /* In đậm vừa phải */
+  font-weight: 600;
+  /* In đậm vừa phải */
 }
 
 /* --- Bố cục chính (Layout) --- */
@@ -65,7 +93,7 @@ h1, h2, h3, h4, h5 {
   top: 0;
   left: 0;
   background: var(--sidebar-bg);
-  box-shadow: 0 0 2rem 0 rgba(136,152,170,.1);
+  box-shadow: 0 0 2rem 0 rgba(136, 152, 170, .1);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -106,7 +134,7 @@ h1, h2, h3, h4, h5 {
   top: 0;
   left: 0;
   background: var(--sidebar-bg);
-  box-shadow: 0 0 2rem 0 rgba(136,152,170,.1);
+  box-shadow: 0 0 2rem 0 rgba(136, 152, 170, .1);
   display: flex;
   flex-direction: column;
   z-index: 100;
@@ -114,11 +142,13 @@ h1, h2, h3, h4, h5 {
 }
 
 .sidebar-logo {
-  padding: 1.6rem 2.25rem; /* Điều chỉnh padding */
+  padding: 1.6rem 2.25rem;
+  /* Điều chỉnh padding */
   font-size: 1.5rem;
   font-weight: 700;
   text-align: left;
 }
+
 .sidebar-logo a {
   text-decoration: none;
   color: var(--primary-color);
@@ -130,53 +160,66 @@ h1, h2, h3, h4, h5 {
   padding: 0 1.25rem;
   overflow-y: auto;
   flex: 1;
-  
+
   /* Ẩn thanh cuộn */
-  scrollbar-width: none; /* Firefox */
+  scrollbar-width: none;
+  /* Firefox */
 }
+
 .sidebar-nav::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Edge */
+  display: none;
+  /* Chrome, Safari, Edge */
 }
 
 /* Kiểu cho mỗi mục menu (Gọn gàng hơn) */
 .nav-item {
   display: flex;
   align-items: center;
-  padding: 0.85rem 1rem; /* Padding mới gọn hơn */
-  margin-bottom: 0.35rem; /* Khoảng cách giữa các mục */
+  padding: 0.85rem 1rem;
+  /* Padding mới gọn hơn */
+  margin-bottom: 0.35rem;
+  /* Khoảng cách giữa các mục */
   text-decoration: none;
   color: var(--text-color);
   border-radius: 6px;
   font-weight: 500;
-  font-size: 0.925rem; /* Font chữ gọn hơn */
+  font-size: 0.925rem;
+  /* Font chữ gọn hơn */
   transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
 }
 
 /* === ICON CHUNG === */
 .nav-item svg {
-  margin-right: 1.15rem; /* Tăng khoảng cách icon và chữ */
-  font-size: 1.2rem; /* Kích thước icon chuẩn */
+  margin-right: 1.15rem;
+  /* Tăng khoảng cách icon và chữ */
+  font-size: 1.2rem;
+  /* Kích thước icon chuẩn */
   flex-shrink: 0;
-  stroke-width: 2.5; /* Làm nét icon đậm hơn một chút */
+  stroke-width: 2.5;
+  /* Làm nét icon đậm hơn một chút */
   transition: color 0.2s;
 }
 
 /* === HOVER STATE (Quan trọng) === */
 /* Khi hover, chữ và icon sẽ đổi sang màu primary */
 .nav-item:hover {
-  background-color: #F6F9FC; /* Màu nền xám nhạt khi hover */
+  background-color: #F6F9FC;
+  /* Màu nền xám nhạt khi hover */
   color: var(--primary-color);
 }
+
 .nav-item:hover svg {
-  color: var(--primary-color) !important; /* Luôn đổi màu khi hover */
+  color: var(--primary-color) !important;
+  /* Luôn đổi màu khi hover */
 }
 
 /* === ACTIVE STATE (Khi được chọn) === */
 .nav-item.active {
   background-color: var(--primary-color);
   color: white;
-  box-shadow: 0 4px 6px rgba(50,50,93,.11), 0 1px 3px rgba(0,0,0,.08);
+  box-shadow: 0 4px 6px rgba(50, 50, 93, .11), 0 1px 3px rgba(0, 0, 0, .08);
 }
+
 /* Khi active, icon luôn là màu trắng */
 .nav-item.active svg {
   color: white !important;
@@ -185,26 +228,40 @@ h1, h2, h3, h4, h5 {
 .nav-item[href="/"] svg {
   color: var(--primary-color);
 }
+
 .nav-item[href="/khach-hang"] svg {
-  color: var(--icon-color-4); /* Green */
+  color: var(--icon-color-4);
+  /* Green */
 }
+
 .nav-item[href="/ban-hang"] svg {
-  color: var(--icon-color-3); /* Red */
+  color: var(--icon-color-3);
+  /* Red */
 }
+
 .nav-item[href="/kho-tai-nguyen"] svg {
-  color: var(--icon-color-2); /* Orange */
+  color: var(--icon-color-2);
+  /* Orange */
 }
+
 .nav-item[href="/ban-quyen-ca-nhan"] svg {
-  color: var(--icon-color-8); /* Purple/Lilac */
+  color: var(--icon-color-8);
+  /* Purple/Lilac */
 }
+
 .nav-item[href="/gia-han"] svg {
-  color: var(--icon-color-6); /* Coral/Red */
+  color: var(--icon-color-6);
+  /* Coral/Red */
 }
+
 .nav-item[href="/nha-cung-cap"] svg {
-  color: var(--icon-color-1); /* Cyan/Blue */
+  color: var(--icon-color-1);
+  /* Cyan/Blue */
 }
+
 .nav-item[href="/cai-dat"] svg {
-  color: var(--icon-color-10); /* Slate/Grey */
+  color: var(--icon-color-10);
+  /* Slate/Grey */
 }
 
 /* --- Sidebar Category Header (Apple Style) --- */
@@ -225,37 +282,47 @@ h1, h2, h3, h4, h5 {
   width: 100%;
   cursor: pointer;
 }
+
 .nav-group-toggle .chevron {
   transition: transform 0.2s;
   color: var(--text-light);
 }
+
 .nav-group-toggle.open .chevron {
   transform: rotate(90deg);
 }
+
 .nav-group-toggle:hover .chevron {
   color: var(--primary-color);
 }
+
 .nav-item.active .chevron {
   color: white !important;
 }
 
 .sidebar-submenu {
-  padding-left: 2.85rem; /* Thụt lề sâu hơn 1 chút */
+  padding-left: 2.85rem;
+  /* Thụt lề sâu hơn 1 chút */
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.3s ease-out;
 }
+
 .sidebar-submenu.open {
   max-height: 500px;
 }
+
 .sidebar-submenu a {
   display: block;
-  padding: 0.7rem 0; /* Điều chỉnh padding */
+  padding: 0.7rem 0;
+  /* Điều chỉnh padding */
   text-decoration: none;
   color: var(--text-light);
   font-size: 0.9rem;
-  font-weight: 500; /* Đậm hơn 1 chút */
+  font-weight: 500;
+  /* Đậm hơn 1 chút */
 }
+
 .sidebar-submenu a:hover {
   color: var(--text-color);
 }
@@ -264,9 +331,11 @@ h1, h2, h3, h4, h5 {
 .dashboard-header {
   margin-bottom: 2rem;
 }
+
 .dashboard-header h1 {
   font-size: 1.75rem;
 }
+
 .dashboard-header p {
   font-size: 1rem;
   color: var(--text-light);
@@ -294,12 +363,14 @@ h1, h2, h3, h4, h5 {
   align-items: top;
   margin-bottom: 1rem;
 }
+
 .widget-header h3 {
   color: var(--text-light);
   font-size: 0.9rem;
   text-transform: uppercase;
   font-weight: 600;
 }
+
 .widget-icon {
   font-size: 1.25rem;
   color: var(--text-light);
@@ -311,10 +382,12 @@ h1, h2, h3, h4, h5 {
   color: var(--text-color);
   margin-bottom: 0.5rem;
 }
+
 .widget-body .change {
   font-size: 0.9rem;
   color: var(--success-color);
 }
+
 .widget-body .change.negative {
   color: var(--pending-color);
 }
@@ -322,10 +395,12 @@ h1, h2, h3, h4, h5 {
 /* Widgets 2 cột ở giữa */
 .widgets-grid-2 {
   display: grid;
-  grid-template-columns: 2fr 1fr; /* 2/3 và 1/3 */
+  grid-template-columns: 2fr 1fr;
+  /* 2/3 và 1/3 */
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
+
 .list-widget h3 {
   margin-bottom: 1.5rem;
   font-size: 1.1rem;
@@ -338,6 +413,7 @@ h1, h2, h3, h4, h5 {
   padding: 1rem 0;
   border-bottom: 1px solid var(--border-color);
 }
+
 .list-item:last-child {
   border-bottom: none;
 }
@@ -347,14 +423,17 @@ h1, h2, h3, h4, h5 {
   align-items: center;
   gap: 1rem;
 }
+
 .list-item-main svg {
   font-size: 1.5rem;
   color: var(--text-color);
 }
+
 .list-item-main-text h4 {
   font-size: 1rem;
   font-weight: 600;
 }
+
 .list-item-main-text p {
   font-size: 0.9rem;
   color: var(--text-light);
@@ -364,6 +443,7 @@ h1, h2, h3, h4, h5 {
   font-weight: 600;
   text-align: right;
 }
+
 .badge {
   padding: 0.25rem 0.75rem;
   border-radius: 1rem;
@@ -371,9 +451,11 @@ h1, h2, h3, h4, h5 {
   font-weight: 600;
   color: white;
 }
+
 .badge-success {
   background-color: var(--success-color);
 }
+
 .badge-pending {
   background-color: var(--pending-color);
 }
@@ -389,9 +471,11 @@ h1, h2, h3, h4, h5 {
   font-weight: 500;
   border-radius: 6px;
 }
+
 .quick-actions a:hover {
   background-color: var(--bg-color);
 }
+
 .quick-actions a svg {
   color: var(--primary-color);
   font-size: 1.25rem;
@@ -405,23 +489,28 @@ h1, h2, h3, h4, h5 {
   box-shadow: var(--shadow);
   border: 1px solid var(--border-color);
 }
+
 .alert-widget h3 {
   font-size: 1.1rem;
   margin-bottom: 1.5rem;
 }
+
 .alert-item {
   display: flex;
   align-items: center;
   gap: 1rem;
   margin-bottom: 1rem;
 }
+
 .alert-item svg {
   font-size: 1.25rem;
   color: var(--pending-color);
 }
+
 .alert-item p {
   font-size: 0.95rem;
 }
+
 .alert-item p strong {
   color: var(--text-color);
 }
@@ -469,7 +558,8 @@ h1, h2, h3, h4, h5 {
   font-size: 1rem;
 }
 
-.login-button, .logout-button {
+.login-button,
+.logout-button {
   width: 100%;
   padding: 0.9rem;
   border: none;
@@ -480,7 +570,7 @@ h1, h2, h3, h4, h5 {
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s;
-  box-shadow: 0 4px 6px rgba(50,50,93,.11), 0 1px 3px rgba(0,0,0,.08);
+  box-shadow: 0 4px 6px rgba(50, 50, 93, .11), 0 1px 3px rgba(0, 0, 0, .08);
 }
 
 /* --- CSS cho Bảng (Table) - NÂNG CẤP --- */
@@ -496,7 +586,8 @@ h1, h2, h3, h4, h5 {
   background-color: var(--widget-bg);
   box-shadow: var(--shadow);
   border-radius: 8px;
-  overflow: hidden; /* Quan trọng để giữ border-radius */
+  overflow: hidden;
+  /* Quan trọng để giữ border-radius */
 }
 
 .styled-table thead tr {
@@ -511,7 +602,8 @@ h1, h2, h3, h4, h5 {
 
 .styled-table th,
 .styled-table td {
-  padding: 1rem 1.25rem; /* Tăng padding */
+  padding: 1rem 1.25rem;
+  /* Tăng padding */
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -524,11 +616,13 @@ h1, h2, h3, h4, h5 {
 }
 
 .styled-table tbody tr:hover {
-  background-color: #F6F9FC; /* Màu hover nhẹ */
+  background-color: #F6F9FC;
+  /* Màu hover nhẹ */
 }
 
 .styled-table td:first-child {
-  font-weight: 600; /* Làm nổi bật cột đầu tiên (tên) */
+  font-weight: 600;
+  /* Làm nổi bật cột đầu tiên (tên) */
   color: var(--text-color);
 }
 
@@ -536,14 +630,17 @@ h1, h2, h3, h4, h5 {
   border: none;
   background: none;
   cursor: pointer;
-  font-size: 1.1rem; /* Kích thước icon vừa phải */
+  font-size: 1.1rem;
+  /* Kích thước icon vừa phải */
   margin-right: 12px;
   color: var(--text-light);
   transition: color 0.2s;
 }
+
 .action-buttons button:hover {
   color: var(--primary-color);
 }
+
 .action-buttons button.delete:hover {
   color: var(--pending-color);
 }
@@ -567,7 +664,9 @@ h1, h2, h3, h4, h5 {
 }
 
 @keyframes fadeIn {
-  to { opacity: 1; }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-content {
@@ -576,13 +675,15 @@ h1, h2, h3, h4, h5 {
   border-radius: 20px;
   width: 90%;
   max-width: 850px;
-  box-shadow: 0 30px 70px rgba(0,0,0,0.18), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.04);
   transform: scale(0.95) translateY(10px);
   animation: scaleIn 0.35s forwards cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes scaleIn {
-  to { transform: scale(1) translateY(0); }
+  to {
+    transform: scale(1) translateY(0);
+  }
 }
 
 .modal-header {
@@ -593,6 +694,7 @@ h1, h2, h3, h4, h5 {
   border-bottom: 1px solid #F2F2F7;
   margin-bottom: 1.75rem;
 }
+
 .modal-header h2 {
   margin: 0;
   font-size: 1.45rem;
@@ -600,6 +702,7 @@ h1, h2, h3, h4, h5 {
   letter-spacing: -0.02em;
   color: #1D1D1F;
 }
+
 .modal-close-btn {
   background: none;
   border: none;
@@ -613,7 +716,8 @@ h1, h2, h3, h4, h5 {
   flex-shrink: 0;
   position: relative;
   padding: 0;
-  color: transparent;           /* Ẩn ký tự &times; gốc */
+  color: transparent;
+  /* Ẩn ký tự &times; gốc */
   font-size: 0;
   transition: background 0.2s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -629,17 +733,25 @@ h1, h2, h3, h4, h5 {
   border-radius: 2px;
   transition: background-color 0.2s ease;
 }
-.modal-close-btn::before { transform: rotate(45deg);  }
-.modal-close-btn::after  { transform: rotate(-45deg); }
+
+.modal-close-btn::before {
+  transform: rotate(45deg);
+}
+
+.modal-close-btn::after {
+  transform: rotate(-45deg);
+}
 
 .modal-close-btn:hover {
   background: rgba(0, 0, 0, 0.07);
   transform: rotate(90deg) scale(1.1);
 }
+
 .modal-close-btn:hover::before,
 .modal-close-btn:hover::after {
   background-color: #1D1D1F;
 }
+
 .modal-close-btn:active {
   transform: rotate(90deg) scale(0.88);
   background: rgba(0, 0, 0, 0.12);
@@ -659,10 +771,12 @@ h1, h2, h3, h4, h5 {
   flex-shrink: 0;
   position: relative;
   padding: 0;
-  color: transparent;       /* Ẩn &times; gốc */
+  color: transparent;
+  /* Ẩn &times; gốc */
   font-size: 0;
   transition: background 0.2s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+
 .close-button::before,
 .close-button::after {
   content: '';
@@ -673,16 +787,25 @@ h1, h2, h3, h4, h5 {
   border-radius: 2px;
   transition: background-color 0.2s ease;
 }
-.close-button::before { transform: rotate(45deg);  }
-.close-button::after  { transform: rotate(-45deg); }
+
+.close-button::before {
+  transform: rotate(45deg);
+}
+
+.close-button::after {
+  transform: rotate(-45deg);
+}
+
 .close-button:hover {
   background: rgba(0, 0, 0, 0.07);
   transform: rotate(90deg) scale(1.1);
 }
+
 .close-button:hover::before,
 .close-button:hover::after {
   background-color: #1D1D1F;
 }
+
 .close-button:active {
   transform: rotate(90deg) scale(0.88);
   background: rgba(0, 0, 0, 0.12);
@@ -691,6 +814,7 @@ h1, h2, h3, h4, h5 {
 .modal-body .form-group {
   margin-bottom: 1.5rem;
 }
+
 .modal-body .form-group label {
   font-weight: 600;
   display: block;
@@ -701,6 +825,7 @@ h1, h2, h3, h4, h5 {
   text-transform: uppercase;
   transition: color 0.2s ease;
 }
+
 .modal-body .form-group input,
 .modal-body .form-group textarea {
   width: 100%;
@@ -714,11 +839,13 @@ h1, h2, h3, h4, h5 {
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
 }
+
 .modal-body .form-group input:hover,
 .modal-body .form-group textarea:hover {
   border-color: #C7C7CC;
   background-color: #F4F4F6;
 }
+
 .modal-body .form-group input:focus,
 .modal-body .form-group textarea:focus {
   outline: none;
@@ -727,6 +854,7 @@ h1, h2, h3, h4, h5 {
   box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.12), 0 4px 12px rgba(0, 113, 227, 0.05);
   transform: translateY(-1px);
 }
+
 .modal-body .form-group:focus-within label {
   color: var(--primary-color);
 }
@@ -737,8 +865,10 @@ h1, h2, h3, h4, h5 {
   padding-top: 1.5rem;
   border-top: 1px solid var(--border-color);
 }
+
 .modal-footer button {
-  padding: 0.8rem 1.5rem; /* Nút to, rõ ràng hơn */
+  padding: 0.8rem 1.5rem;
+  /* Nút to, rõ ràng hơn */
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -747,22 +877,26 @@ h1, h2, h3, h4, h5 {
   margin-left: 0.75rem;
   transition: all 0.2s;
 }
+
 .modal-footer .btn-cancel {
   background-color: var(--bg-color);
   color: var(--text-light);
   border: 1px solid var(--border-color);
 }
+
 .modal-footer .btn-cancel:hover {
   background-color: #E9ECEF;
 }
+
 .modal-footer .btn-save {
   background-color: var(--primary-color);
   color: white;
-  box-shadow: 0 4px 6px rgba(50,50,93,.11), 0 1px 3px rgba(0,0,0,.08);
+  box-shadow: 0 4px 6px rgba(50, 50, 93, .11), 0 1px 3px rgba(0, 0, 0, .08);
 }
+
 .modal-footer .btn-save:hover {
   transform: translateY(-2px);
-  box-shadow: 0 7px 14px rgba(50,50,93,.1), 0 3px 6px rgba(0,0,0,.08);
+  box-shadow: 0 7px 14px rgba(50, 50, 93, .1), 0 3px 6px rgba(0, 0, 0, .08);
 }
 
 /* --- CSS cho Ô Tìm Kiếm (MỚI) --- */
@@ -772,7 +906,8 @@ h1, h2, h3, h4, h5 {
 
 .search-input {
   width: 100%;
-  max-width: 400px; /* Giới hạn chiều rộng */
+  max-width: 400px;
+  /* Giới hạn chiều rộng */
   padding: 0.85rem 1.25rem;
   font-size: 0.95rem;
   border: 1px solid var(--border-color);
@@ -790,20 +925,28 @@ h1, h2, h3, h4, h5 {
 
 /* --- Tinh chỉnh Bảng (Table) với font mới --- */
 .styled-table {
-  font-weight: 400; /* Chữ trong bảng mảnh */
+  font-weight: 400;
+  /* Chữ trong bảng mảnh */
 }
 
 .styled-table th {
-  font-weight: 600; /* Tiêu đề bảng đậm */
+  font-weight: 600;
+  /* Tiêu đề bảng đậm */
 }
 
 /* --- Tinh chỉnh Widget & Button (Mềm hơn) --- */
-.widget, .modal-content, .btn-save, .login-button, .sidebar-nav a {
-  transition: all 0.2s ease-out; /* Hiệu ứng chuyển động mềm */
+.widget,
+.modal-content,
+.btn-save,
+.login-button,
+.sidebar-nav a {
+  transition: all 0.2s ease-out;
+  /* Hiệu ứng chuyển động mềm */
 }
 
 .widget:hover {
-  box-shadow: 0 10px 30px rgba(0,0,0,0.07); /* Đổ bóng đẹp hơn khi hover */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+  /* Đổ bóng đẹp hơn khi hover */
   transform: translateY(-3px);
 }
 
@@ -812,19 +955,22 @@ h1, h2, h3, h4, h5 {
 /* 1. Tiêu đề Gradient */
 .gradient-title {
   font-weight: 700;
-  font-size: 2.25rem; /* To hơn cho nổi bật */
+  font-size: 2.25rem;
+  /* To hơn cho nổi bật */
   background: linear-gradient(90deg, var(--primary-color), #a07aff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-fill-color: transparent;
-  padding-bottom: 5px; /* Thêm chút không gian */
+  padding-bottom: 5px;
+  /* Thêm chút không gian */
 }
 
 /* 2. Lưới Thẻ Thống Kê (Stat Cards) */
 .stats-grid-3 {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 cột */
+  grid-template-columns: repeat(3, 1fr);
+  /* 3 cột */
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
@@ -840,9 +986,10 @@ h1, h2, h3, h4, h5 {
   gap: 1.25rem;
   transition: all 0.2s ease-out;
 }
+
 .stat-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.07);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
 }
 
 .stat-card-icon {
@@ -853,17 +1000,23 @@ h1, h2, h3, h4, h5 {
   align-items: center;
   justify-content: center;
 }
+
 /* Màu riêng cho icon */
 .stat-card-icon.icon-total {
-  color: #5E72E4; /* Primary */
+  color: #5E72E4;
+  /* Primary */
   background-color: #F0F2FF;
 }
+
 .stat-card-icon.icon-new {
-  color: #2DCE89; /* Green */
+  color: #2DCE89;
+  /* Green */
   background-color: #EAFBF4;
 }
+
 .stat-card-icon.icon-source {
-  color: #F3A41A; /* Orange */
+  color: #F3A41A;
+  /* Orange */
   background-color: #FEF6E8;
 }
 
@@ -874,16 +1027,19 @@ h1, h2, h3, h4, h5 {
   text-transform: uppercase;
   margin-bottom: 0.25rem;
 }
+
 .stat-card-info p {
   font-size: 1.75rem;
   font-weight: 600;
   color: var(--text-color);
 }
+
 .stat-card-info .source-list {
   font-size: 0.9rem;
   color: var(--text-color);
   font-weight: 500;
 }
+
 .stat-card-info .source-list span {
   font-weight: 400;
   color: var(--text-light);
@@ -891,7 +1047,8 @@ h1, h2, h3, h4, h5 {
 
 /* 3. Tiêu đề Bảng (Table Header) Nổi bật - Apple Design */
 .styled-table thead tr {
-  background-color: rgba(0, 0, 0, 0.02) !important; /* Trong suốt nhẹ */
+  background-color: rgba(0, 0, 0, 0.02) !important;
+  /* Trong suốt nhẹ */
   color: var(--text-light) !important;
   font-size: 0.85rem !important;
   font-weight: 600 !important;
@@ -899,6 +1056,7 @@ h1, h2, h3, h4, h5 {
   letter-spacing: 0.5px !important;
   border-radius: 0;
 }
+
 .styled-table th {
   padding: 1.1rem 1.25rem !important;
   border-bottom: 2px solid var(--border-color) !important;
@@ -914,27 +1072,32 @@ h1, h2, h3, h4, h5 {
   text-align: center;
   min-width: 90px;
 }
+
 /* Thêm màu cho các nguồn phổ biến (Soft pastel style) */
-.source-facebook { 
-  background-color: #E8F4FF !important; 
+.source-facebook {
+  background-color: #E8F4FF !important;
   color: #1877F2 !important;
   border: 1px solid rgba(24, 119, 242, 0.1);
 }
-.source-zalo { 
-  background-color: #E5F2FF !important; 
+
+.source-zalo {
+  background-color: #E5F2FF !important;
   color: #0068FF !important;
   border: 1px solid rgba(0, 104, 255, 0.1);
 }
-.source-telegram { 
-  background-color: #EBF7FF !important; 
+
+.source-telegram {
+  background-color: #EBF7FF !important;
   color: #2AABEE !important;
   border: 1px solid rgba(42, 171, 238, 0.1);
 }
-.source-gioi-thieu { 
-  background-color: #EAFBF4 !important; 
+
+.source-gioi-thieu {
+  background-color: #EAFBF4 !important;
   color: #34C759 !important;
   border: 1px solid rgba(52, 199, 89, 0.1);
 }
+
 .source-khac {
   background-color: #F5F5F7 !important;
   color: var(--text-light) !important;
@@ -951,21 +1114,25 @@ h1, h2, h3, h4, h5 {
   text-align: center;
   min-width: 90px;
 }
+
 .status-vip {
   background-color: #FFF8E6 !important;
   color: #FF9500 !important;
   border: 1px solid rgba(255, 149, 0, 0.15);
 }
+
 .status-tiem-nang {
   background-color: #F8F2FF !important;
   color: #AF52DE !important;
   border: 1px solid rgba(175, 82, 222, 0.15);
 }
+
 .status-binh-thuong {
   background-color: #F5F5F7 !important;
   color: #5E5E62 !important;
   border: 1px solid var(--border-color);
 }
+
 .status-canh-bao {
   background-color: #FFEBEA !important;
   color: #FF3B30 !important;
@@ -993,10 +1160,12 @@ h1, h2, h3, h4, h5 {
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
 }
+
 .modal-body .form-group select:hover {
   border-color: #C7C7CC;
   background-color: #F4F4F6;
 }
+
 .modal-body .form-group select:focus {
   outline: none;
   background-color: #FFFFFF;
@@ -1013,6 +1182,7 @@ h1, h2, h3, h4, h5 {
   color: var(--primary-color);
   text-decoration: none;
 }
+
 .customer-link:hover {
   text-decoration: underline;
 }
@@ -1021,39 +1191,48 @@ h1, h2, h3, h4, h5 {
 .customer-detail-header {
   margin-bottom: 2rem;
 }
+
 .customer-detail-grid {
   display: grid;
-  grid-template-columns: 1fr 2fr; /* 1/3 cho info, 2/3 cho stats/tabs */
+  grid-template-columns: 1fr 2fr;
+  /* 1/3 cho info, 2/3 cho stats/tabs */
   gap: 1.5rem;
 }
+
 .customer-info-card {
   background: var(--widget-bg);
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: var(--shadow);
   border: 1px solid var(--border-color);
-  align-self: flex-start; /* Dính ở trên */
+  align-self: flex-start;
+  /* Dính ở trên */
 }
+
 .customer-info-card h2 {
   font-size: 1.5rem;
   margin-bottom: 1.5rem;
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 1rem;
 }
+
 .customer-info-card .info-item {
   margin-bottom: 1rem;
 }
+
 .customer-info-card .info-item label {
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-light);
   display: block;
 }
+
 .customer-info-card .info-item p {
   font-size: 1rem;
   color: var(--text-color);
   font-weight: 500;
-  white-space: pre-wrap; /* Để hiển thị ghi chú xuống dòng */
+  white-space: pre-wrap;
+  /* Để hiển thị ghi chú xuống dòng */
 }
 
 /* Thẻ thống kê nhanh */
@@ -1063,6 +1242,7 @@ h1, h2, h3, h4, h5 {
   gap: 1.5rem;
   margin-bottom: 1.5rem;
 }
+
 /* (Chúng ta có thể tái sử dụng .stat-card từ trang KhachHang) */
 
 /* Hệ thống Tab */
@@ -1071,13 +1251,16 @@ h1, h2, h3, h4, h5 {
   border-radius: 12px;
   box-shadow: var(--shadow);
   border: 1px solid var(--border-color);
-  overflow: hidden; /* Quan trọng */
+  overflow: hidden;
+  /* Quan trọng */
 }
+
 .tab-nav {
   display: flex;
   background-color: #F6F9FC;
   border-bottom: 1px solid var(--border-color);
 }
+
 .tab-nav button {
   padding: 1rem 1.5rem;
   font-size: 1rem;
@@ -1089,31 +1272,38 @@ h1, h2, h3, h4, h5 {
   transition: all 0.2s;
   border-bottom: 3px solid transparent;
 }
+
 .tab-nav button:hover {
   color: var(--text-color);
 }
+
 .tab-nav button.active {
   color: var(--primary-color);
   border-bottom-color: var(--primary-color);
   background-color: var(--widget-bg);
 }
+
 .tab-content {
   padding: 1.5rem;
 }
+
 /* Ẩn tab content không active */
 .tab-pane {
   display: none;
 }
+
 .tab-pane.active {
   display: block;
 }
 
 /* --- Nút Đăng xuất ở Sidebar (MỚI) --- */
 .sidebar-footer {
-  margin-top: auto; /* Đẩy xuống dưới cùng */
+  margin-top: auto;
+  /* Đẩy xuống dưới cùng */
   padding: 1.25rem;
   border-top: 1px solid var(--border-color);
 }
+
 .logout-button-sidebar {
   display: flex;
   align-items: center;
@@ -1122,18 +1312,22 @@ h1, h2, h3, h4, h5 {
   padding: 0.85rem 1rem;
   border: none;
   border-radius: 6px;
-  background-color: #F6F9FC; /* Nền xám nhạt */
-  color: var(--pending-color); /* Màu đỏ cam */
+  background-color: #F6F9FC;
+  /* Nền xám nhạt */
+  color: var(--pending-color);
+  /* Màu đỏ cam */
   font-size: 0.925rem;
   font-weight: 600;
   font-family: 'Inter', sans-serif;
   cursor: pointer;
   transition: all 0.2s;
 }
+
 .logout-button-sidebar svg {
   font-size: 1.2rem;
   stroke-width: 2.5;
 }
+
 .logout-button-sidebar:hover {
   background-color: var(--pending-color);
   color: white;
@@ -1148,7 +1342,7 @@ h1, h2, h3, h4, h5 {
   flex-wrap: wrap;
   gap: 1.5rem;
   /* Đây là phần "kéo lên" - nó thay thế Header cũ */
-  height: 70px; 
+  height: 70px;
   margin-bottom: 2rem;
   /* (Giữ lại CSS cho .dashboard-header nếu bạn muốn) */
 }
@@ -1169,6 +1363,7 @@ h1, h2, h3, h4, h5 {
   font-family: 'Inter', sans-serif;
   transition: all 0.2s;
 }
+
 .search-bar-container input:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(94, 114, 228, 0.2);
@@ -1192,12 +1387,12 @@ h1, h2, h3, h4, h5 {
   text-decoration: none;
   font-size: 0.9rem;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .mmo-icon-btn:hover {
   transform: translateY(-2px) scale(1.08);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .mmo-facebook {
@@ -1205,20 +1400,23 @@ h1, h2, h3, h4, h5 {
   color: #1877F2;
   border: 1px solid rgba(24, 119, 242, 0.15);
 }
+
 .mmo-telegram {
   background-color: #EBF7FF;
   color: #2AABEE;
   border: 1px solid rgba(42, 171, 238, 0.15);
 }
+
 .mmo-zalo {
   background-color: #E5F2FF;
   color: #0068FF;
   border: 1px solid rgba(0, 104, 255, 0.15);
 }
+
 .mmo-empty {
   background-color: #F5F5F7;
   color: #C2C2C7;
-  border: 1px solid rgba(0,0,0,0.04);
+  border: 1px solid rgba(0, 0, 0, 0.04);
   cursor: not-allowed;
 }
 
@@ -1261,7 +1459,13 @@ h1, h2, h3, h4, h5 {
 }
 
 /* Hiệu ứng Scale down khi click nút */
-.btn-save:active, .login-button:active, .mmo-icon-btn:active, .btn-primary:active, .btn-secondary:active, .btn-cancel:active, .btn-danger:active {
+.btn-save:active,
+.login-button:active,
+.mmo-icon-btn:active,
+.btn-primary:active,
+.btn-secondary:active,
+.btn-cancel:active,
+.btn-danger:active {
   transform: scale(0.96);
   transition: transform 0.1s;
 }
@@ -1271,7 +1475,16 @@ h1, h2, h3, h4, h5 {
    ========================================================================== */
 
 /* Nút cơ bản (Base Button Style) */
-.btn, .login-button, .logout-button, .btn-save, .btn-cancel, .btn-primary, .btn-secondary, .btn-danger, .delete-button, .edit-button {
+.btn,
+.login-button,
+.logout-button,
+.btn-save,
+.btn-cancel,
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.delete-button,
+.edit-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1279,7 +1492,8 @@ h1, h2, h3, h4, h5 {
   padding: 0.65rem 1.25rem;
   font-size: 0.9rem;
   font-weight: 600;
-  border-radius: 8px; /* Bo góc Apple tiêu chuẩn */
+  border-radius: 8px;
+  /* Bo góc Apple tiêu chuẩn */
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: 'Inter', sans-serif;
@@ -1289,49 +1503,67 @@ h1, h2, h3, h4, h5 {
 }
 
 /* Nút chính (Primary Action Button - Apple Blue) */
-.btn-primary, .login-button, .btn-save {
+.btn-primary,
+.login-button,
+.btn-save {
   background-color: var(--primary-color) !important;
   color: #FFFFFF !important;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
 }
-.btn-primary:hover, .login-button:hover, .btn-save:hover {
+
+.btn-primary:hover,
+.login-button:hover,
+.btn-save:hover {
   background-color: var(--primary-hover) !important;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 113, 227, 0.2) !important;
 }
-.btn-primary:active, .login-button:active, .btn-save:active {
+
+.btn-primary:active,
+.login-button:active,
+.btn-save:active {
   transform: scale(0.97);
 }
 
 /* Nút phụ / Hủy bỏ (Secondary Button - Apple Soft Gray) */
-.btn-secondary, .btn-cancel {
+.btn-secondary,
+.btn-cancel {
   background-color: #F5F5F7 !important;
   color: #1D1D1F !important;
   border: 1px solid rgba(0, 0, 0, 0.08) !important;
   font-weight: 500 !important;
   box-shadow: none !important;
 }
-.btn-secondary:hover, .btn-cancel:hover {
+
+.btn-secondary:hover,
+.btn-cancel:hover {
   background-color: #E8E8ED !important;
   color: var(--primary-color) !important;
   border-color: rgba(0, 113, 227, 0.15) !important;
 }
-.btn-secondary:active, .btn-cancel:active {
+
+.btn-secondary:active,
+.btn-cancel:active {
   transform: scale(0.97);
 }
 
 /* Nút nguy hiểm / Xóa (Danger Button - Apple Red) */
-.btn-danger, .delete-button {
+.btn-danger,
+.delete-button {
   background-color: var(--danger-color) !important;
   color: #FFFFFF !important;
   box-shadow: 0 1px 2px rgba(255, 59, 48, 0.1) !important;
 }
-.btn-danger:hover, .delete-button:hover {
+
+.btn-danger:hover,
+.delete-button:hover {
   background-color: #E0352A !important;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(255, 59, 48, 0.2) !important;
 }
-.btn-danger:active, .delete-button:active {
+
+.btn-danger:active,
+.delete-button:active {
   transform: scale(0.97);
 }
 
@@ -1344,7 +1576,10 @@ h1, h2, h3, h4, h5 {
 /* ==========================================================================
    UNIFIED TABLE ACTION BUTTONS (MICRO CAPSULES)
    ========================================================================== */
-.action-buttons button, .btn-edit-sm, .btn-delete-sm, .btn-action-sm {
+.action-buttons button,
+.btn-edit-sm,
+.btn-delete-sm,
+.btn-action-sm {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -1360,30 +1595,40 @@ h1, h2, h3, h4, h5 {
 }
 
 /* Nút Sửa Nhỏ (Light Blue / Blue) */
-.action-buttons button, .btn-edit-sm {
+.action-buttons button,
+.btn-edit-sm {
   background-color: #E1F5FE !important;
   color: #0288D1 !important;
 }
-.action-buttons button:hover, .btn-edit-sm:hover {
+
+.action-buttons button:hover,
+.btn-edit-sm:hover {
   background-color: #0288D1 !important;
   color: #FFFFFF !important;
   transform: translateY(-1px);
 }
-.action-buttons button:active, .btn-edit-sm:active {
+
+.action-buttons button:active,
+.btn-edit-sm:active {
   transform: scale(0.92);
 }
 
 /* Nút Xóa Nhỏ (Light Red / Red) */
-.action-buttons button.delete, .btn-delete-sm {
+.action-buttons button.delete,
+.btn-delete-sm {
   background-color: #FFEBEA !important;
   color: #FF3B30 !important;
 }
-.action-buttons button.delete:hover, .btn-delete-sm:hover {
+
+.action-buttons button.delete:hover,
+.btn-delete-sm:hover {
   background-color: #FF3B30 !important;
   color: #FFFFFF !important;
   transform: translateY(-1px);
 }
-.action-buttons button.delete:active, .btn-delete-sm:active {
+
+.action-buttons button.delete:active,
+.btn-delete-sm:active {
   transform: scale(0.92);
 }
 
@@ -1393,12 +1638,14 @@ h1, h2, h3, h4, h5 {
   color: #1D1D1F !important;
   border: 1px solid rgba(0, 0, 0, 0.05) !important;
 }
+
 .btn-action-sm:hover {
   background-color: var(--primary-color) !important;
   color: #FFFFFF !important;
   border-color: var(--primary-color) !important;
   transform: translateY(-1px);
 }
+
 .btn-action-sm:active {
   transform: scale(0.92);
 }
@@ -1411,11 +1658,13 @@ h1, h2, h3, h4, h5 {
   grid-template-columns: repeat(4, 1fr) !important;
   gap: 1.25rem !important;
 }
+
 @media (max-width: 1024px) {
   .stats-grid-4 {
     grid-template-columns: repeat(2, 1fr) !important;
   }
 }
+
 @media (max-width: 600px) {
   .stats-grid-4 {
     grid-template-columns: 1fr !important;
@@ -1444,11 +1693,13 @@ h1, h2, h3, h4, h5 {
   box-shadow: none !important;
   margin-right: 6px !important;
 }
+
 .btn-renew-action:hover {
   background-color: #0288D1 !important;
   color: #FFFFFF !important;
   transform: translateY(-1px);
 }
+
 .btn-renew-action:active {
   transform: scale(0.96);
 }
@@ -1471,11 +1722,13 @@ h1, h2, h3, h4, h5 {
   width: auto !important;
   box-shadow: 0 2px 4px rgba(0, 113, 227, 0.15) !important;
 }
+
 .btn-remind-action:hover {
   background-color: #005BB5 !important;
   box-shadow: 0 4px 8px rgba(0, 113, 227, 0.25) !important;
   transform: translateY(-1px);
 }
+
 .btn-remind-action:active {
   transform: scale(0.96);
 }
@@ -1488,11 +1741,13 @@ h1, h2, h3, h4, h5 {
   grid-template-columns: repeat(4, 1fr);
   gap: 1.25rem;
 }
+
 @media (max-width: 1024px) {
   .quick-actions-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
 @media (max-width: 600px) {
   .quick-actions-grid {
     grid-template-columns: 1fr;
@@ -1512,12 +1767,14 @@ h1, h2, h3, h4, h5 {
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.01);
 }
+
 .quick-action-card:hover {
   transform: translateY(-4px);
   background-color: #FFFFFF;
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05);
   border-color: rgba(0, 113, 227, 0.3);
 }
+
 .quick-action-card:hover h4 {
   color: var(--primary-color);
 }
@@ -1528,6 +1785,7 @@ h1, h2, h3, h4, h5 {
   gap: 1.5rem;
   margin-top: 1.5rem;
 }
+
 @media (max-width: 1100px) {
   .dashboard-split-grid {
     grid-template-columns: 1fr;
@@ -1554,6 +1812,7 @@ h1, h2, h3, h4, h5 {
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 0.75rem;
 }
+
 .dashboard-section-header h2 {
   font-size: 1.2rem;
   font-weight: 700;
@@ -1569,6 +1828,7 @@ h1, h2, h3, h4, h5 {
   text-decoration: none;
   transition: opacity 0.2s;
 }
+
 .dashboard-view-all:hover {
   opacity: 0.8;
 }
@@ -1576,17 +1836,19 @@ h1, h2, h3, h4, h5 {
 .stat-card.widget {
   padding: 1.5rem;
   border-radius: 20px;
-  border: 1px solid rgba(0,0,0,0.02);
+  border: 1px solid rgba(0, 0, 0, 0.02);
   display: flex;
   align-items: center;
   gap: 1.25rem;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.01);
 }
+
 .stat-card.widget:hover {
   transform: translateY(-5px);
-  box-shadow: 0 15px 30px rgba(0,0,0,0.06);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.06);
 }
+
 .stat-card-icon {
   width: 52px;
   height: 52px;
@@ -1596,16 +1858,639 @@ h1, h2, h3, h4, h5 {
   justify-content: center;
   font-size: 1.5rem;
   flex-shrink: 0;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
+
 .stat-card-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
+
 .stat-card-info h3 {
   font-size: 0.85rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+/* ==========================================================================
+   REDESIGNED LOGIN PAGE (Apple-Inspired Modern)
+   ========================================================================== */
+.login-page {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-image: url('/src/assets/login-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow-y: auto;
+  padding: 2rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.login-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(30, 27, 75, 0.85) 0%, rgba(76, 29, 149, 0.75) 50%, rgba(109, 40, 217, 0.7) 100%);
+  z-index: 1;
+}
+
+.login-card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 400px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(25px) saturate(130%);
+  -webkit-backdrop-filter: blur(25px) saturate(130%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  padding: 2.5rem 2.25rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-logo-section {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.login-logo-img {
+  width: auto;
+  height: 56px;
+  margin-bottom: 0.75rem;
+  object-fit: contain;
+}
+
+.login-logo-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 18px;
+  color: white;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.login-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.3rem 0;
+  letter-spacing: -0.02em;
+}
+
+.login-subtitle {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0;
+  font-weight: 400;
+}
+
+.login-form-elegant {
+  margin-bottom: 0.5rem;
+}
+
+.login-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px;
+  color: #fca5a5;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 1.25rem;
+  animation: shakeError 0.4s ease-out;
+}
+
+@keyframes shakeError {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-6px);
+  }
+
+  40% {
+    transform: translateX(6px);
+  }
+
+  60% {
+    transform: translateX(-4px);
+  }
+
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+.login-field {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  width: 100%;
+}
+
+.login-label {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: #6d28d9;
+  padding: 4px 12px;
+  border-radius: 10px;
+  margin-bottom: -10px;
+  margin-left: 1.25rem;
+  position: relative;
+  z-index: 10;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(109, 40, 217, 0.3);
+  text-transform: none;
+}
+
+.login-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.login-input-wrapper .login-input-icon {
+  position: absolute;
+  right: 18px;
+  left: auto;
+  color: rgba(255, 255, 255, 0.75);
+  z-index: 2;
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.login-input-wrapper:focus-within .login-input-icon {
+  color: #ffffff;
+}
+
+.login-input-wrapper input {
+  width: 100%;
+  padding: 0.9rem 3.25rem 0.9rem 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 30px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+  transition: all 0.25s ease;
+  outline: none;
+}
+
+.login-input-wrapper input:hover {
+  border-color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.login-input-wrapper input:focus {
+  border-color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.15);
+}
+
+.login-input-wrapper input::placeholder {
+  color: #ffffff;
+  opacity: 0.6;
+}
+
+.login-input-wrapper input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-input-wrapper input:-webkit-autofill {
+  -webkit-text-fill-color: #ffffff !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.login-pwd-toggle {
+  position: absolute;
+  right: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 2;
+  padding: 0;
+}
+
+.login-pwd-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.login-pwd-toggle:active {
+  transform: scale(0.92);
+}
+
+.login-options-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.login-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  user-select: none;
+}
+
+.login-checkbox-label input[type="checkbox"] {
+  display: none;
+}
+
+.login-checkbox-custom {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.login-checkbox-custom::after {
+  content: '';
+  width: 4px;
+  height: 8px;
+  border: solid transparent;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) scale(0);
+  opacity: 0;
+  transition: all 0.15s ease;
+  position: absolute;
+  top: 1px;
+}
+
+.login-checkbox-label input:checked+.login-checkbox-custom {
+  background: #ffffff;
+  border-color: #ffffff;
+}
+
+.login-checkbox-label input:checked+.login-checkbox-custom::after {
+  opacity: 1;
+  transform: rotate(45deg) scale(1);
+  border-color: #6d28d9;
+}
+
+.login-checkbox-label input:disabled+.login-checkbox-custom {
+  opacity: 0.5;
+}
+
+.login-forgot-btn {
+  background: none;
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  padding: 0.25rem 0;
+  transition: opacity 0.2s ease;
+  font-family: 'Inter', sans-serif;
+}
+
+.login-forgot-btn:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.login-forgot-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.login-submit-btn {
+  width: 100%;
+  padding: 0.9rem;
+  border: none;
+  border-radius: 30px;
+  background: #ffffff;
+  color: #1D1D1F;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+.login-submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(255, 255, 255, 0.25);
+  background: #f0f0f0;
+}
+
+.login-submit-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.login-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.login-submit-btn.loading {
+  background: #e0e0e0;
+  cursor: wait;
+}
+
+.spin-animation {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.login-keyboard-hint {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.login-keyboard-hint kbd {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.75rem;
+  font-family: 'SF Mono', 'Inter', monospace;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  color: #ffffff;
+}
+
+.login-footer {
+  text-align: center;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.login-footer p {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
+}
+
+/* ===== FORGOT PASSWORD MODAL ===== */
+.login-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 113, 227, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+  animation: fadeIn 0.25s ease-out;
+  padding: 1.5rem;
+}
+
+.login-modal-content {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  background: rgba(15, 14, 28, 0.85);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(0, 113, 227, 0.3);
+  border-radius: 16px;
+  padding: 1.75rem 1.5rem;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+  animation: modalSlideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  max-height: 90vh;
+  overflow-y: auto;
+  color: #ffffff;
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.login-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.login-modal-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  transform: rotate(90deg);
+}
+
+.fp-step {
+  text-align: center;
+}
+
+.fp-icon-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+}
+
+.fp-icon-warning {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+}
+
+.fp-step h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.5rem 0;
+}
+
+.fp-desc {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+  margin: 0 0 1.5rem 0;
+}
+
+.fp-form {
+  text-align: left;
+}
+
+.fp-form .login-field {
+  margin-bottom: 1rem;
+}
+
+.fp-form .login-submit-btn {
+  margin-top: 0.5rem;
+}
+
+.fp-error {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 0.85rem;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 10px;
+  color: #fca5a5;
+  font-size: 0.825rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.fp-success {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 0.85rem;
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 10px;
+  color: #a7f3d0;
+  font-size: 0.825rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.fp-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 1rem;
+  background: none;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.fp-back-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.fp-step-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fp-step-success .login-submit-btn {
+  max-width: 240px;
+}
+
+/* ==========================================================================
+   RESPONSIVE LOGIN
+   ========================================================================== */
+@media (max-width: 768px) {
+  .login-page {
+    padding: 0;
+  }
+
+  .login-frame {
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  .login-card {
+    padding: 2rem 1.5rem;
+    border-radius: 20px;
+    margin: 1rem;
+    max-width: 360px;
+  }
+
+  .login-title {
+    font-size: 1.5rem;
+  }
+
+  .login-logo-icon {
+    width: 50px;
+    height: 50px;
+  }
+
+  .login-modal-content {
+    padding: 1.75rem 1.25rem;
+  }
 }

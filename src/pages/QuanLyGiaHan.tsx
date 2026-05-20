@@ -32,6 +32,8 @@ interface IAccount {
   status: 'available' | 'sold' | 'expired' | 'banned';
   valid_until?: string;
   customer_id?: ICustomer | null;
+  total_slots?: number;
+  used_slots?: number;
   slots_assigned?: Array<{
     customer_id?: ICustomer;
     assigned_email?: string;
@@ -76,6 +78,10 @@ const QuanLyGiaHan: React.FC = () => {
   const [selectedSub, setSelectedSub] = useState<IFlattenedSub | null>(null);
   const [isRenewModalOpen, setIsRenewModalOpen] = useState<boolean>(false);
   const [newExpiryDate, setNewExpiryDate] = useState<string>('');
+  const [renewStep, setRenewStep] = useState<'form' | 'confirm'>('form');
+  const [renewalFee, setRenewalFee] = useState<number>(0);
+  const [renewalNotes, setRenewalNotes] = useState<string>('');
+  const [isRenewing, setIsRenewing] = useState<boolean>(false);
   
   // Email Preview Modal state
   const [previewEmailData, setPreviewEmailData] = useState<{
@@ -235,6 +241,9 @@ const QuanLyGiaHan: React.FC = () => {
   const openRenewModal = (sub: IFlattenedSub) => {
     setSelectedSub(sub);
     setNewExpiryDate(sub.validUntil ? sub.validUntil.substring(0, 10) : new Date().toISOString().substring(0, 10));
+    setRenewalFee(sub.cost || 0);
+    setRenewalNotes('');
+    setRenewStep('form');
     setIsRenewModalOpen(true);
   };
 
@@ -249,28 +258,61 @@ const QuanLyGiaHan: React.FC = () => {
     setNewExpiryDate(startFrom.toISOString().substring(0, 10));
   };
 
-  // Xác nhận gia hạn (PUT lên DB)
+  // Xác nhận gia hạn (POST lên DB)
   const handleRenewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedSub) return;
 
-    try {
-      const body = {
-        ...selectedSub.accountObj,
-        valid_until: newExpiryDate,
-        status: new Date(newExpiryDate).getTime() > Date.now() ? 'sold' : 'expired'
-      };
+    if (renewStep === 'form') {
+      setRenewStep('confirm');
+      return;
+    }
 
-      const res = await api.put<{ success: boolean }>(`/accounts/${selectedSub.parentAccountId}`, body);
+    try {
+      setIsRenewing(true);
+      const res = await api.post<{
+        success: boolean;
+        message: string;
+        data: {
+          account: any;
+          order: any;
+          emailResult: {
+            mode: 'smtp' | 'simulation' | 'preview';
+            previewHtml?: string;
+            recipient?: string;
+            subject?: string;
+          };
+        };
+      }>(`/accounts/${selectedSub.parentAccountId}/renew`, {
+        newExpiryDate,
+        renewalFee,
+        notes: renewalNotes
+      });
+
       if (res.data.success) {
-        alert(`Gia hạn gói dịch vụ thành công đến ngày ${new Date(newExpiryDate).toLocaleDateString('vi-VN')}!`);
         setIsRenewModalOpen(false);
         setSelectedSub(null);
         await loadData();
+
+        // Check if email result is a simulation / preview to display the mail
+        const emailRes = res.data.data.emailResult;
+        if (emailRes && (emailRes.mode === 'simulation' || emailRes.mode === 'preview')) {
+          setActivePreviewSub(selectedSub);
+          setPreviewEmailData({
+            recipient: emailRes.recipient || selectedSub.customer.email || 'khachhang@gmail.com',
+            subject: emailRes.subject || 'Thông báo gia hạn',
+            html: emailRes.previewHtml || '',
+            isSimulation: emailRes.mode === 'simulation'
+          });
+        } else {
+          alert(`Gia hạn gói dịch vụ thành công đến ngày ${new Date(newExpiryDate).toLocaleDateString('vi-VN')} và đã gửi email hóa đơn!`);
+        }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert('Không thể cập nhật gia hạn dịch vụ.');
+      alert(err.response?.data?.message || 'Không thể cập nhật gia hạn dịch vụ.');
+    } finally {
+      setIsRenewing(false);
     }
   };
 
@@ -656,75 +698,150 @@ const QuanLyGiaHan: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Các Preset gia hạn nhanh Apple Style */}
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label style={{ marginBottom: '0.5rem', display: 'block' }}>Gia Hạn Nhanh (Preset):</label>
-                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                    <button 
-                      type="button" 
-                      onClick={() => applyPreset(1)}
-                      style={{ flex: 1, height: '36px', borderRadius: '18px', border: '1px solid #E5E5EA', backgroundColor: '#FFF', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s' }}
-                    >
-                      +1 Tháng
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={() => applyPreset(3)}
-                      style={{ flex: 1, height: '36px', borderRadius: '18px', border: '1px solid #E5E5EA', backgroundColor: '#FFF', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s' }}
-                    >
-                      +3 Tháng
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={() => applyPreset(6)}
-                      style={{ flex: 1, height: '36px', borderRadius: '18px', border: '1px solid #E5E5EA', backgroundColor: '#FFF', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s' }}
-                    >
-                      +6 Tháng
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={() => applyPreset(12)}
-                      style={{ flex: 1, height: '36px', borderRadius: '18px', border: '1px solid #E5E5EA', backgroundColor: '#FFF', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s' }}
-                    >
-                      +1 Năm
-                    </button>
-                  </div>
-                </div>
+                {renewStep === 'form' ? (
+                  <>
+                    {/* Các Preset gia hạn nhanh Apple Style */}
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label style={{ marginBottom: '0.5rem', display: 'block' }}>Gia Hạn Nhanh (Preset):</label>
+                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        <button 
+                          type="button" 
+                          onClick={() => applyPreset(1)}
+                          style={{ flex: 1, height: '36px', borderRadius: '18px', border: '1px solid #E5E5EA', backgroundColor: '#FFF', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s' }}
+                        >
+                          +1 Tháng
+                        </button>
+                        <button 
+                          type="button" 
+                          onClick={() => applyPreset(3)}
+                          style={{ flex: 1, height: '36px', borderRadius: '18px', border: '1px solid #E5E5EA', backgroundColor: '#FFF', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s' }}
+                        >
+                          +3 Tháng
+                        </button>
+                        <button 
+                          type="button" 
+                          onClick={() => applyPreset(6)}
+                          style={{ flex: 1, height: '36px', borderRadius: '18px', border: '1px solid #E5E5EA', backgroundColor: '#FFF', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s' }}
+                        >
+                          +6 Tháng
+                        </button>
+                        <button 
+                          type="button" 
+                          onClick={() => applyPreset(12)}
+                          style={{ flex: 1, height: '36px', borderRadius: '18px', border: '1px solid #E5E5EA', backgroundColor: '#FFF', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s' }}
+                        >
+                          +1 Năm
+                        </button>
+                      </div>
+                    </div>
 
-                {/* Lựa chọn ngày tùy biến */}
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label htmlFor="new-expiry">Hạn Sử Dụng Mới:</label>
-                  <input 
-                    type="date" 
-                    id="new-expiry"
-                    value={newExpiryDate}
-                    onChange={e => setNewExpiryDate(e.target.value)}
-                    required
-                    style={{ width: '100%', height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', fontSize: '0.9rem', outline: 'none' }}
-                  />
-                  <small style={{ color: 'var(--text-light)', marginTop: '4px', display: 'block', fontSize: '0.75rem' }}>
-                    * Hệ thống sẽ tự động chuyển trạng thái tài nguyên thành <strong>Đang Hoạt Động (Sold)</strong> khi gia hạn ngày trong tương lai.
-                  </small>
-                </div>
+                    {/* Lựa chọn ngày tùy biến */}
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label htmlFor="new-expiry">Hạn Sử Dụng Mới:</label>
+                      <input 
+                        type="date" 
+                        id="new-expiry"
+                        value={newExpiryDate}
+                        onChange={e => setNewExpiryDate(e.target.value)}
+                        required
+                        style={{ width: '100%', height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', fontSize: '0.9rem', outline: 'none' }}
+                      />
+                      <small style={{ color: 'var(--text-light)', marginTop: '4px', display: 'block', fontSize: '0.75rem' }}>
+                        * Hệ thống sẽ tự động chuyển trạng thái tài nguyên thành <strong>Đang Hoạt Động (Sold)</strong> khi gia hạn ngày trong tương lai.
+                      </small>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Bước 2: Xác nhận & thiết lập hóa đơn */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', borderLeft: '3px solid #34C759', paddingLeft: '12px' }}>
+                      <h4 style={{ margin: 0, color: '#1D1D1F', fontSize: '0.95rem' }}>Xác Nhận Thay Đổi Hạn Sử Dụng:</h4>
+                      <div style={{ fontSize: '0.9rem', color: '#1D1D1F' }}>
+                        {selectedSub.validUntil ? new Date(selectedSub.validUntil).toLocaleDateString('vi-VN') : 'Không giới hạn'}
+                        &nbsp;&rarr;&nbsp;
+                        <strong style={{ color: '#34C759', fontSize: '1rem' }}>
+                          {new Date(newExpiryDate).toLocaleDateString('vi-VN')}
+                        </strong>
+                      </div>
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label htmlFor="renewal-fee">Chi Phí Gia Hạn (VNĐ):</label>
+                      <input 
+                        type="number" 
+                        id="renewal-fee"
+                        value={renewalFee}
+                        onChange={e => setRenewalFee(Number(e.target.value))}
+                        required
+                        min="0"
+                        style={{ width: '100%', height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', fontSize: '0.9rem', outline: 'none' }}
+                      />
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label htmlFor="renewal-notes">Ghi Chú Đơn Hàng / Gia Hạn (Không bắt buộc):</label>
+                      <input 
+                        type="text" 
+                        id="renewal-notes"
+                        placeholder="Ví dụ: Khách gia hạn qua Zalo, ck Sacombank..."
+                        value={renewalNotes}
+                        onChange={e => setRenewalNotes(e.target.value)}
+                        style={{ width: '100%', height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', fontSize: '0.9rem', outline: 'none' }}
+                      />
+                    </div>
+
+                    <div style={{ padding: '0.75rem', borderRadius: '8px', backgroundColor: '#F0F9F1', border: '1px solid #C2E7C6', color: '#2E7D32', fontSize: '0.8rem', lineHeight: '1.4' }}>
+                      <strong>Hệ thống sẽ thực hiện:</strong>
+                      <ol style={{ margin: '4px 0 0 0', paddingLeft: '1.25rem' }}>
+                        <li>Cập nhật ngày sử dụng mới cho tài khoản MMO này.</li>
+                        <li>Tạo 1 đơn hàng gia hạn trị giá <strong>{renewalFee.toLocaleString('vi-VN')} đ</strong> ở trạng thái <em>Đã thanh toán (paid)</em>.</li>
+                        <li>Tự động gửi email <strong>xác nhận thanh toán</strong> kèm hóa đơn PDF cập nhật hạn sử dụng mới đến khách hàng.</li>
+                      </ol>
+                    </div>
+                  </>
+                )}
 
               </div>
 
               <div className="modal-footer" style={{ borderTop: '1px solid #E5E5EA', padding: '1rem 0 0 0', marginTop: '1.25rem', display: 'flex', gap: '0.75rem' }}>
-                <button 
-                  type="button" 
-                  className="btn-cancel" 
-                  onClick={() => { setIsRenewModalOpen(false); setSelectedSub(null); }}
-                  style={{ flex: 1, height: '44px', fontWeight: 600 }}
-                >
-                  Hủy bỏ
-                </button>
-                <button 
-                  type="submit" 
-                  className="btn-save"
-                  style={{ flex: 1, height: '44px', fontWeight: 600, backgroundColor: '#34C759' }}
-                >
-                  Xác Nhận Gia Hạn
-                </button>
+                {renewStep === 'form' ? (
+                  <>
+                    <button 
+                      type="button" 
+                      className="btn-cancel" 
+                      onClick={() => { setIsRenewModalOpen(false); setSelectedSub(null); }}
+                      style={{ flex: 1, height: '44px', fontWeight: 600 }}
+                    >
+                      Hủy bỏ
+                    </button>
+                    <button 
+                      type="submit" 
+                      className="btn-save"
+                      style={{ flex: 1, height: '44px', fontWeight: 600, backgroundColor: '#0071E3' }}
+                    >
+                      Tiếp tục (Xác nhận)
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button 
+                      type="button" 
+                      className="btn-cancel" 
+                      onClick={() => setRenewStep('form')}
+                      style={{ flex: 1, height: '44px', fontWeight: 600 }}
+                    >
+                      Quay lại
+                    </button>
+                    <button 
+                      type="submit" 
+                      className="btn-save"
+                      disabled={isRenewing}
+                      style={{ flex: 1, height: '44px', fontWeight: 600, backgroundColor: '#34C759' }}
+                    >
+                      {isRenewing ? 'Đang gửi & xử lý...' : 'Xác Nhận & Gửi Hóa Đơn'}
+                    </button>
+                  </>
+                )}
               </div>
             </form>
           </div>
