@@ -31,7 +31,10 @@ import backupSettingsHandler from './api/settings/backup.ts';
 import suppliersHandler from './api/suppliers/index.ts';
 
 import supplierDetailHandler from './api/suppliers/[id].ts';
-
+import supplierDashboardStatsHandler from './api/suppliers/dashboard-stats.ts';
+import supplierImportsHandler from './api/suppliers/imports/index.ts';
+import supplierPaymentsHandler from './api/suppliers/payments/index.ts';
+import supplierProfitHandler from './api/suppliers/profit.ts';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -115,8 +118,19 @@ app.post('/api/settings/email-templates', emailTemplatesHandler);
 app.get('/api/settings/backup', backupSettingsHandler);
 app.post('/api/settings/backup', backupSettingsHandler);
 
+// Supplier Routes — static routes MUST come BEFORE dynamic :id routes
+app.get('/api/suppliers/dashboard-stats', supplierDashboardStatsHandler);
+app.get('/api/suppliers/profit', supplierProfitHandler);
+app.get('/api/suppliers/imports', supplierImportsHandler);
+app.post('/api/suppliers/imports', supplierImportsHandler);
+app.get('/api/suppliers/imports/:id', mapParams, supplierImportsHandler);
+app.put('/api/suppliers/imports/:id', mapParams, supplierImportsHandler);
+app.delete('/api/suppliers/imports/:id', mapParams, supplierImportsHandler);
+app.get('/api/suppliers/payments', supplierPaymentsHandler);
+app.post('/api/suppliers/payments', supplierPaymentsHandler);
+app.get('/api/suppliers/payments/:id', mapParams, supplierPaymentsHandler);
+app.delete('/api/suppliers/payments/:id', mapParams, supplierPaymentsHandler);
 app.get('/api/suppliers', suppliersHandler);
-
 app.post('/api/suppliers', suppliersHandler);
 app.get('/api/suppliers/:id', mapParams, supplierDetailHandler);
 app.put('/api/suppliers/:id', mapParams, supplierDetailHandler);

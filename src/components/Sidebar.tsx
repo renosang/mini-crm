@@ -3,7 +3,8 @@ import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import {
   FiHome, FiUsers, FiShoppingCart, FiBox, FiKey,
-  FiClock, FiBriefcase, FiSettings, FiLogOut, FiChevronRight
+  FiClock, FiBriefcase, FiSettings, FiLogOut, FiChevronRight,
+  FiDollarSign, FiTrendingUp, FiDownload, FiGrid
 } from 'react-icons/fi';
 
 import logo from '../assets/logo.png';
@@ -13,7 +14,9 @@ const Sidebar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isCaiDatPage = location.pathname === '/cai-dat';
+  const isNhaCungCapPage = location.pathname === '/nha-cung-cap';
   const [settingsOpen, setSettingsOpen] = useState<boolean>(isCaiDatPage);
+  const [supplierOpen, setSupplierOpen] = useState<boolean>(isNhaCungCapPage);
 
   const handleLogout = () => {
     logout();
@@ -59,9 +62,63 @@ const Sidebar: React.FC = () => {
 
         {/* --- NHÓM 3: ĐỐI TÁC & HỆ THỐNG --- */}
         <div className="sidebar-category-header">Đối Tác & Hệ Thống</div>
-        <NavLink to="/nha-cung-cap" className="nav-item">
-          <FiBriefcase /> Nhà Cung Cấp
-        </NavLink>
+        <div
+          className={`nav-item nav-group-toggle ${isNhaCungCapPage ? 'active' : ''} ${supplierOpen ? 'open' : ''}`}
+          onClick={() => setSupplierOpen(!supplierOpen)}
+        >
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <FiBriefcase />
+            <span>Nhà Cung Cấp</span>
+          </div>
+          <FiChevronRight className="chevron" />
+        </div>
+        <div className={`sidebar-submenu ${supplierOpen ? 'open' : ''}`}>
+          <Link
+            to="/nha-cung-cap?tab=dashboard"
+            style={{
+              color: (isNhaCungCapPage && (location.search.includes('tab=dashboard') || !location.search.includes('tab='))) ? 'var(--primary-color)' : 'var(--text-light)',
+              fontWeight: (isNhaCungCapPage && (location.search.includes('tab=dashboard') || !location.search.includes('tab='))) ? '600' : '500'
+            }}
+          >
+            <FiGrid size={12} style={{ marginRight: 4 }} /> Dashboard
+          </Link>
+          <Link
+            to="/nha-cung-cap?tab=directory"
+            style={{
+              color: (isNhaCungCapPage && location.search.includes('tab=directory')) ? 'var(--primary-color)' : 'var(--text-light)',
+              fontWeight: (isNhaCungCapPage && location.search.includes('tab=directory')) ? '600' : '500'
+            }}
+          >
+            <FiBriefcase size={12} style={{ marginRight: 4 }} /> Danh Bạ Đối Tác
+          </Link>
+          <Link
+            to="/nha-cung-cap?tab=imports"
+            style={{
+              color: (isNhaCungCapPage && location.search.includes('tab=imports')) ? 'var(--primary-color)' : 'var(--text-light)',
+              fontWeight: (isNhaCungCapPage && location.search.includes('tab=imports')) ? '600' : '500'
+            }}
+          >
+            <FiDownload size={12} style={{ marginRight: 4 }} /> Quản Lý Hàng Nhập
+          </Link>
+          <Link
+            to="/nha-cung-cap?tab=payments"
+            style={{
+              color: (isNhaCungCapPage && location.search.includes('tab=payments')) ? 'var(--primary-color)' : 'var(--text-light)',
+              fontWeight: (isNhaCungCapPage && location.search.includes('tab=payments')) ? '600' : '500'
+            }}
+          >
+            <FiDollarSign size={12} style={{ marginRight: 4 }} /> Thanh Toán & Công Nợ
+          </Link>
+          <Link
+            to="/nha-cung-cap?tab=profit"
+            style={{
+              color: (isNhaCungCapPage && location.search.includes('tab=profit')) ? 'var(--primary-color)' : 'var(--text-light)',
+              fontWeight: (isNhaCungCapPage && location.search.includes('tab=profit')) ? '600' : '500'
+            }}
+          >
+            <FiTrendingUp size={12} style={{ marginRight: 4 }} /> Lợi Nhuận
+          </Link>
+        </div>
         <div
           className={`nav-item nav-group-toggle ${isCaiDatPage ? 'active' : ''} ${settingsOpen ? 'open' : ''}`}
           onClick={() => setSettingsOpen(!settingsOpen)}
