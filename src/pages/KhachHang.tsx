@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom'; // <-- THÊM IMPORT NÀY
 import api from '../services/api';
-import { FiEdit, FiTrash2, FiUserPlus, FiUsers, FiUserCheck, FiTarget, FiFacebook, FiSend, FiMessageCircle, FiLock } from 'react-icons/fi';
+import { FiEdit, FiTrash2, FiUserPlus, FiUsers, FiUserCheck, FiTarget, FiFacebook, FiSend, FiMessageCircle, FiLock, FiSearch } from 'react-icons/fi';
 
 // === Định nghĩa kiểu dữ liệu ===
 interface ICustomer {
@@ -246,13 +246,15 @@ const KhachHang: React.FC = () => {
       </div>
 
       {/* Thanh Tìm kiếm */}
-      <div className="table-toolbar">
+      <div className="table-toolbar" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+        <FiSearch style={{ position: 'absolute', left: '16px', color: 'var(--text-light)', pointerEvents: 'none', fontSize: '1.1rem' }} />
         <input
           type="text"
           placeholder="Tìm kiếm theo Tên, Email, SĐT, Nguồn, Telegram, Trạng thái..."
           className="search-input"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ paddingLeft: '44px' }}
         />
       </div>
 
@@ -275,17 +277,39 @@ const KhachHang: React.FC = () => {
             </thead>
             <tbody>
               {filteredCustomers.length > 0 ? (
-                filteredCustomers.map(customer => (
-                  <tr key={customer._id}>
-                    <td>
-                      <Link to={`/customers/${customer._id}`} className="customer-link" style={{ fontWeight: 600 }}>
-                        {customer.name}
-                      </Link>
-                    </td>
-                    <td>
-                      <div style={{ fontWeight: 500, fontSize: '0.925rem' }}>{customer.email || '—'}</div>
-                      <div style={{ color: 'var(--text-light)', fontSize: '0.825rem', marginTop: '2px' }}>{customer.phone || '—'}</div>
-                    </td>
+                filteredCustomers.map(customer => {
+                  // Lấy chữ cái viết tắt của tên
+                  const getInitials = (name: string) => {
+                    const parts = name.trim().split(' ');
+                    if (parts.length >= 2) {
+                      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+                    }
+                    return name.substring(0, 2).toUpperCase();
+                  };
+                  
+                  // Tạo class màu sắc ngẫu nhiên dựa trên tên
+                  const getAvatarColorClass = (name: string) => {
+                    const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                    const colors = ['blue', 'green', 'purple', 'orange', 'indigo'];
+                    return `avatar-bg-${colors[hash % colors.length]}`;
+                  };
+
+                  return (
+                    <tr key={customer._id}>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div className={`customer-avatar-circle ${getAvatarColorClass(customer.name)}`}>
+                            {getInitials(customer.name)}
+                          </div>
+                          <Link to={`/customers/${customer._id}`} className="customer-link" style={{ fontWeight: 600, textDecoration: 'none' }}>
+                            {customer.name}
+                          </Link>
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ fontWeight: 500, fontSize: '0.925rem' }}>{customer.email || '—'}</div>
+                        <div style={{ color: 'var(--text-light)', fontSize: '0.825rem', marginTop: '2px' }}>{customer.phone || '—'}</div>
+                      </td>
                     <td className="mmo-social-links">
                       {customer.facebook ? (
                         <a href={customer.facebook.startsWith('http') ? customer.facebook : `https://facebook.com/${customer.facebook}`} target="_blank" rel="noopener noreferrer" className="mmo-icon-btn mmo-facebook" title="Facebook Messenger">
@@ -319,8 +343,9 @@ const KhachHang: React.FC = () => {
                         <FiTrash2 />
                       </button>
                     </td>
-                  </tr>
-                ))
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>
