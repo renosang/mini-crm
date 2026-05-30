@@ -274,39 +274,39 @@ const Dashboard: React.FC = () => {
       <div className="stats-grid-4" style={{ marginBottom: '1.75rem' }}>
         {stats && (
           <>
-            <div className="stat-card widget" style={{ background: 'linear-gradient(135deg, #E3F2FD, #BBDEFB)', cursor: 'pointer' }} onClick={() => navigate('/khach-hang')}>
-              <div className="stat-card-icon" style={{ backgroundColor: '#0071E3', color: '#FFF' }}><FiUsers /></div>
+            <div className="stat-card widget stat-card-blue" onClick={() => navigate('/khach-hang')}>
+              <div className="stat-card-icon"><FiUsers /></div>
               <div className="stat-card-info">
-                <h3 style={{ color: '#0D47A1' }}>Tổng Khách Hàng</h3>
-                <p style={{ fontWeight: 700, fontSize: '1.65rem', color: '#0B3C5D', margin: '4px 0' }}>{stats.totalCustomers}</p>
-                <span style={{ fontSize: '0.8rem', color: '#1565C0', fontWeight: 600 }}>Quản lý khách hàng →</span>
+                <h3>Tổng Khách Hàng</h3>
+                <p className="stat-card-value">{stats.totalCustomers}</p>
+                <span className="stat-card-link">Quản lý khách hàng →</span>
               </div>
             </div>
 
-            <div className="stat-card widget" style={{ background: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)', cursor: 'pointer' }} onClick={() => navigate('/kho-tai-nguyen')}>
-              <div className="stat-card-icon" style={{ backgroundColor: '#34C759', color: '#FFF' }}><FiBox /></div>
+            <div className="stat-card widget stat-card-green" onClick={() => navigate('/kho-tai-nguyen')}>
+              <div className="stat-card-icon"><FiBox /></div>
               <div className="stat-card-info">
-                <h3 style={{ color: '#1B5E20' }}>Tài Khoản Khả Dụng</h3>
-                <p style={{ fontWeight: 700, fontSize: '1.65rem', color: '#1B5E20', margin: '4px 0' }}>{stats.availableAccounts}</p>
-                <span style={{ fontSize: '0.8rem', color: '#2E7D32', fontWeight: 600 }}>Xem kho tài nguyên →</span>
+                <h3>Tài Khoản Khả Dụng</h3>
+                <p className="stat-card-value">{stats.availableAccounts}</p>
+                <span className="stat-card-link">Xem kho tài nguyên →</span>
               </div>
             </div>
 
-            <div className="stat-card widget" style={{ background: 'linear-gradient(135deg, #F3E5F5, #E1BEE7)', cursor: 'pointer' }} onClick={() => navigate('/ban-hang')}>
-              <div className="stat-card-icon" style={{ backgroundColor: '#AF52DE', color: '#FFF' }}><FiShoppingCart /></div>
+            <div className="stat-card widget stat-card-purple" onClick={() => navigate('/ban-hang')}>
+              <div className="stat-card-icon"><FiShoppingCart /></div>
               <div className="stat-card-info">
-                <h3 style={{ color: '#4A148C' }}>Đơn Hàng (Tháng)</h3>
-                <p style={{ fontWeight: 700, fontSize: '1.65rem', color: '#4A148C', margin: '4px 0' }}>{stats.monthlyOrders}</p>
-                <span style={{ fontSize: '0.8rem', color: '#6A1B9A', fontWeight: 600 }}>Xem lịch sử đơn hàng →</span>
+                <h3>Đơn Hàng (Tháng)</h3>
+                <p className="stat-card-value">{stats.monthlyOrders}</p>
+                <span className="stat-card-link">Xem lịch sử đơn hàng →</span>
               </div>
             </div>
 
-            <div className="stat-card widget" style={{ background: 'linear-gradient(135deg, #FFF8E1, #FFECB3)', cursor: 'pointer' }} onClick={() => navigate('/ban-hang')}>
-              <div className="stat-card-icon" style={{ backgroundColor: '#FF9500', color: '#FFF' }}><FiCreditCard /></div>
+            <div className="stat-card widget stat-card-orange" onClick={() => navigate('/ban-hang')}>
+              <div className="stat-card-icon"><FiCreditCard /></div>
               <div className="stat-card-info">
-                <h3 style={{ color: '#E65100' }}>Doanh Thu (Tháng)</h3>
-                <p style={{ fontWeight: 700, fontSize: '1.5rem', color: '#E65100', margin: '4px 0' }}>{stats.monthlyRevenue.toLocaleString('vi-VN')} đ</p>
-                <span style={{ fontSize: '0.8rem', color: '#F57F17', fontWeight: 600 }}>Chi tiết doanh thu →</span>
+                <h3>Doanh Thu (Tháng)</h3>
+                <p className="stat-card-value">{stats.monthlyRevenue.toLocaleString('vi-VN')} đ</p>
+                <span className="stat-card-link">Chi tiết doanh thu →</span>
               </div>
             </div>
           </>

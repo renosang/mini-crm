@@ -215,9 +215,11 @@ h5 {
 
 /* === ACTIVE STATE (Khi được chọn) === */
 .nav-item.active {
-  background-color: var(--primary-color);
+  background: linear-gradient(135deg, #0071E3 0%, #005bb5 100%);
   color: white;
-  box-shadow: 0 4px 6px rgba(50, 50, 93, .11), 0 1px 3px rgba(0, 0, 0, .08);
+  border-radius: 10px;
+  box-shadow: 0 8px 18px -4px rgba(0, 113, 227, 0.35);
+  font-weight: 600;
 }
 
 /* Khi active, icon luôn là màu trắng */
@@ -1834,45 +1836,177 @@ h5 {
 }
 
 .stat-card.widget {
-  padding: 1.5rem;
+  padding: 1.6rem 1.75rem;
   border-radius: 20px;
-  border: 1px solid rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(226, 232, 240, 0.8);
   display: flex;
   align-items: center;
   gap: 1.25rem;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.01);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
+  cursor: pointer;
+  background: #ffffff;
 }
 
 .stat-card.widget:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.06);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.08);
+}
+
+/* Các biến thể màu sắc Premium cho Stat Cards */
+.stat-card-blue {
+  background: linear-gradient(135deg, #f0f7ff 0%, #e0f2fe 100%) !important;
+  border-color: rgba(186, 230, 253, 0.6) !important;
+}
+.stat-card-blue .stat-card-icon {
+  background-color: #0071E3;
+  color: #ffffff;
+}
+.stat-card-blue h3 {
+  color: #0369a1;
+}
+.stat-card-blue .stat-card-value {
+  color: #0c4a6e;
+}
+.stat-card-blue .stat-card-link {
+  color: #0284c7;
+}
+
+.stat-card-green {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%) !important;
+  border-color: rgba(187, 247, 208, 0.6) !important;
+}
+.stat-card-green .stat-card-icon {
+  background-color: #34C759;
+  color: #ffffff;
+}
+.stat-card-green h3 {
+  color: #15803d;
+}
+.stat-card-green .stat-card-value {
+  color: #14532d;
+}
+.stat-card-green .stat-card-link {
+  color: #16a34a;
+}
+
+.stat-card-purple {
+  background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%) !important;
+  border-color: rgba(233, 213, 255, 0.6) !important;
+}
+.stat-card-purple .stat-card-icon {
+  background-color: #AF52DE;
+  color: #ffffff;
+}
+.stat-card-purple h3 {
+  color: #6b21a8;
+}
+.stat-card-purple .stat-card-value {
+  color: #581c87;
+}
+.stat-card-purple .stat-card-link {
+  color: #7e22ce;
+}
+
+.stat-card-orange {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important;
+  border-color: rgba(253, 230, 138, 0.6) !important;
+}
+.stat-card-orange .stat-card-icon {
+  background-color: #FF9500;
+  color: #ffffff;
+}
+.stat-card-orange h3 {
+  color: #b45309;
+}
+.stat-card-orange .stat-card-value {
+  color: #78350f;
+}
+.stat-card-orange .stat-card-link {
+  color: #d97706;
 }
 
 .stat-card-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
   flex-shrink: 0;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .stat-card-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  width: 100%;
 }
 
 .stat-card-info h3 {
-  font-size: 0.85rem;
+  font-size: 0.825rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  margin: 0;
 }
+
+.stat-card-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 4px 0;
+  letter-spacing: -0.03em;
+}
+
+.stat-card-link {
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.stat-card.widget:hover .stat-card-link {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   QUICK ACTIONS (Hành động nhanh)
+   ========================================================================== */
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+}
+
+.quick-action-card {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  padding: 1.15rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.02);
+}
+
+.quick-action-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary-color);
+  box-shadow: 0 10px 20px -5px rgba(0, 113, 227, 0.1);
+}
+
+.quick-action-card h4 {
+  color: var(--text-color);
+  transition: color 0.2s;
+}
+
+.quick-action-card:hover h4 {
+  color: var(--primary-color);
+}
+
 
 /* ==========================================================================
    REDESIGNED LOGIN PAGE (Apple-Inspired Modern)
