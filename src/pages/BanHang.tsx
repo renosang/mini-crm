@@ -306,32 +306,32 @@ const BanHang: React.FC = () => {
 
       {/* Bảng Widgets Thống kê Apple Glassmorphism */}
       <div className="stats-grid-3" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', marginBottom: '2rem' }}>
-        <div className="stat-card widget" style={{ background: 'linear-gradient(135deg, #FBFBFD, #F5F5F7)' }}>
-          <div className="stat-card-icon icon-new" style={{ backgroundColor: '#E8F5E9', color: '#4CAF50' }}><FiCreditCard /></div>
+        <div className="stat-card widget stat-card-green">
+          <div className="stat-card-icon"><FiCreditCard /></div>
           <div className="stat-card-info">
             <h3>Doanh Thu Đã Nhận</h3>
-            <p style={{ color: '#2E7D32', fontWeight: 700 }}>{stats.totalRevenue.toLocaleString('vi-VN')} đ</p>
+            <p className="stat-card-value">{stats.totalRevenue.toLocaleString('vi-VN')} đ</p>
           </div>
         </div>
-        <div className="stat-card widget">
-          <div className="stat-card-icon icon-total" style={{ backgroundColor: '#E3F2FD', color: '#1E88E5' }}><FiShoppingCart /></div>
+        <div className="stat-card widget stat-card-blue">
+          <div className="stat-card-icon"><FiShoppingCart /></div>
           <div className="stat-card-info">
             <h3>Tổng Số Đơn Bán</h3>
-            <p>{stats.totalOrders} đơn</p>
+            <p className="stat-card-value">{stats.totalOrders} đơn</p>
           </div>
         </div>
-        <div className="stat-card widget" style={{ background: 'linear-gradient(135deg, #FFFDE8, #FFF9C4)' }}>
-          <div className="stat-card-icon icon-source" style={{ backgroundColor: '#FFFDE7', color: '#FBC02D' }}><FiClock /></div>
+        <div className="stat-card widget stat-card-orange">
+          <div className="stat-card-icon"><FiClock /></div>
           <div className="stat-card-info">
             <h3>Dư Nợ Chưa Thu</h3>
-            <p style={{ color: '#F57F17', fontWeight: 700 }}>{stats.pendingPayments.toLocaleString('vi-VN')} đ</p>
+            <p className="stat-card-value">{stats.pendingPayments.toLocaleString('vi-VN')} đ</p>
           </div>
         </div>
-        <div className="stat-card widget">
-          <div className="stat-card-icon icon-source" style={{ backgroundColor: '#EDE7F6', color: '#5E35B1' }}><FiPackage /></div>
+        <div className="stat-card widget stat-card-purple">
+          <div className="stat-card-icon"><FiPackage /></div>
           <div className="stat-card-info">
             <h3>Tài Khoản Đã Bán</h3>
-            <p>{stats.accountsSold} tài nguyên</p>
+            <p className="stat-card-value">{stats.accountsSold} tài nguyên</p>
           </div>
         </div>
       </div>
@@ -435,11 +435,11 @@ const BanHang: React.FC = () => {
                     </td>
                     <td>
                       {order.status === 'paid' ? (
-                        <span className="status-badge status-tiem-nang" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <span className="payment-status-paid">
                           <FiCheckCircle /> Đã Thu
                         </span>
                       ) : (
-                        <span className="status-badge status-canh-bao" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <span className="payment-status-pending">
                           <FiClock /> Dư Nợ
                         </span>
                       )}
@@ -583,19 +583,17 @@ const BanHang: React.FC = () => {
                 {/* 2. CHỌN CHẾ ĐỘ CUNG CẤP TÀI NGUYÊN */}
                 <div className="form-group">
                   <label>Chọn chế độ cung cấp tài nguyên</label>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '0.4rem' }}>
+                  <div className="segmented-control" style={{ marginTop: '0.4rem' }}>
                     <button 
                       type="button" 
-                      className={`tab-nav button ${sellMode === 'direct' ? 'active' : ''}`}
-                      style={{ padding: '0.75rem', borderRadius: '12px', border: '1px solid ' + (sellMode === 'direct' ? '#0071E3' : '#D2D2D7'), backgroundColor: sellMode === 'direct' ? '#F2F8FF' : '#FFFFFF', color: sellMode === 'direct' ? '#0071E3' : 'var(--text-color)', fontWeight: 600, cursor: 'pointer' }}
+                      className={`segment-button ${sellMode === 'direct' ? 'active' : ''}`}
                       onClick={() => setSellMode('direct')}
                     >
                       Nhập Tài khoản / Cấp Proxy trực tiếp
                     </button>
                     <button 
                       type="button" 
-                      className={`tab-nav button ${sellMode === 'inventory' ? 'active' : ''}`}
-                      style={{ padding: '0.75rem', borderRadius: '12px', border: '1px solid ' + (sellMode === 'inventory' ? '#0071E3' : '#D2D2D7'), backgroundColor: sellMode === 'inventory' ? '#F2F8FF' : '#FFFFFF', color: sellMode === 'inventory' ? '#0071E3' : 'var(--text-color)', fontWeight: 600, cursor: 'pointer' }}
+                      className={`segment-button ${sellMode === 'inventory' ? 'active' : ''}`}
                       onClick={() => setSellMode('inventory')}
                     >
                       Bán Tài khoản có sẵn trong kho ({stockAccounts.length})
@@ -874,16 +872,28 @@ const BanHang: React.FC = () => {
 
             <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto', padding: '1.5rem 0' }}>
               {/* Thông tin khách hàng */}
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1.7fr 1.3fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
                 <div style={{ backgroundColor: '#FAFBFD', border: '1px solid var(--border-color)', padding: '1.25rem', borderRadius: '12px' }}>
                   <h4 style={{ margin: '0 0 0.75rem 0', color: 'var(--text-dark)', fontSize: '0.95rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                     <FiUser style={{ color: '#30D158' }} /> Thông Tin Khách Hàng
                   </h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', fontSize: '0.9rem' }}>
-                    <div>Tên khách hàng: <strong>{viewingOrder.customer_id?.name || 'Khách hàng lẻ'}</strong></div>
-                    <div>Số điện thoại: <strong>{viewingOrder.customer_id?.phone || 'N/A'}</strong></div>
-                    <div style={{ gridColumn: 'span 2' }}>Email: <strong>{viewingOrder.customer_id?.email || 'N/A'}</strong></div>
-                    <div>Nguồn khách: <span className="source-badge source-khac" style={{ minWidth: 'auto', padding: '0.1rem 0.5rem', fontSize: '0.75rem' }}>{viewingOrder.customer_id?.source || 'N/A'}</span></div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', fontSize: '0.9rem' }}>
+                    <div>
+                      <div style={{ color: 'var(--text-light)', fontSize: '0.8rem', fontWeight: 500, marginBottom: '2px' }}>Tên khách hàng</div>
+                      <strong style={{ color: 'var(--text-dark)' }}>{viewingOrder.customer_id?.name || 'Khách hàng lẻ'}</strong>
+                    </div>
+                    <div>
+                      <div style={{ color: 'var(--text-light)', fontSize: '0.8rem', fontWeight: 500, marginBottom: '2px' }}>Số điện thoại</div>
+                      <strong style={{ color: 'var(--text-dark)' }}>{viewingOrder.customer_id?.phone || 'N/A'}</strong>
+                    </div>
+                    <div>
+                      <div style={{ color: 'var(--text-light)', fontSize: '0.8rem', fontWeight: 500, marginBottom: '2px' }}>Email</div>
+                      <strong style={{ color: 'var(--text-dark)', wordBreak: 'break-all' }}>{viewingOrder.customer_id?.email || 'N/A'}</strong>
+                    </div>
+                    <div>
+                      <div style={{ color: 'var(--text-light)', fontSize: '0.8rem', fontWeight: 500, marginBottom: '2px' }}>Nguồn khách</div>
+                      <span className="source-badge source-khac" style={{ minWidth: 'auto', padding: '0.1rem 0.5rem', fontSize: '0.75rem', display: 'inline-block' }}>{viewingOrder.customer_id?.source || 'N/A'}</span>
+                    </div>
                   </div>
                 </div>
 
@@ -892,7 +902,7 @@ const BanHang: React.FC = () => {
                   <div style={{ fontSize: '1.1rem', fontWeight: 700, margin: '4px 0 8px 0', color: 'var(--text-dark)' }}>
                     {new Date(viewingOrder.createdAt).toLocaleDateString('vi-VN')}
                   </div>
-                  <div>Trạng thái: <span className={`badge badge-${viewingOrder.status === 'paid' ? 'success' : 'pending'}`} style={{ fontSize: '0.8rem' }}>{viewingOrder.status === 'paid' ? 'Đã Thanh Toán' : 'Chờ Thanh Toán'}</span></div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>Trạng thái: <span className={`badge badge-${viewingOrder.status === 'paid' ? 'success' : 'pending'}`} style={{ fontSize: '0.8rem' }}>{viewingOrder.status === 'paid' ? 'Đã Thanh Toán' : 'Chờ Thanh Toán'}</span></div>
                 </div>
               </div>
 
@@ -940,7 +950,7 @@ const BanHang: React.FC = () => {
                                 )}
                               </div>
                             </td>
-                            <td style={{ textAlign: 'right', fontWeight: 500, color: 'var(--text-light)' }}>
+                            <td style={{ textAlign: 'right', fontWeight: 700, color: '#1D1D1F', fontSize: '0.95rem' }}>
                               {(acc.cost || 0).toLocaleString('vi-VN')} đ
                             </td>
                           </tr>
@@ -956,30 +966,30 @@ const BanHang: React.FC = () => {
               </div>
 
               {/* Phân tích Doanh Thu & Lợi Nhuận (Premium Widget) */}
-              <div style={{ backgroundColor: '#F5F5F7', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+              <div style={{ backgroundColor: '#FAFBFD', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                 <h4 style={{ margin: '0 0 0.75rem 0', color: 'var(--text-dark)', fontSize: '0.95rem', fontWeight: 600 }}>Phân Tích Lợi Nhuận Đơn Hàng</h4>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1rem', textAlign: 'center' }}>
-                  <div style={{ backgroundColor: 'white', padding: '0.75rem', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-light)', fontWeight: 600 }}>TỔNG DOANH THU</div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 700, marginTop: '4px', color: '#0071E3' }}>
+                  <div className="profit-card-blue" style={{ padding: '0.75rem', borderRadius: '10px' }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 600 }}>TỔNG DOANH THU</div>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 700, marginTop: '4px' }}>
                       {viewingOrder.total_amount.toLocaleString('vi-VN')} đ
                     </div>
                   </div>
-                  <div style={{ backgroundColor: 'white', padding: '0.75rem', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-light)', fontWeight: 600 }}>TỔNG GIÁ VỐN</div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 700, marginTop: '4px', color: '#8E8E93' }}>
+                  <div className="profit-card-gray" style={{ padding: '0.75rem', borderRadius: '10px' }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 600 }}>TỔNG GIÁ VỐN</div>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 700, marginTop: '4px' }}>
                       {(viewingOrder.accounts?.reduce((acc: number, item: any) => acc + (item.cost || 0), 0) || 0).toLocaleString('vi-VN')} đ
                     </div>
                   </div>
-                  <div style={{ backgroundColor: 'white', padding: '0.75rem', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-light)', fontWeight: 600 }}>LỢI NHUẬN RÒNG</div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 700, marginTop: '4px', color: '#30D158' }}>
+                  <div className="profit-card-green" style={{ padding: '0.75rem', borderRadius: '10px' }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 600 }}>LỢI NHUẬN RÒNG</div>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 700, marginTop: '4px' }}>
                       {(viewingOrder.total_amount - (viewingOrder.accounts?.reduce((acc: number, item: any) => acc + (item.cost || 0), 0) || 0)).toLocaleString('vi-VN')} đ
                     </div>
                   </div>
-                  <div style={{ backgroundColor: 'white', padding: '0.75rem', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-light)', fontWeight: 600 }}>TỶ SUẤT LỢI NHUẬN</div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 700, marginTop: '4px', color: '#BF5AF2' }}>
+                  <div className="profit-card-purple" style={{ padding: '0.75rem', borderRadius: '10px' }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 600 }}>TỶ SUẤT LỢI NHUẬN</div>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 700, marginTop: '4px' }}>
                       {viewingOrder.total_amount > 0 ? (
                         ((viewingOrder.total_amount - (viewingOrder.accounts?.reduce((acc: number, item: any) => acc + (item.cost || 0), 0) || 0)) / viewingOrder.total_amount * 100).toFixed(1)
                       ) : '0'} %

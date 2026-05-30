@@ -447,6 +447,8 @@ h5 {
 }
 
 .badge {
+  display: inline-block;
+  white-space: nowrap;
   padding: 0.25rem 0.75rem;
   border-radius: 1rem;
   font-size: 0.8rem;
@@ -2628,3 +2630,139 @@ h5 {
     padding: 1.75rem 1.25rem;
   }
 }
+
+/* ==========================================================================
+   CUSTOMER LIST UPGRADES (Nâng cấp giao diện Khách Hàng)
+   ========================================================================== */
+.customer-avatar-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.825rem;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+/* Các nhóm màu Gradient cho Avatar */
+.avatar-bg-blue {
+  background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+}
+.avatar-bg-green {
+  background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+}
+.avatar-bg-purple {
+  background: linear-gradient(135deg, #c084fc 0%, #7c3aed 100%);
+}
+.avatar-bg-orange {
+  background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+}
+.avatar-bg-indigo {
+  background: linear-gradient(135deg, #818cf8 0%, #4f46e5 100%);
+}
+
+.table-toolbar {
+  margin: 1.5rem 0;
+  width: 100%;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 480px;
+  height: 44px;
+  padding: 0.5rem 1rem 0.5rem 2.75rem;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  font-size: 0.925rem;
+  background: #ffffff;
+  outline: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.03);
+}
+
+.search-input:focus {
+  border-color: var(--primary-color);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1), 0 4px 15px -2px rgba(0, 0, 0, 0.04);
+}
+
+/* === Payment Status Badges === */
+.payment-status-paid {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background-color: #EAFCEE;
+  color: #1E7E34;
+  border: 1px solid #C1F0C8;
+}
+
+.payment-status-pending {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background-color: #FFF3CD;
+  color: #856404;
+  border: 1px solid #FFEEBA;
+}
+
+/* === Apple Segmented Control === */
+.segmented-control {
+  display: flex;
+  background-color: #EEEEF0;
+  border-radius: 10px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.segment-button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0.6rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.segment-button.active {
+  background-color: #FFFFFF;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  color: var(--primary-color);
+}
+
+/* === Profit Analysis Cards in Modal === */
+.profit-card-blue {
+  background: linear-gradient(135deg, #f0f7ff 0%, #e0f2fe 100%);
+  border: 1px solid rgba(186, 230, 253, 0.6);
+}
+.profit-card-gray {
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  border: 1px solid rgba(229, 231, 235, 0.6);
+}
+.profit-card-green {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1px solid rgba(187, 247, 208, 0.6);
+}
+.profit-card-purple {
+  background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+  border: 1px solid rgba(233, 213, 255, 0.6);
+}
+
