@@ -28,6 +28,7 @@ import renewalSettingsHandler from './api/settings/renewal.ts';
 import accountSettingsHandler from './api/settings/account.ts';
 import emailTemplatesHandler from './api/settings/email-templates.ts';
 import backupSettingsHandler from './api/settings/backup.ts';
+import omnichannelSettingsHandler from './api/settings/omnichannel.ts';
 import suppliersHandler from './api/suppliers/index.ts';
 
 import supplierDetailHandler from './api/suppliers/[id].ts';
@@ -117,6 +118,9 @@ app.post('/api/settings/email-templates', emailTemplatesHandler);
 
 app.get('/api/settings/backup', backupSettingsHandler);
 app.post('/api/settings/backup', backupSettingsHandler);
+
+app.get('/api/settings/omnichannel', omnichannelSettingsHandler);
+app.post('/api/settings/omnichannel', omnichannelSettingsHandler);
 
 // Supplier Routes — static routes MUST come BEFORE dynamic :id routes
 app.get('/api/suppliers/dashboard-stats', supplierDashboardStatsHandler);

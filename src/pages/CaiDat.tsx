@@ -19,6 +19,28 @@ interface ISMTPConfig {
   smtp_from: string;
 }
 
+interface IOmnichannelConfig {
+  zaloEnabled: boolean;
+  zaloAccountType: 'oa' | 'personal';
+  zaloAppId: string;
+  zaloSecretKey: string;
+  zaloAccessToken: string;
+  zaloRefreshToken: string;
+  zaloCookie: string;
+  telegramEnabled: boolean;
+  telegramAccountType: 'bot' | 'user';
+  telegramBotToken: string;
+  telegramBotUsername: string;
+  telegramApiId: string;
+  telegramApiHash: string;
+  telegramSession: string;
+  facebookEnabled: boolean;
+  facebookPageId: string;
+  facebookPageAccessToken: string;
+  facebookAppSecret: string;
+  facebookVerifyToken: string;
+}
+
 interface IBankConfig {
   bank_id: string;
   account_no: string;
@@ -195,6 +217,30 @@ const CaiDat: React.FC = () => {
   const [exporting, setExporting] = useState(false);
   const [savingBackup, setSavingBackup] = useState(false);
 
+  // --- OMNICHANNEL STATE ---
+  const [omnichannelConfig, setOmnichannelConfig] = useState<IOmnichannelConfig>({
+    zaloEnabled: false,
+    zaloAccountType: 'oa',
+    zaloAppId: '',
+    zaloSecretKey: '',
+    zaloAccessToken: '',
+    zaloRefreshToken: '',
+    zaloCookie: '',
+    telegramEnabled: false,
+    telegramAccountType: 'bot',
+    telegramBotToken: '',
+    telegramBotUsername: '',
+    telegramApiId: '',
+    telegramApiHash: '',
+    telegramSession: '',
+    facebookEnabled: false,
+    facebookPageId: '',
+    facebookPageAccessToken: '',
+    facebookAppSecret: '',
+    facebookVerifyToken: 'minicrm_omnichannel_verify_token_123'
+  });
+  const [savingOmnichannel, setSavingOmnichannel] = useState(false);
+
   // --- NEW LOAD FUNCTIONS ---
   const loadGeneralConfig = async () => {
     try {
@@ -238,13 +284,21 @@ const CaiDat: React.FC = () => {
     } catch (err) { console.error(err); }
   };
 
+  const loadOmnichannelConfig = async () => {
+    try {
+      const res = await api.get<{ success: boolean; data: any }>('/settings/omnichannel');
+      if (res.data.success && res.data.data) setOmnichannelConfig(res.data.data);
+    } catch (err) { console.error(err); }
+  };
+
   useEffect(() => {
     const init = async () => {
       setLoading(true);
       await Promise.all([
         loadConfig(), loadBankConfig(), fetchBanks(),
         loadGeneralConfig(), loadInvoiceConfig(), loadRenewalConfig(),
-        loadAccountInfo(), loadEmailTemplates(), loadBackupConfig()
+        loadAccountInfo(), loadEmailTemplates(), loadBackupConfig(),
+        loadOmnichannelConfig()
       ]);
       setLoading(false);
     };
@@ -392,6 +446,31 @@ const CaiDat: React.FC = () => {
     } finally { setSavingBackup(false); }
   };
 
+  const handleOmnichannelChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+    setOmnichannelConfig(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleSaveOmnichannel = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setSavingOmnichannel(true);
+      setMessage(null);
+      const res = await api.post('/settings/omnichannel', omnichannelConfig);
+      if (res.data.success) {
+        setMessage({ text: 'Lưu cấu hình đấu nối đa kênh thành công!', type: 'success' });
+      }
+    } catch (err: any) {
+      setMessage({ text: err.response?.data?.message || 'Lỗi khi lưu cấu hình đấu nối', type: 'error' });
+    } finally {
+      setSavingOmnichannel(false);
+    }
+  };
+
 
   // Thay đổi input form SMTP
   const handleSMTPInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -522,6 +601,7 @@ const CaiDat: React.FC = () => {
           {activeTab === 'account' && 'Quản lý thông tin tài khoản Admin, thay đổi email và đổi mật khẩu đăng nhập'}
           {activeTab === 'email-templates' && 'Tùy chỉnh nội dung email gửi cho khách hàng: bàn giao, nhắc gia hạn và cảm ơn'}
           {activeTab === 'backup' && 'Sao lưu và xuất dữ liệu toàn bộ hệ thống để đảm bảo an toàn thông tin'}
+          {activeTab === 'omnichannel' && 'Đấu nối API & Webhooks cho các kênh nhắn tin: Zalo OA, Telegram Bot, Facebook Messenger để hợp nhất vào Omnichannel Inbox'}
         </p>
       </div>
 
@@ -686,6 +766,26 @@ const CaiDat: React.FC = () => {
           }}
         >
           <FiDownloadCloud /> Sao Lưu
+        </button>
+        <button
+          onClick={() => setSearchParams({ tab: 'omnichannel' })}
+          style={{
+            padding: '8px 16px',
+            border: 'none',
+            background: activeTab === 'omnichannel' ? 'var(--primary-color)' : 'none',
+            color: activeTab === 'omnichannel' ? 'white' : 'var(--text-light)',
+            fontWeight: 600,
+            borderRadius: '10px',
+            cursor: 'pointer',
+            fontSize: '0.85rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            boxShadow: activeTab === 'omnichannel' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
+            transition: 'all 0.2s'
+          }}
+        >
+          <FiMessageSquare /> Đấu nối Chat (Omni)
         </button>
       </div>
 
@@ -1576,6 +1676,444 @@ const CaiDat: React.FC = () => {
                 </form>
               </div>
             </div>
+          )}
+
+          {/* TAB 9: ĐẤU NỐI CHAT (OMNICHANNEL) */}
+          {activeTab === 'omnichannel' && (
+            <form onSubmit={handleSaveOmnichannel} style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+              <div className="table-card widget" style={{ padding: '1.75rem', borderRadius: '20px', backgroundColor: '#FFF' }}>
+                <div style={{ borderBottom: '1px solid #F5F5F7', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+                  <h2 style={{ fontSize: '1.25rem', color: '#1D1D1F', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                    <FiMessageSquare style={{ color: '#0071E3' }} /> Cấu Hình Kết Nối Đa Kênh (Omnichannel Webhooks)
+                  </h2>
+                  <p style={{ color: '#86868B', fontSize: '0.85rem', margin: '4px 0 0 0' }}>
+                    Nhận diện khách hàng tự động khi họ nhắn tin từ Zalo OA, Telegram, Facebook Messenger về CRM.
+                  </p>
+                </div>
+
+                {/* WEBHOOK URL GENERAL INFO */}
+                <div style={{ backgroundColor: '#F5F5F7', borderRadius: '12px', padding: '1.25rem', marginBottom: '1.5rem', border: '1px solid #E5E5EA' }}>
+                  <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#1D1D1F', margin: '0 0 0.5rem 0' }}>🔗 Link Webhook nhận tin nhắn của bạn</h3>
+                  <p style={{ fontSize: '0.8rem', color: '#515154', margin: '0 0 0.75rem 0' }}>
+                    Hãy copy đường dẫn webhook dưới đây để điền vào phần cấu hình Webhook trên trang quản trị nhà phát triển của Zalo, Telegram, và Facebook:
+                  </p>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <input
+                      type="text"
+                      readOnly
+                      value={`${window.location.origin}/api/omnichannel/webhook`}
+                      style={{
+                        flex: 1,
+                        minWidth: '280px',
+                        height: '38px',
+                        backgroundColor: '#FFF',
+                        border: '1px solid #D2D2D7',
+                        borderRadius: '8px',
+                        padding: '0 10px',
+                        fontSize: '0.85rem',
+                        color: '#1D1D1F',
+                        fontFamily: 'monospace',
+                        outline: 'none'
+                      }}
+                      id="webhook_url_input"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const copyText = document.getElementById('webhook_url_input') as HTMLInputElement;
+                        if (copyText) {
+                          navigator.clipboard.writeText(copyText.value);
+                          alert('Đã copy đường dẫn Webhook!');
+                        }
+                      }}
+                      style={{
+                        height: '38px',
+                        backgroundColor: '#0071E3',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '0 16px',
+                        fontWeight: 600,
+                        fontSize: '0.8rem',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s'
+                      }}
+                    >
+                      Copy Link
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem' }}>
+
+                  {/* 1. TELEGRAM BOT INTEGRATION */}
+                  <div style={{ border: '1px solid #E5E5EA', borderRadius: '16px', padding: '1.5rem', backgroundColor: '#FFF' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ backgroundColor: '#229ED9', color: '#FFF', width: '36px', height: '36px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.1rem' }}>T</div>
+                        <div>
+                          <h3 style={{ margin: 0, fontSize: '1rem', color: '#1D1D1F' }}>Đấu nối Telegram Bot</h3>
+                          <span style={{ fontSize: '0.75rem', color: '#86868B' }}>Tích hợp chatbot Telegram chăm sóc khách hàng</span>
+                        </div>
+                      </div>
+                      <label style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
+                        <span style={{ fontSize: '0.8rem', marginRight: '8px', fontWeight: 500, color: omnichannelConfig.telegramEnabled ? '#34C759' : '#86868B' }}>
+                          {omnichannelConfig.telegramEnabled ? 'Đang bật' : 'Đang tắt'}
+                        </span>
+                        <input
+                          type="checkbox"
+                          name="telegramEnabled"
+                          checked={omnichannelConfig.telegramEnabled}
+                          onChange={handleOmnichannelChange}
+                          style={{ width: '38px', height: '20px', cursor: 'pointer' }}
+                        />
+                      </label>
+                    </div>
+
+                    {omnichannelConfig.telegramEnabled && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                        <div style={{ maxWidth: '400px' }}>
+                          <label style={{ fontSize: '0.8rem', fontWeight: 600, display: 'block', marginBottom: '6px' }}>Loại kết nối Telegram:</label>
+                          <select
+                            name="telegramAccountType"
+                            value={omnichannelConfig.telegramAccountType}
+                            onChange={handleOmnichannelChange}
+                            style={{ height: '38px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none', fontSize: '0.85rem' }}
+                          >
+                            <option value="bot">Sử dụng Bot Telegram (Khuyên dùng, chính thống)</option>
+                            <option value="user">Sử dụng Tài khoản Cá nhân (Userbot Client)</option>
+                          </select>
+                        </div>
+
+                        {omnichannelConfig.telegramAccountType === 'bot' ? (
+                          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.5rem' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                              <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Telegram Bot Token:</label>
+                                <input
+                                  type="password"
+                                  name="telegramBotToken"
+                                  value={omnichannelConfig.telegramBotToken}
+                                  onChange={handleOmnichannelChange}
+                                  placeholder="e.g. 123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ"
+                                  style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }}
+                                />
+                              </div>
+                              <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Username của Bot (không kèm @):</label>
+                                <input
+                                  type="text"
+                                  name="telegramBotUsername"
+                                  value={omnichannelConfig.telegramBotUsername}
+                                  onChange={handleOmnichannelChange}
+                                  placeholder="e.g. MiniCRM_AssistantBot"
+                                  style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }}
+                                />
+                              </div>
+                            </div>
+
+                            <div style={{ backgroundColor: '#F9FCFF', border: '1px solid #D2E9FF', borderRadius: '12px', padding: '1rem', fontSize: '0.8rem', color: '#334E68', lineHeight: '1.5' }}>
+                              <strong style={{ display: 'block', color: '#102A43', marginBottom: '6px' }}>💡 Hướng dẫn lấy Token Telegram Bot:</strong>
+                              <ol style={{ paddingLeft: '1.2rem', margin: 0 }}>
+                                <li style={{ marginBottom: '4px' }}>Mở Telegram, chat với <strong>@BotFather</strong></li>
+                                <li style={{ marginBottom: '4px' }}>Nhập <code>/newbot</code> để tạo Bot mới</li>
+                                <li style={{ marginBottom: '4px' }}>Copy dãy ký tự <strong>HTTP API Token</strong> dán vào ô bên trái</li>
+                                <li>Bấm <strong>Lưu cấu hình</strong>.</li>
+                              </ol>
+                            </div>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.5rem' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div className="form-group" style={{ marginBottom: 0 }}>
+                                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>API ID:</label>
+                                  <input
+                                    type="text"
+                                    name="telegramApiId"
+                                    value={omnichannelConfig.telegramApiId}
+                                    onChange={handleOmnichannelChange}
+                                    placeholder="e.g. 1234567"
+                                    style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }}
+                                  />
+                                </div>
+                                <div className="form-group" style={{ marginBottom: 0 }}>
+                                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>API Hash:</label>
+                                  <input
+                                    type="password"
+                                    name="telegramApiHash"
+                                    value={omnichannelConfig.telegramApiHash}
+                                    onChange={handleOmnichannelChange}
+                                    placeholder="e.g. abcde12345fghij..."
+                                    style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }}
+                                  />
+                                </div>
+                              </div>
+                              <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Session String / Auth Key (Chuỗi phiên đăng nhập):</label>
+                                <input
+                                  type="text"
+                                  name="telegramSession"
+                                  value={omnichannelConfig.telegramSession}
+                                  onChange={handleOmnichannelChange}
+                                  placeholder="Nhập chuỗi Session chuỗi dài hoặc để trống để login bằng OTP trong log"
+                                  style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }}
+                                />
+                              </div>
+                            </div>
+
+                            <div style={{ backgroundColor: '#FDF6F6', border: '1px solid #FFE3E3', borderRadius: '12px', padding: '1rem', fontSize: '0.8rem', color: '#662222', lineHeight: '1.5' }}>
+                              <strong style={{ display: 'block', color: '#4A1515', marginBottom: '6px' }}>💡 Hướng dẫn tài khoản cá nhân:</strong>
+                              <ol style={{ paddingLeft: '1.2rem', margin: 0 }}>
+                                <li style={{ marginBottom: '4px' }}>Truy cập <strong>my.telegram.org</strong> và đăng nhập bằng số điện thoại của bạn.</li>
+                                <li style={{ marginBottom: '4px' }}>Vào mục <strong>API development tools</strong>.</li>
+                                <li style={{ marginBottom: '4px' }}>Tạo ứng dụng để lấy mã <strong>API ID</strong> và <strong>API Hash</strong> điền sang bên trái.</li>
+                                <li>Chuỗi Session có thể được khởi tạo bằng công cụ script userbot (như Telethon/GramJS) để duy trì đăng nhập mà không cần OTP lại.</li>
+                              </ol>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 2. ZALO OA INTEGRATION */}
+                  <div style={{ border: '1px solid #E5E5EA', borderRadius: '16px', padding: '1.5rem', backgroundColor: '#FFF' }}>
+                    <div style={{ display: 'flex', justifyBetween: 'space-between', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ backgroundColor: '#0068FF', color: '#FFF', width: '36px', height: '36px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.1rem' }}>Z</div>
+                        <div>
+                          <h3 style={{ margin: 0, fontSize: '1rem', color: '#1D1D1F' }}>Đấu nối Zalo Official Account (OA)</h3>
+                          <span style={{ fontSize: '0.75rem', color: '#86868B' }}>Nhận tin nhắn chăm sóc khách hàng tập trung Zalo</span>
+                        </div>
+                      </div>
+                      <label style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
+                        <span style={{ fontSize: '0.8rem', marginRight: '8px', fontWeight: 500, color: omnichannelConfig.zaloEnabled ? '#34C759' : '#86868B' }}>
+                          {omnichannelConfig.zaloEnabled ? 'Đang bật' : 'Đang tắt'}
+                        </span>
+                        <input
+                          type="checkbox"
+                          name="zaloEnabled"
+                          checked={omnichannelConfig.zaloEnabled}
+                          onChange={handleOmnichannelChange}
+                          style={{ width: '38px', height: '20px', cursor: 'pointer' }}
+                        />
+                      </label>
+                    </div>
+
+                    {omnichannelConfig.zaloEnabled && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                        <div style={{ maxWidth: '400px' }}>
+                          <label style={{ fontSize: '0.8rem', fontWeight: 600, display: 'block', marginBottom: '6px' }}>Loại kết nối Zalo:</label>
+                          <select
+                            name="zaloAccountType"
+                            value={omnichannelConfig.zaloAccountType}
+                            onChange={handleOmnichannelChange}
+                            style={{ height: '38px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none', fontSize: '0.85rem' }}
+                          >
+                            <option value="oa">Sử dụng Zalo Official Account (OA - Khuyên dùng, chính thống)</option>
+                            <option value="personal">Sử dụng Zalo Cá nhân (Cookie/Session emulation)</option>
+                          </select>
+                        </div>
+
+                        {omnichannelConfig.zaloAccountType === 'oa' ? (
+                          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.5rem' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div className="form-group" style={{ marginBottom: 0 }}>
+                                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Zalo App ID:</label>
+                                  <input
+                                    type="text"
+                                    name="zaloAppId"
+                                    value={omnichannelConfig.zaloAppId}
+                                    onChange={handleOmnichannelChange}
+                                    placeholder="e.g. 17892305712893"
+                                    style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }}
+                                  />
+                                </div>
+                                <div className="form-group" style={{ marginBottom: 0 }}>
+                                  <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>App Secret Key:</label>
+                                  <input
+                                    type="password"
+                                    name="zaloSecretKey"
+                                    value={omnichannelConfig.zaloSecretKey}
+                                    onChange={handleOmnichannelChange}
+                                    placeholder="Nhập Secret Key"
+                                    style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }}
+                                  />
+                                </div>
+                              </div>
+                              <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Zalo Access Token (OAuth):</label>
+                                <input
+                                  type="password"
+                                  name="zaloAccessToken"
+                                  value={omnichannelConfig.zaloAccessToken}
+                                  onChange={handleOmnichannelChange}
+                                  placeholder="Nhập Access Token dài"
+                                  style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }}
+                                />
+                              </div>
+                              <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Zalo Refresh Token:</label>
+                                <input
+                                  type="password"
+                                  name="zaloRefreshToken"
+                                  value={omnichannelConfig.zaloRefreshToken}
+                                  onChange={handleOmnichannelChange}
+                                  placeholder="Nhập Refresh Token dùng để tự refresh"
+                                  style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }}
+                                />
+                              </div>
+                            </div>
+
+                            <div style={{ backgroundColor: '#F9FCFF', border: '1px solid #D2E9FF', borderRadius: '12px', padding: '1rem', fontSize: '0.8rem', color: '#334E68', lineHeight: '1.5' }}>
+                              <strong style={{ display: 'block', color: '#102A43', marginBottom: '6px' }}>💡 Hướng dẫn lấy Token Zalo OA:</strong>
+                              <ol style={{ paddingLeft: '1.2rem', margin: 0 }}>
+                                <li style={{ marginBottom: '4px' }}>Truy cập <strong>developers.zalo.me</strong></li>
+                                <li style={{ marginBottom: '4px' }}>Tạo ứng dụng mới liên kết với Zalo OA của bạn.</li>
+                                <li style={{ marginBottom: '4px' }}>Cấp quyền tin nhắn và tạo mã Access/Refresh Token kiểm thử dán sang bên trái.</li>
+                                <li>Nhập Webhook URL ở đầu trang vào phần Webhook của Zalo console.</li>
+                              </ol>
+                            </div>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.5rem' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                              <div className="form-group" style={{ marginBottom: 0 }}>
+                                <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Zalo Cookie (zpw_sek / Cookie chuỗi phiên):</label>
+                                <textarea
+                                  name="zaloCookie"
+                                  value={omnichannelConfig.zaloCookie}
+                                  onChange={handleOmnichannelChange}
+                                  placeholder="Nhập chuỗi Cookie zpw_sek lấy từ trình duyệt hoặc Extension F12..."
+                                  rows={4}
+                                  style={{ borderRadius: '8px', border: '1px solid var(--border-color)', padding: '10px', width: '100%', outline: 'none', resize: 'vertical', fontFamily: 'monospace', fontSize: '0.85rem' }}
+                                />
+                              </div>
+                            </div>
+
+                            <div style={{ backgroundColor: '#FDF6F6', border: '1px solid #FFE3E3', borderRadius: '12px', padding: '1rem', fontSize: '0.8rem', color: '#662222', lineHeight: '1.5' }}>
+                              <strong style={{ display: 'block', color: '#4A1515', marginBottom: '6px' }}>💡 Hướng dẫn tài khoản cá nhân Zalo:</strong>
+                              <p style={{ margin: '0 0 6px 0' }}>
+                                Kết nối Zalo cá nhân yêu cầu giả lập phiên đăng nhập (Zalo Web API). Bạn cần lấy cookie phiên hoạt động của mình:
+                              </p>
+                              <ol style={{ paddingLeft: '1.2rem', margin: 0 }}>
+                                <li style={{ marginBottom: '4px' }}>Đăng nhập vào Zalo Web (`chat.zalo.me`) trên trình duyệt máy tính.</li>
+                                <li style={{ marginBottom: '4px' }}>F12 &gt; Application (Ứng dụng) &gt; Cookies &gt; chat.zalo.me</li>
+                                <li style={{ marginBottom: '4px' }}>Sao chép giá trị của cookie có tên <strong>zpw_sek</strong> (chuỗi mã hóa phiên đăng nhập).</li>
+                                <li>Dán giá trị đó vào ô bên trái. * Lưu ý: Phiên Cookie cá nhân có thể hết hạn sau vài tuần và cần cập nhật lại khi mất kết nối.</li>
+                              </ol>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 3. FACEBOOK MESSENGER INTEGRATION */}
+                  <div style={{ border: '1px solid #E5E5EA', borderRadius: '16px', padding: '1.5rem', backgroundColor: '#FFF' }}>
+                    <div style={{ display: 'flex', justifyBetween: 'space-between', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ backgroundColor: '#1877F2', color: '#FFF', width: '36px', height: '36px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.1rem' }}>F</div>
+                        <div>
+                          <h3 style={{ margin: 0, fontSize: '1rem', color: '#1D1D1F' }}>Đấu nối Facebook Messenger</h3>
+                          <span style={{ fontSize: '0.75rem', color: '#86868B' }}>Kết nối Fanpage để trả lời inbox tập trung ngay trên CRM</span>
+                        </div>
+                      </div>
+                      <label style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
+                        <span style={{ fontSize: '0.8rem', marginRight: '8px', fontWeight: 500, color: omnichannelConfig.facebookEnabled ? '#34C759' : '#86868B' }}>
+                          {omnichannelConfig.facebookEnabled ? 'Đang bật' : 'Đang tắt'}
+                        </span>
+                        <input
+                          type="checkbox"
+                          name="facebookEnabled"
+                          checked={omnichannelConfig.facebookEnabled}
+                          onChange={handleOmnichannelChange}
+                          style={{ width: '38px', height: '20px', cursor: 'pointer' }}
+                        />
+                      </label>
+                    </div>
+
+                    {omnichannelConfig.facebookEnabled && (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.5rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                              <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Facebook Page ID:</label>
+                              <input
+                                type="text"
+                                name="facebookPageId"
+                                value={omnichannelConfig.facebookPageId}
+                                onChange={handleOmnichannelChange}
+                                placeholder="e.g. 10928371908273"
+                                style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }}
+                              />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                              <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>App Secret Key:</label>
+                              <input
+                                type="password"
+                                name="facebookAppSecret"
+                                value={omnichannelConfig.facebookAppSecret}
+                                onChange={handleOmnichannelChange}
+                                placeholder="App Secret Key"
+                                style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }}
+                              />
+                            </div>
+                          </div>
+                          <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Page Access Token:</label>
+                            <input
+                              type="password"
+                              name="facebookPageAccessToken"
+                              value={omnichannelConfig.facebookPageAccessToken}
+                              onChange={handleOmnichannelChange}
+                              placeholder="EAAG..."
+                              style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }}
+                            />
+                          </div>
+                          <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Verify Token (Chuỗi xác minh Webhook tự đặt):</label>
+                            <input
+                              type="text"
+                              name="facebookVerifyToken"
+                              value={omnichannelConfig.facebookVerifyToken}
+                              onChange={handleOmnichannelChange}
+                              placeholder="Nhập verify token tùy ý"
+                              style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }}
+                            />
+                          </div>
+                        </div>
+
+                        <div style={{ backgroundColor: '#F9FCFF', border: '1px solid #D2E9FF', borderRadius: '12px', padding: '1rem', fontSize: '0.8rem', color: '#334E68', lineHeight: '1.5' }}>
+                          <strong style={{ display: 'block', color: '#102A43', marginBottom: '6px' }}>💡 Hướng dẫn kết nối Facebook Fanpage:</strong>
+                          <ol style={{ paddingLeft: '1.2rem', margin: 0 }}>
+                            <li style={{ marginBottom: '4px' }}>Truy cập <strong>developers.facebook.com</strong> &gt; Tạo App loại kinh doanh/doanh nghiệp.</li>
+                            <li style={{ marginBottom: '4px' }}>Thêm sản phẩm <strong>Messenger</strong> vào ứng dụng của bạn.</li>
+                            <li style={{ marginBottom: '4px' }}>Liên kết với Fanpage của bạn để lấy mã <strong>Page ID</strong> và tạo ra **Page Access Token**.</li>
+                            <li style={{ marginBottom: '4px' }}>Cài đặt Webhook, nhập đường dẫn Webhook của bạn ở đầu trang, và nhập <strong>Verify Token</strong> khớp với ô bên cạnh.</li>
+                            <li>Đăng ký (Subscribe) các sự kiện <code>messages</code>, <code>messaging_postbacks</code> của Webhook.</li>
+                          </ol>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                </div>
+
+                <div style={{ marginTop: '2rem', borderTop: '1px solid #F5F5F7', paddingTop: '1.5rem' }}>
+                  <button
+                    type="submit"
+                    className="btn-save"
+                    disabled={savingOmnichannel}
+                    style={{ width: '100%', height: '46px', fontWeight: 600, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.95rem' }}
+                  >
+                    {savingOmnichannel ? 'Đang lưu cấu hình...' : <><FiSave /> Lưu Cấu Hình Đấu Nối</>}
+                  </button>
+                </div>
+              </div>
+            </form>
           )}
         </div>
       )}
