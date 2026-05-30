@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext.tsx';
 import {
   FiHome, FiUsers, FiShoppingCart, FiBox, FiKey,
   FiClock, FiBriefcase, FiSettings, FiLogOut, FiChevronRight,
-  FiDollarSign, FiTrendingUp, FiDownload, FiGrid
+  FiDollarSign, FiTrendingUp, FiDownload, FiGrid, FiMessageCircle
 } from 'react-icons/fi';
 
 import logo from '../assets/logo.png';
@@ -46,6 +46,9 @@ const Sidebar: React.FC = () => {
         </NavLink>
         <NavLink to="/ban-hang" className="nav-item">
           <FiShoppingCart /> Bán Hàng & Hóa Đơn
+        </NavLink>
+        <NavLink to="/omnichannel" className="nav-item">
+          <FiMessageCircle /> Omni-channel Inbox
         </NavLink>
 
         {/* --- NHÓM 2: QUẢN LÝ KHO & HẠN DÙNG --- */}

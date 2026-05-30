@@ -18,6 +18,7 @@ import CustomerDetail from './pages/CustomerDetail.tsx';
 import QuanLyGiaHan from './pages/QuanLyGiaHan.tsx';
 import CaiDat from './pages/CaiDat.tsx';
 import NhaCungCap from './pages/NhaCungCap.tsx';
+import OmnichannelInbox from './pages/OmnichannelInbox.tsx';
 
 
 // Component bảo vệ (Protected Route)
@@ -57,6 +58,7 @@ function App() {
         <Route path="/ban-hang" element={<BanHang />} />
         <Route path="/kho-tai-nguyen" element={<KhoTaiNguyen />} />
         <Route path="/ban-quyen-ca-nhan" element={<BanQuyenCaNhan />} />
+        <Route path="/omnichannel" element={<OmnichannelInbox />} />
         
         {/* Các trang khác */}
         <Route path="/gia-han" element={<QuanLyGiaHan />} />
