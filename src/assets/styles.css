@@ -1696,6 +1696,7 @@ h5 {
   width: auto !important;
   box-shadow: none !important;
   margin-right: 6px !important;
+  white-space: nowrap !important;
 }
 
 .btn-renew-action:hover {
@@ -1725,6 +1726,7 @@ h5 {
   color: #FFFFFF !important;
   width: auto !important;
   box-shadow: 0 2px 4px rgba(0, 113, 227, 0.15) !important;
+  white-space: nowrap !important;
 }
 
 .btn-remind-action:hover {

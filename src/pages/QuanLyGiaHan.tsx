@@ -563,7 +563,7 @@ const QuanLyGiaHan: React.FC = () => {
                     </td>
 
                     {/* 4. Thời hạn còn lại */}
-                    <td>
+                    <td style={{ whiteSpace: 'nowrap' }}>
                       <span style={{ 
                         padding: '4px 10px', 
                         borderRadius: '20px', 
@@ -571,7 +571,8 @@ const QuanLyGiaHan: React.FC = () => {
                         fontWeight: 600, 
                         color: expiry.color, 
                         backgroundColor: expiry.bg,
-                        display: 'inline-block'
+                        display: 'inline-block',
+                        whiteSpace: 'nowrap'
                       }}>
                         {expiry.text}
                       </span>
@@ -633,7 +634,7 @@ const QuanLyGiaHan: React.FC = () => {
                     </td>
 
                     {/* 7. Thao tác */}
-                    <td style={{ textAlign: 'right' }}>
+                    <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                       <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end' }}>
                         <button 
                           className="btn-renew-action" 
