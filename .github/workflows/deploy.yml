@@ -28,7 +28,7 @@ jobs:
       - name: Compress files for transfer
         # Đóng gói tất cả các file chạy backend & frontend đã build
         run: |
-          tar -czf deploy.tar.gz dist api server.ts loadEnv.ts package.json package-lock.json tsconfig.json tsconfig.node.json
+          tar -czf deploy.tar.gz dist api server.ts loadEnv.ts seed-data.js package.json package-lock.json tsconfig.json tsconfig.node.json
 
       - name: Upload build artifact
         # Đẩy gói build lên hệ thống lưu trữ tạm thời của Github Artifacts
