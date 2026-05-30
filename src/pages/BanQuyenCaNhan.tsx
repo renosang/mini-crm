@@ -175,32 +175,32 @@ const BanQuyenCaNhan: React.FC = () => {
 
       {/* Widgets thống kê */}
       <div className="stats-grid-3" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', marginBottom: '2rem' }}>
-        <div className="stat-card widget" style={{ background: 'linear-gradient(135deg, #FBFBFD, #F5F5F7)' }}>
-          <div className="stat-card-icon icon-total" style={{ backgroundColor: '#E3F2FD', color: '#1E88E5' }}><FiGrid /></div>
+        <div className="stat-card widget stat-card-blue">
+          <div className="stat-card-icon"><FiGrid /></div>
           <div className="stat-card-info">
             <h3>Tổng Tài Nguyên</h3>
-            <p>{licenses.length} tài nguyên</p>
+            <p className="stat-card-value">{licenses.length} tài nguyên</p>
           </div>
         </div>
-        <div className="stat-card widget" style={{ background: 'linear-gradient(135deg, #EBF9EB, #D1F2D1)' }}>
-          <div className="stat-card-icon icon-new" style={{ backgroundColor: '#E8F5E9', color: '#4CAF50' }}><FiCheckCircle /></div>
+        <div className="stat-card widget stat-card-green">
+          <div className="stat-card-icon"><FiCheckCircle /></div>
           <div className="stat-card-info">
             <h3>Đang Hoạt Động</h3>
-            <p style={{ color: '#2E7D32', fontWeight: 700 }}>{activeCount} tài nguyên</p>
+            <p className="stat-card-value">{activeCount} tài nguyên</p>
           </div>
         </div>
-        <div className="stat-card widget" style={{ background: 'linear-gradient(135deg, #FFF5F5, #FFD2D2)' }}>
-          <div className="stat-card-icon icon-source" style={{ backgroundColor: '#FFEBEE', color: '#FF3B30' }}><FiAlertTriangle /></div>
+        <div className="stat-card widget stat-card-orange">
+          <div className="stat-card-icon"><FiAlertTriangle /></div>
           <div className="stat-card-info">
             <h3>Hết Hạn / Tạm Dừng</h3>
-            <p style={{ color: '#C62828', fontWeight: 700 }}>{expiredCount + licenses.filter(l => l.status === 'suspended').length} tài nguyên</p>
+            <p className="stat-card-value">{expiredCount + licenses.filter(l => l.status === 'suspended').length} tài nguyên</p>
           </div>
         </div>
-        <div className="stat-card widget">
-          <div className="stat-card-icon icon-source" style={{ backgroundColor: '#EDE7F6', color: '#5E35B1' }}><FiBriefcase /></div>
+        <div className="stat-card widget stat-card-purple">
+          <div className="stat-card-icon"><FiBriefcase /></div>
           <div className="stat-card-info">
             <h3>Tổng Phí Duy Trì</h3>
-            <p style={{ fontWeight: 700 }}>{totalCost.toLocaleString('vi-VN')} đ</p>
+            <p className="stat-card-value">{totalCost.toLocaleString('vi-VN')} đ</p>
           </div>
         </div>
       </div>
@@ -208,13 +208,14 @@ const BanQuyenCaNhan: React.FC = () => {
       {/* Thanh bộ lọc & Tìm kiếm */}
       <div className="widget" style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', padding: '1rem 1.25rem' }}>
         <div style={{ flex: 1, position: 'relative', minWidth: '200px' }}>
-          <FiSearch style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-light)' }} />
+          <FiSearch style={{ position: 'absolute', left: '14px', top: '14px', color: 'var(--text-light)', zIndex: 5 }} />
           <input 
             type="text" 
+            className="search-input"
             placeholder="Tìm tên, tài khoản hoặc key..." 
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            style={{ paddingLeft: '35px', marginBottom: 0 }}
+            style={{ maxWidth: '100%', width: '100%', marginBottom: 0 }}
           />
         </div>
         <div>
@@ -292,7 +293,7 @@ const BanQuyenCaNhan: React.FC = () => {
                         )}
                       </div>
                     </td>
-                    <td style={{ fontWeight: 700, color: 'var(--text-dark)' }}>
+                    <td style={{ fontWeight: 700, color: '#1D1D1F', fontSize: '0.95rem' }}>
                       {item.cost.toLocaleString('vi-VN')} đ
                     </td>
                     <td>
