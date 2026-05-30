@@ -184,7 +184,9 @@ const QuanLyGiaHan: React.FC = () => {
     if (diffDays < 0) {
       return { days: diffDays, text: `Quá hạn ${Math.abs(diffDays)} ngày`, color: '#FF3B30', bg: '#FFEBEA', label: 'expired' };
     } else if (diffDays === 0) {
-      return { days: 0, text: 'Hết hạn hôm nay', color: '#FF9500', bg: '#FFF3E0', label: 'today' };
+      return { days: 0, text: 'Hết hạn hôm nay', color: '#FF3B30', bg: '#FFEBEA', label: 'expired' };
+    } else if (diffDays <= 3) {
+      return { days: diffDays, text: `🚨 Chỉ còn ${diffDays} ngày`, color: '#FF3B30', bg: '#FFEBEA', label: 'soon-urgent' };
     } else if (diffDays <= 7) {
       return { days: diffDays, text: `Còn ${diffDays} ngày`, color: '#FF9500', bg: '#FFF3E0', label: 'soon' };
     } else {
@@ -209,7 +211,7 @@ const QuanLyGiaHan: React.FC = () => {
     // 2. Bộ lọc thời hạn
     const expiryInfo = getDaysRemaining(sub.validUntil);
     if (timeFilter === 'expired' && expiryInfo.label !== 'expired') return false;
-    if (timeFilter === 'soon' && expiryInfo.label !== 'soon' && expiryInfo.label !== 'today') return false;
+    if (timeFilter === 'soon' && expiryInfo.label !== 'soon' && expiryInfo.label !== 'soon-urgent') return false;
     if (timeFilter === 'safe' && expiryInfo.label !== 'safe') return false;
 
     // 3. Bộ lọc phân loại tài nguyên
@@ -227,7 +229,7 @@ const QuanLyGiaHan: React.FC = () => {
     subscriptions.forEach(sub => {
       const exp = getDaysRemaining(sub.validUntil);
       if (exp.label === 'expired') expiredCount++;
-      else if (exp.label === 'soon' || exp.label === 'today') soonCount++;
+      else if (exp.label === 'soon' || exp.label === 'soon-urgent') soonCount++;
       else safeCount++;
     });
 

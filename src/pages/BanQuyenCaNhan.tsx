@@ -297,12 +297,35 @@ const BanQuyenCaNhan: React.FC = () => {
                       {item.cost.toLocaleString('vi-VN')} đ
                     </td>
                     <td>
-                      {item.valid_until ? (
-                        <div style={{ fontSize: '0.85rem' }}>
-                          <FiCalendar style={{ marginRight: '4px', verticalAlign: 'middle' }} />
-                          {new Date(item.valid_until).toLocaleDateString('vi-VN')}
-                        </div>
-                      ) : (
+                      {item.valid_until ? (() => {
+                        const expiry = new Date(item.valid_until);
+                        const today = new Date();
+                        expiry.setHours(0,0,0,0);
+                        today.setHours(0,0,0,0);
+                        const diffTime = expiry.getTime() - today.getTime();
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        
+                        let style: React.CSSProperties = { fontSize: '0.85rem' };
+                        let labelPrefix = '';
+                        
+                        if (diffDays < 0) {
+                          style = { fontSize: '0.85rem', color: '#FF3B30', fontWeight: 600, backgroundColor: '#FFEBEA', padding: '2px 6px', borderRadius: '6px', display: 'inline-block' };
+                          labelPrefix = '🚨 Quá hạn: ';
+                        } else if (diffDays <= 3) {
+                          style = { fontSize: '0.85rem', color: '#FF3B30', fontWeight: 600, backgroundColor: '#FFEBEA', padding: '2px 6px', borderRadius: '6px', display: 'inline-block' };
+                          labelPrefix = '⚠️ Sắp hết hạn: ';
+                        } else if (diffDays <= 7) {
+                          style = { fontSize: '0.85rem', color: '#FF9500', fontWeight: 600, backgroundColor: '#FFF3E0', padding: '2px 6px', borderRadius: '6px', display: 'inline-block' };
+                          labelPrefix = '⏳ ';
+                        }
+
+                        return (
+                          <div style={style}>
+                            <FiCalendar style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+                            {labelPrefix}{new Date(item.valid_until).toLocaleDateString('vi-VN')}
+                          </div>
+                        );
+                      })() : (
                         <span style={{ color: 'var(--text-light)', fontStyle: 'italic' }}>Không thời hạn</span>
                       )}
                     </td>

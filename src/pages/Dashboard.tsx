@@ -167,7 +167,9 @@ const Dashboard: React.FC = () => {
     if (diffDays < 0) {
       return { days: diffDays, text: `Quá hạn ${Math.abs(diffDays)} ngày`, color: '#FF3B30', bg: '#FFEBEA', label: 'expired' };
     } else if (diffDays === 0) {
-      return { days: 0, text: 'Hết hạn hôm nay', color: '#FF9500', bg: '#FFF3E0', label: 'today' };
+      return { days: 0, text: 'Hết hạn hôm nay', color: '#FF3B30', bg: '#FFEBEA', label: 'expired' };
+    } else if (diffDays <= 3) {
+      return { days: diffDays, text: `🚨 Chỉ còn ${diffDays} ngày`, color: '#FF3B30', bg: '#FFEBEA', label: 'soon-urgent' };
     } else if (diffDays <= 7) {
       return { days: diffDays, text: `Còn ${diffDays} ngày`, color: '#FF9500', bg: '#FFF3E0', label: 'soon' };
     } else {
@@ -178,9 +180,34 @@ const Dashboard: React.FC = () => {
   // Lọc lấy danh sách thuê bao gia hạn gấp (Đã hết hạn hoặc sắp hết hạn trong 7 ngày), giới hạn tối đa 5 bản ghi
   const urgentRenewals = subscriptions
     .map(sub => ({ ...sub, expiry: getDaysRemaining(sub.validUntil) }))
-    .filter(sub => sub.expiry.label === 'expired' || sub.expiry.label === 'soon' || sub.expiry.label === 'today')
+    .filter(sub => sub.expiry.label === 'expired' || sub.expiry.label === 'soon' || sub.expiry.label === 'soon-urgent' || sub.expiry.label === 'today')
     .sort((a, b) => a.expiry.days - b.expiry.days)
     .slice(0, 5);
+
+  // Tính toán số lượng tồn kho theo sản phẩm
+  const productStockStats = (() => {
+    const map: Record<string, { available: number; total: number; slotsFree: number; slotsTotal: number }> = {};
+    accounts.forEach(acc => {
+      const prod = acc.product_type;
+      if (!map[prod]) {
+        map[prod] = { available: 0, total: 0, slotsFree: 0, slotsTotal: 0 };
+      }
+      map[prod].total++;
+      if (acc.status === 'available') {
+        map[prod].available++;
+      }
+      if (acc.resource_type === 'slot') {
+        const total = acc.total_slots || 5;
+        const used = acc.used_slots || 0;
+        map[prod].slotsFree += (total - used);
+        map[prod].slotsTotal += total;
+      }
+    });
+    return Object.entries(map).map(([name, val]) => ({
+      name,
+      ...val
+    })).sort((a, b) => b.available - a.available);
+  })();
 
   // Lấy 5 đơn hàng gần đây nhất
   const recentOrders = orders
@@ -478,6 +505,68 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
+      </div>
+
+      {/* 5. Phân Hệ Tồn Kho Khả Dụng Theo Sản Phẩm */}
+      <div className="dashboard-section-card" style={{ marginTop: '1.75rem', marginBottom: '1.75rem' }}>
+        <div className="dashboard-section-header" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', marginBottom: '1rem' }}>
+          <h2><FiBox style={{ color: '#34C759' }} /> Tình Trạng Kho Hàng Khả Dụng</h2>
+          <Link to="/kho-tai-nguyen" className="dashboard-view-all">Chi tiết kho →</Link>
+        </div>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="styled-table" style={{ fontSize: '0.875rem', margin: 0 }}>
+            <thead>
+              <tr>
+                <th>Tên sản phẩm</th>
+                <th>Dạng tài nguyên</th>
+                <th>Hàng có sẵn (Còn trong kho)</th>
+                <th>Tổng nhập kho</th>
+              </tr>
+            </thead>
+            <tbody>
+              {productStockStats.length > 0 ? (
+                productStockStats.map((prod, idx) => {
+                  const sampleAcc = accounts.find(a => a.product_type === prod.name);
+                  const resType = sampleAcc?.resource_type || 'id_pass';
+                  const resTypeLabel = resType === 'slot' ? '👥 Slot' : resType === 'key' ? '🎟️ Key' : '🔑 ID:Pass';
+                  
+                  return (
+                    <tr key={idx}>
+                      <td><strong>{prod.name}</strong></td>
+                      <td>
+                        <span className="product-badge" style={{
+                          backgroundColor: resType === 'slot' ? '#FAF5FE' : resType === 'key' ? '#F4FBF6' : '#F2F7FD',
+                          color: resType === 'slot' ? '#AF52DE' : resType === 'key' ? '#34C759' : '#0071E3',
+                          fontSize: '0.75rem',
+                          padding: '2px 8px',
+                          borderRadius: '8px',
+                          fontWeight: 600
+                        }}>{resTypeLabel}</span>
+                      </td>
+                      <td>
+                        {resType === 'slot' ? (
+                          <div>
+                            <strong style={{ color: prod.slotsFree > 0 ? '#34C759' : '#FF3B30' }}>{prod.slotsFree} slots trống</strong>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-light)', marginLeft: '6px' }}>(trong {prod.slotsTotal} tổng slots)</span>
+                          </div>
+                        ) : (
+                          <strong style={{ color: prod.available > 0 ? '#34C759' : '#FF3B30' }}>{prod.available} sản phẩm</strong>
+                        )}
+                      </td>
+                      <td>{prod.total} sản phẩm</td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={4} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-light)' }}>
+                    Không có dữ liệu hàng hóa trong kho.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* ==========================================================================
