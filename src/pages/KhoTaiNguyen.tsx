@@ -340,32 +340,32 @@ const KhoTaiNguyen: React.FC = () => {
 
       {/* Widgets thống kê kho */}
       <div className="stats-grid-3" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', marginBottom: '2rem' }}>
-        <div className="stat-card widget" style={{ background: 'linear-gradient(135deg, #FBFBFD, #F5F5F7)' }}>
-          <div className="stat-card-icon icon-total" style={{ backgroundColor: '#E3F2FD', color: '#1E88E5' }}><FiLayers /></div>
+        <div className="stat-card widget stat-card-blue">
+          <div className="stat-card-icon"><FiLayers /></div>
           <div className="stat-card-info">
             <h3>Tổng Tài Nguyên Nhập Kho</h3>
-            <p>{accounts.length} sản phẩm</p>
+            <p className="stat-card-value">{accounts.length} sản phẩm</p>
           </div>
         </div>
-        <div className="stat-card widget" style={{ background: 'linear-gradient(135deg, #EBF9EB, #D1F2D1)' }}>
-          <div className="stat-card-icon icon-new" style={{ backgroundColor: '#E8F5E9', color: '#4CAF50' }}><FiCheckCircle /></div>
+        <div className="stat-card widget stat-card-green">
+          <div className="stat-card-icon"><FiCheckCircle /></div>
           <div className="stat-card-info">
             <h3>Hàng Có Sẵn</h3>
-            <p style={{ color: '#2E7D32', fontWeight: 700 }}>{totalInStock} sản phẩm</p>
+            <p className="stat-card-value">{totalInStock} sản phẩm</p>
           </div>
         </div>
-        <div className="stat-card widget" style={{ background: 'linear-gradient(135deg, #FFFDE8, #FFF9C4)' }}>
-          <div className="stat-card-icon icon-source" style={{ backgroundColor: '#FFFDE7', color: '#FBC02D' }}><FiTrendingUp /></div>
+        <div className="stat-card widget stat-card-orange">
+          <div className="stat-card-icon"><FiTrendingUp /></div>
           <div className="stat-card-info">
             <h3>Đã Bàn Giao</h3>
-            <p style={{ color: '#D27B00', fontWeight: 700 }}>{totalSold} sản phẩm</p>
+            <p className="stat-card-value">{totalSold} sản phẩm</p>
           </div>
         </div>
-        <div className="stat-card widget">
-          <div className="stat-card-icon icon-source" style={{ backgroundColor: '#EDE7F6', color: '#5E35B1' }}><FiDollarSign /></div>
+        <div className="stat-card widget stat-card-purple">
+          <div className="stat-card-icon"><FiDollarSign /></div>
           <div className="stat-card-info">
             <h3>Giá trị vốn tồn kho</h3>
-            <p style={{ fontWeight: 700 }}>{totalValue.toLocaleString('vi-VN')} đ</p>
+            <p className="stat-card-value">{totalValue.toLocaleString('vi-VN')} đ</p>
           </div>
         </div>
       </div>
@@ -647,7 +647,7 @@ const KhoTaiNguyen: React.FC = () => {
                         </div>
                       )}
                     </td>
-                    <td style={{ fontWeight: 700, color: '#1D1D1F' }}>
+                    <td style={{ fontWeight: 700, color: '#1D1D1F', fontSize: '0.95rem' }}>
                       {item.cost.toLocaleString('vi-VN')} đ
                     </td>
                     <td>
@@ -706,54 +706,20 @@ const KhoTaiNguyen: React.FC = () => {
                 
                 {/* SWITCH TABS (CHỈ KHI THÊM MỚI TÀI NGUYÊN) */}
                 {!editingAccount && (
-                  <div style={{ 
-                    display: 'flex', 
-                    backgroundColor: '#F2F2F7', 
-                    padding: '4px', 
-                    borderRadius: '10px', 
-                    marginBottom: '1.25rem' 
-                  }}>
+                  <div className="segmented-control" style={{ marginBottom: '1.25rem' }}>
                     <button
                       type="button"
                       onClick={() => { setActiveTab('single'); setResourceType('id_pass'); }}
-                      style={{
-                        flex: 1,
-                        padding: '8px',
-                        border: 'none',
-                        borderRadius: '8px',
-                        fontWeight: activeTab === 'single' ? 600 : 400,
-                        backgroundColor: activeTab === 'single' ? '#FFF' : 'transparent',
-                        color: activeTab === 'single' ? '#1D1D1F' : 'var(--text-light)',
-                        boxShadow: activeTab === 'single' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                        cursor: 'pointer',
-                        fontSize: '0.85rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px'
-                      }}
+                      className={`segment-button ${activeTab === 'single' ? 'active' : ''}`}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                     >
                       <FiBox /> Nhập Từng Sản Phẩm
                     </button>
                     <button
                       type="button"
                       onClick={() => { setActiveTab('bulk'); setResourceType('id_pass'); }}
-                      style={{
-                        flex: 1,
-                        padding: '8px',
-                        border: 'none',
-                        borderRadius: '8px',
-                        fontWeight: activeTab === 'bulk' ? 600 : 400,
-                        backgroundColor: activeTab === 'bulk' ? '#FFF' : 'transparent',
-                        color: activeTab === 'bulk' ? '#1D1D1F' : 'var(--text-light)',
-                        boxShadow: activeTab === 'bulk' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                        cursor: 'pointer',
-                        fontSize: '0.85rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px'
-                      }}
+                      className={`segment-button ${activeTab === 'bulk' ? 'active' : ''}`}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                     >
                       <FiGrid /> Nhập Hàng Loạt (Bulk MMO Importer)
                     </button>
@@ -810,60 +776,26 @@ const KhoTaiNguyen: React.FC = () => {
                 {/* 3. Apple Segmented Control chọn dạng tài nguyên */}
                 <div className="form-group" style={{ marginBottom: '1.25rem' }}>
                   <label style={{ fontWeight: 600, color: 'var(--text-dark)' }}>Dạng Tài Nguyên Kho</label>
-                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.35rem' }}>
+                  <div className="segmented-control" style={{ marginTop: '0.35rem' }}>
                     <button 
                       type="button" 
-                      style={{ 
-                        flex: 1, 
-                        padding: '0.65rem', 
-                        borderRadius: '8px', 
-                        border: '1px solid ' + (resourceType === 'id_pass' ? '#0071E3' : '#E5E5EA'), 
-                        backgroundColor: resourceType === 'id_pass' ? '#F2F8FE' : '#FFF', 
-                        color: resourceType === 'id_pass' ? '#0071E3' : 'var(--text-dark)',
-                        fontWeight: resourceType === 'id_pass' ? 600 : 400,
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        fontSize: '0.85rem'
-                      }}
+                      className={`segment-button ${resourceType === 'id_pass' ? 'active' : ''}`}
                       onClick={() => setResourceType('id_pass')}
                     >
                       🔑 Tài Khoản (ID:Pass)
                     </button>
                     <button 
                       type="button" 
-                      style={{ 
-                        flex: 1, 
-                        padding: '0.65rem', 
-                        borderRadius: '8px', 
-                        border: '1px solid ' + (resourceType === 'key' ? '#34C759' : '#E5E5EA'), 
-                        backgroundColor: resourceType === 'key' ? '#F4FBF6' : '#FFF', 
-                        color: resourceType === 'key' ? '#34C759' : 'var(--text-dark)',
-                        fontWeight: resourceType === 'key' ? 600 : 400,
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        fontSize: '0.85rem'
-                      }}
+                      className={`segment-button ${resourceType === 'key' ? 'active' : ''}`}
                       onClick={() => setResourceType('key')}
                     >
                       🎟️ Key Kích Hoạt
                     </button>
-                    
                     {/* CHỈ HIỂN THỊ CHỌN SLOT KHI Ở TAB NHẬP ĐƠN LẺ */}
                     {activeTab === 'single' && (
                       <button 
                         type="button" 
-                        style={{ 
-                          flex: 1, 
-                          padding: '0.65rem', 
-                          borderRadius: '8px', 
-                          border: '1px solid ' + (resourceType === 'slot' ? '#AF52DE' : '#E5E5EA'), 
-                          backgroundColor: resourceType === 'slot' ? '#FAF5FE' : '#FFF', 
-                          color: resourceType === 'slot' ? '#AF52DE' : 'var(--text-dark)',
-                          fontWeight: resourceType === 'slot' ? 600 : 400,
-                          cursor: 'pointer',
-                          transition: 'all 0.2s',
-                          fontSize: '0.85rem'
-                        }}
+                        className={`segment-button ${resourceType === 'slot' ? 'active' : ''}`}
                         onClick={() => setResourceType('slot')}
                       >
                         👥 Gán Slot Bản Quyền
