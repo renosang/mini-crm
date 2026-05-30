@@ -1,0 +1,75 @@
+name: Deploy Mini CRM to VPS
+
+on:
+  push:
+    branches:
+      - main # Thay đổi thành nhánh của bạn nếu khác (ví dụ: master)
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-size: 20
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Compress files for transfer
+        # Nén các file cần thiết để copy sang VPS nhanh và nhẹ hơn
+        # Bao gồm: dist (frontend), api, server.ts, loadEnv.ts, package.json, package-lock.json, tsconfig.json, tsconfig.node.json
+        run: |
+          tar -czf deploy.tar.gz dist api server.ts loadEnv.ts package.json package-lock.json tsconfig.json tsconfig.node.json
+
+      - name: Copy build artifacts to VPS via SCP
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          source: "deploy.tar.gz"
+          target: "/var/www/mini-crm"
+
+      - name: Extract and restart app on VPS via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            cd /var/www/mini-crm
+            # Giải nén đè lên các file cũ
+            tar -xzf deploy.tar.gz
+            rm deploy.tar.gz
+            
+            # Cài đặt dependencies (bao gồm devDeps để có tsx chạy server)
+            npm install
+            
+            # Khởi động hoặc restart bằng PM2 với port 5004
+            # Kiểm tra xem app đã chạy trong PM2 chưa, nếu chưa thì start mới, có rồi thì reload để không gián đoạn
+            export PORT=5004
+            export NODE_ENV=production
+            
+            if pm2 describe mini-crm > /dev/null 2>&1; then
+              pm2 trigger mini-crm reload
+              # Hoặc dùng pm2 reload nếu cấu hình dạng cluster/ecosystem
+              PORT=5004 pm2 reload mini-crm --update-env
+            else
+              PORT=5004 pm2 start npx --name "mini-crm" -- tsx server.ts
+            fi
+            
+            # Lưu lại trạng thái PM2 để tự khởi động khi VPS reboot
+            pm2 save
