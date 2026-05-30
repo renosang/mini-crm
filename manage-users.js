@@ -2,22 +2,32 @@ import fs from 'fs';
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-// Read .env.local
-const envPath = './.env.local';
+// Read env file (.env.local or .env)
 let envContent;
+let envPath = './.env.local';
 try {
-  envContent = fs.readFileSync(envPath, 'utf8');
+  if (fs.existsSync(envPath)) {
+    envContent = fs.readFileSync(envPath, 'utf8');
+  } else {
+    envPath = './.env';
+    if (fs.existsSync(envPath)) {
+      envContent = fs.readFileSync(envPath, 'utf8');
+    } else {
+      throw new Error("No env file found");
+    }
+  }
 } catch (e) {
-  console.error("Failed to read .env.local at", envPath, e.message);
+  console.error("Failed to read environment file:", e.message);
   process.exit(1);
 }
 
 const match = envContent.match(/^\s*MONGODB_URI=["']?([^"'\r\n]+)["']?/m);
 if (!match) {
-  console.error("MONGODB_URI not found in .env.local");
+  console.error(`MONGODB_URI not found in ${envPath}`);
   process.exit(1);
 }
 const MONGODB_URI = match[1].trim();
+
 
 let connected = false;
 console.log("Connecting to MongoDB from env...");
