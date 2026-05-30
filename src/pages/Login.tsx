@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import logo from '../assets/logo.png';
 
 // ===== Icons as inline SVGs for zero dependency =====
 const EyeIcon = ({ visible }: { visible: boolean }) => (
@@ -227,7 +228,7 @@ const Login: React.FC = () => {
       <div className="login-card">
         {/* Logo Section */}
         <div className="login-logo-section">
-          <img src="/src/assets/logo.png" alt="Beegadget Logo" className="login-logo-img" />
+          <img src={logo} alt="Beegadget Logo" className="login-logo-img" />
           <p className="login-subtitle">Đăng nhập để quản lý hệ thống</p>
         </div>
 
