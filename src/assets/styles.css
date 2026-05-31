@@ -2965,31 +2965,55 @@ h5 {
   }
   
   /* Typography mobile optimizations */
+  body {
+    font-size: 13px !important;
+  }
+
   .gradient-title, h1 {
-    font-size: 1.5rem !important;
+    font-size: 1.3rem !important;
   }
   
   h2 {
-    font-size: 1.2rem !important;
+    font-size: 1.1rem !important;
+  }
+
+  h3 {
+    font-size: 0.95rem !important;
   }
 
   .stat-card {
-    padding: 1rem !important;
-    gap: 0.75rem !important;
+    padding: 0.85rem !important;
+    gap: 0.5rem !important;
   }
 
   .stat-card-icon {
-    font-size: 1.5rem !important;
-    padding: 0.75rem !important;
+    font-size: 1.25rem !important;
+    padding: 0.6rem !important;
   }
 
-  .stat-card-info p, .stat-card-value {
-    font-size: 1.25rem !important;
+  .stat-card-info h3, .widget h3 {
+    font-size: 0.75rem !important;
+  }
+
+  .stat-card-info p, .stat-card-value, .widget-body .value {
+    font-size: 1.05rem !important;
+  }
+
+  .nav-item, 
+  .supplier-tabs button, 
+  .settings-tabs button {
+    font-size: 0.78rem !important;
+    padding: 6px 12px !important;
+    gap: 4px !important;
   }
   
   /* Inputs wrap */
+  .form-group label {
+    font-size: 0.78rem !important;
+  }
+
   .form-group input, .form-group select, .form-group textarea {
-    font-size: 0.9rem !important;
+    font-size: 0.825rem !important;
   }
 }
 
