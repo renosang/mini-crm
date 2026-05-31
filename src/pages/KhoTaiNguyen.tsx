@@ -371,7 +371,7 @@ const KhoTaiNguyen: React.FC = () => {
       </div>
 
       {/* BỘ LỌC THÔNG MINH PHONG CÁCH APPLE */}
-      <div className="widget" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem', padding: '1.25rem' }}>
+      <div className="widget kho-filter-card">
         
         {/* Hàng 1: Search Bar Chiều Rộng 100% cực kỳ thoáng đãng */}
         <div style={{ position: 'relative', width: '100%' }}>
@@ -414,12 +414,12 @@ const KhoTaiNguyen: React.FC = () => {
         </div>
 
         {/* Hàng 2: Bộ chọn lọc dropdown & Nút thêm mới */}
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', width: '100%', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+        <div className="filter-actions-row">
           
           {/* Bộ lọc nhanh Segmented Buttons */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-light)', fontWeight: 600 }}>Dạng tài nguyên:</span>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <div className="chips-container">
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-light)', fontWeight: 600 }} className="nowrap">Dạng tài nguyên:</span>
+            <div className="chips-scroll">
               {[
                 { id: 'all', label: '🗂️ Tất cả', color: '#0071E3' },
                 { id: 'id_pass', label: '🔑 Tài khoản (ID:Pass)', color: '#0071E3' },
@@ -448,13 +448,13 @@ const KhoTaiNguyen: React.FC = () => {
           </div>
 
           {/* Cụm Dropdown Lọc bổ trợ & Nút tạo mới */}
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <div className="filter-dropdowns-group">
             
             {/* Lọc theo Nhà Cung Cấp */}
             <select 
               value={supplierFilter} 
               onChange={e => setSupplierFilter(e.target.value)}
-              style={{ padding: '0 1rem', borderRadius: '20px', border: '1px solid var(--border-color)', outline: 'none', minWidth: '150px', height: '40px', fontSize: '0.85rem' }}
+              style={{ padding: '0 1rem', borderRadius: '20px', border: '1px solid var(--border-color)', outline: 'none', height: '40px', fontSize: '0.85rem' }}
             >
               <option value="all">Tất cả nhà cung cấp</option>
               {suppliers.map(s => (
@@ -465,7 +465,7 @@ const KhoTaiNguyen: React.FC = () => {
             <select 
               value={productFilter} 
               onChange={e => setProductFilter(e.target.value)}
-              style={{ padding: '0 1rem', borderRadius: '20px', border: '1px solid var(--border-color)', outline: 'none', minWidth: '150px', height: '40px', fontSize: '0.85rem' }}
+              style={{ padding: '0 1rem', borderRadius: '20px', border: '1px solid var(--border-color)', outline: 'none', height: '40px', fontSize: '0.85rem' }}
             >
               <option value="all">Tất cả sản phẩm</option>
               {uniqueProducts.map(p => (
@@ -476,21 +476,21 @@ const KhoTaiNguyen: React.FC = () => {
             <select 
               value={statusFilter} 
               onChange={e => setStatusFilter(e.target.value)}
-              style={{ padding: '0 1rem', borderRadius: '20px', border: '1px solid var(--border-color)', outline: 'none', minWidth: '130px', height: '40px', fontSize: '0.85rem' }}
+              style={{ padding: '0 1rem', borderRadius: '20px', border: '1px solid var(--border-color)', outline: 'none', height: '40px', fontSize: '0.85rem' }}
             >
               <option value="all">Tất cả Trạng Thái</option>
               <option value="available">Còn trống</option>
               <option value="sold">Đã bàn giao</option>
             </select>
-
-            <button 
-              className="login-button" 
-              style={{ width: 'auto', display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1.25rem', borderRadius: '20px', height: '40px', fontSize: '0.85rem' }} 
-              onClick={() => setIsModalOpen(true)}
-            >
-              <FiPlusCircle /> Nhập Hàng Mới
-            </button>
           </div>
+
+          <button 
+            className="login-button nowrap" 
+            style={{ width: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.5rem 1.25rem', borderRadius: '20px', height: '40px', fontSize: '0.85rem' }} 
+            onClick={() => setIsModalOpen(true)}
+          >
+            <FiPlusCircle /> Nhập Hàng Mới
+          </button>
         </div>
       </div>
 
@@ -504,19 +504,19 @@ const KhoTaiNguyen: React.FC = () => {
           <table className="styled-table">
             <thead>
               <tr>
-                <th>Tên Bản Quyền</th>
-                <th>Phân Loại</th>
-                <th>Thông Tin Chi Tiết</th>
-                <th>Giá Vốn</th>
-                <th>Hạn Sử Dụng</th>
-                <th>Thao Tác</th>
+                <th className="nowrap">Tên Bản Quyền</th>
+                <th className="nowrap">Phân Loại</th>
+                <th className="nowrap">Thông Tin Chi Tiết</th>
+                <th className="nowrap">Giá Vốn</th>
+                <th className="nowrap">Hạn Sử Dụng</th>
+                <th className="nowrap">Thao Tác</th>
               </tr>
             </thead>
             <tbody>
               {filteredAccounts.length > 0 ? (
                 filteredAccounts.map(item => (
                   <tr key={item._id}>
-                    <td>
+                    <td className="nowrap">
                       <strong style={{ color: '#1D1D1F', fontSize: '0.95rem' }}>{item.product_type}</strong>
                       <div style={{ fontSize: '0.72rem', color: 'var(--text-light)', marginTop: '2px' }}>
                         Nhập: {new Date(item.createdAt).toLocaleDateString('vi-VN')}
@@ -541,7 +541,7 @@ const KhoTaiNguyen: React.FC = () => {
                         </div>
                       )}
                     </td>
-                    <td>
+                    <td className="nowrap">
                       {item.resource_type === 'key' ? (
                         <span style={{ fontSize: '0.75rem', padding: '3px 8px', borderRadius: '12px', backgroundColor: '#EBF9EB', color: '#2E7D32', fontWeight: 600 }}>
                           🎟️ Key kích hoạt
@@ -647,10 +647,10 @@ const KhoTaiNguyen: React.FC = () => {
                         </div>
                       )}
                     </td>
-                    <td style={{ fontWeight: 700, color: '#1D1D1F', fontSize: '0.95rem' }}>
+                    <td className="nowrap" style={{ fontWeight: 700, color: '#1D1D1F', fontSize: '0.95rem' }}>
                       {item.cost.toLocaleString('vi-VN')} đ
                     </td>
-                    <td>
+                    <td className="nowrap">
                       {item.valid_until ? (() => {
                         const expiry = new Date(item.valid_until);
                         const today = new Date();
@@ -683,7 +683,7 @@ const KhoTaiNguyen: React.FC = () => {
                         <span style={{ color: 'var(--text-light)', fontStyle: 'italic', fontSize: '0.85rem' }}>Không thời hạn</span>
                       )}
                     </td>
-                    <td>
+                    <td className="nowrap">
                       <div style={{ display: 'flex', gap: '0.4rem' }}>
                         <button 
                           className="btn-edit-sm" 

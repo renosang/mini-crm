@@ -2784,6 +2784,47 @@ h5 {
   display: none !important;
 }
 
+/* === Kho Tài Nguyên Filter Layout === */
+.kho-filter-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+}
+
+.chips-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.chips-scroll {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.filter-actions-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  width: 100%;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.filter-dropdowns-group {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  flex-grow: 1;
+}
+
+.filter-dropdowns-group select {
+  min-width: 140px;
+}
+
 /* === Mobile Responsive CSS Customization === */
 @media (max-width: 768px) {
   html, body {
@@ -2877,6 +2918,50 @@ h5 {
 
   .nowrap {
     white-space: nowrap !important;
+  }
+
+  /* Kho Filters overrides */
+  .chips-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .chips-scroll {
+    overflow-x: auto;
+    width: 100%;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    display: flex;
+  }
+  
+  .chips-scroll button {
+    flex-shrink: 0;
+  }
+
+  .filter-actions-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .filter-dropdowns-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .filter-dropdowns-group select {
+    width: 100%;
+    min-width: 0 !important;
+  }
+
+  .filter-actions-row .login-button {
+    width: 100% !important;
+    justify-content: center;
+    margin-top: 0.25rem;
   }
   
   /* Inputs wrap */
