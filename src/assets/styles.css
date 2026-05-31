@@ -159,7 +159,9 @@ h5 {
   flex-direction: column;
   padding: 0 1.25rem;
   overflow-y: auto;
+  overflow-x: hidden;
   flex: 1;
+  min-height: 0;
 
   /* Ẩn thanh cuộn */
   scrollbar-width: none;
@@ -307,11 +309,11 @@ h5 {
   /* Thụt lề sâu hơn 1 chút */
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease-out;
+  transition: max-height 0.4s ease-out;
 }
 
 .sidebar-submenu.open {
-  max-height: 500px;
+  max-height: 800px;
 }
 
 .sidebar-submenu a {

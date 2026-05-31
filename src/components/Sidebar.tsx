@@ -9,7 +9,11 @@ import {
 
 import logo from '../assets/logo.png';
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  onClose?: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,12 +27,17 @@ const Sidebar: React.FC = () => {
     navigate('/login');
   };
 
+  // Tự động đóng sidebar mobile khi click link
+  const handleNavClick = () => {
+    onClose?.();
+  };
+
   return (
     <aside className="sidebar">
 
       {/* === PHẦN 1: LOGO (Luôn cố định) === */}
       <div className="sidebar-logo" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem 1rem' }}>
-        <Link to="/" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+        <Link to="/" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }} onClick={handleNavClick}>
           <img src={logo} alt="Logo" style={{ maxHeight: '65px', maxWidth: '85%', objectFit: 'contain' }} />
         </Link>
       </div>
@@ -38,28 +47,28 @@ const Sidebar: React.FC = () => {
 
         {/* --- NHÓM 1: HOẠT ĐỘNG CHÍNH --- */}
         <div className="sidebar-category-header">Hoạt Động Chính</div>
-        <NavLink to="/" end className="nav-item">
+        <NavLink to="/" end className="nav-item" onClick={handleNavClick}>
           <FiHome /> Dashboard
         </NavLink>
-        <NavLink to="/khach-hang" className="nav-item">
+        <NavLink to="/khach-hang" className="nav-item" onClick={handleNavClick}>
           <FiUsers /> Khách Hàng
         </NavLink>
-        <NavLink to="/ban-hang" className="nav-item">
+        <NavLink to="/ban-hang" className="nav-item" onClick={handleNavClick}>
           <FiShoppingCart /> Bán Hàng & Hóa Đơn
         </NavLink>
-        <NavLink to="/omnichannel" className="nav-item">
+        <NavLink to="/omnichannel" className="nav-item" onClick={handleNavClick}>
           <FiMessageCircle /> Omni-channel Inbox
         </NavLink>
 
         {/* --- NHÓM 2: QUẢN LÝ KHO & HẠN DÙNG --- */}
         <div className="sidebar-category-header">Quản Lý Kho & Bản Quyền</div>
-        <NavLink to="/kho-tai-nguyen" className="nav-item">
+        <NavLink to="/kho-tai-nguyen" className="nav-item" onClick={handleNavClick}>
           <FiBox /> Kho Tài Nguyên
         </NavLink>
-        <NavLink to="/ban-quyen-ca-nhan" className="nav-item">
+        <NavLink to="/ban-quyen-ca-nhan" className="nav-item" onClick={handleNavClick}>
           <FiKey /> Bản Quyền Cá Nhân
         </NavLink>
-        <NavLink to="/gia-han" className="nav-item">
+        <NavLink to="/gia-han" className="nav-item" onClick={handleNavClick}>
           <FiClock /> Quản Lý Gia Hạn
         </NavLink>
 
@@ -78,6 +87,7 @@ const Sidebar: React.FC = () => {
         <div className={`sidebar-submenu ${supplierOpen ? 'open' : ''}`}>
           <Link
             to="/nha-cung-cap?tab=dashboard"
+            onClick={handleNavClick}
             style={{
               color: (isNhaCungCapPage && (location.search.includes('tab=dashboard') || !location.search.includes('tab='))) ? 'var(--primary-color)' : 'var(--text-light)',
               fontWeight: (isNhaCungCapPage && (location.search.includes('tab=dashboard') || !location.search.includes('tab='))) ? '600' : '500'
@@ -87,6 +97,7 @@ const Sidebar: React.FC = () => {
           </Link>
           <Link
             to="/nha-cung-cap?tab=directory"
+            onClick={handleNavClick}
             style={{
               color: (isNhaCungCapPage && location.search.includes('tab=directory')) ? 'var(--primary-color)' : 'var(--text-light)',
               fontWeight: (isNhaCungCapPage && location.search.includes('tab=directory')) ? '600' : '500'
@@ -96,6 +107,7 @@ const Sidebar: React.FC = () => {
           </Link>
           <Link
             to="/nha-cung-cap?tab=imports"
+            onClick={handleNavClick}
             style={{
               color: (isNhaCungCapPage && location.search.includes('tab=imports')) ? 'var(--primary-color)' : 'var(--text-light)',
               fontWeight: (isNhaCungCapPage && location.search.includes('tab=imports')) ? '600' : '500'
@@ -105,6 +117,7 @@ const Sidebar: React.FC = () => {
           </Link>
           <Link
             to="/nha-cung-cap?tab=payments"
+            onClick={handleNavClick}
             style={{
               color: (isNhaCungCapPage && location.search.includes('tab=payments')) ? 'var(--primary-color)' : 'var(--text-light)',
               fontWeight: (isNhaCungCapPage && location.search.includes('tab=payments')) ? '600' : '500'
@@ -114,6 +127,7 @@ const Sidebar: React.FC = () => {
           </Link>
           <Link
             to="/nha-cung-cap?tab=profit"
+            onClick={handleNavClick}
             style={{
               color: (isNhaCungCapPage && location.search.includes('tab=profit')) ? 'var(--primary-color)' : 'var(--text-light)',
               fontWeight: (isNhaCungCapPage && location.search.includes('tab=profit')) ? '600' : '500'
@@ -135,6 +149,7 @@ const Sidebar: React.FC = () => {
         <div className={`sidebar-submenu ${settingsOpen ? 'open' : ''}`}>
           <Link
             to="/cai-dat?tab=smtp"
+            onClick={handleNavClick}
             style={{
               color: (isCaiDatPage && (location.search.includes('tab=smtp') || !location.search.includes('tab='))) ? 'var(--primary-color)' : 'var(--text-light)',
               fontWeight: (isCaiDatPage && (location.search.includes('tab=smtp') || !location.search.includes('tab='))) ? '600' : '500'
@@ -144,6 +159,7 @@ const Sidebar: React.FC = () => {
           </Link>
           <Link
             to="/cai-dat?tab=bank"
+            onClick={handleNavClick}
             style={{
               color: (isCaiDatPage && location.search.includes('tab=bank')) ? 'var(--primary-color)' : 'var(--text-light)',
               fontWeight: (isCaiDatPage && location.search.includes('tab=bank')) ? '600' : '500'
@@ -153,6 +169,7 @@ const Sidebar: React.FC = () => {
           </Link>
           <Link
             to="/cai-dat?tab=general"
+            onClick={handleNavClick}
             style={{
               color: (isCaiDatPage && location.search.includes('tab=general')) ? 'var(--primary-color)' : 'var(--text-light)',
               fontWeight: (isCaiDatPage && location.search.includes('tab=general')) ? '600' : '500'
@@ -162,6 +179,7 @@ const Sidebar: React.FC = () => {
           </Link>
           <Link
             to="/cai-dat?tab=invoice"
+            onClick={handleNavClick}
             style={{
               color: (isCaiDatPage && location.search.includes('tab=invoice')) ? 'var(--primary-color)' : 'var(--text-light)',
               fontWeight: (isCaiDatPage && location.search.includes('tab=invoice')) ? '600' : '500'
@@ -171,6 +189,7 @@ const Sidebar: React.FC = () => {
           </Link>
           <Link
             to="/cai-dat?tab=renewal"
+            onClick={handleNavClick}
             style={{
               color: (isCaiDatPage && location.search.includes('tab=renewal')) ? 'var(--primary-color)' : 'var(--text-light)',
               fontWeight: (isCaiDatPage && location.search.includes('tab=renewal')) ? '600' : '500'
@@ -180,6 +199,7 @@ const Sidebar: React.FC = () => {
           </Link>
           <Link
             to="/cai-dat?tab=account"
+            onClick={handleNavClick}
             style={{
               color: (isCaiDatPage && location.search.includes('tab=account')) ? 'var(--primary-color)' : 'var(--text-light)',
               fontWeight: (isCaiDatPage && location.search.includes('tab=account')) ? '600' : '500'
@@ -189,6 +209,7 @@ const Sidebar: React.FC = () => {
           </Link>
           <Link
             to="/cai-dat?tab=email-templates"
+            onClick={handleNavClick}
             style={{
               color: (isCaiDatPage && location.search.includes('tab=email-templates')) ? 'var(--primary-color)' : 'var(--text-light)',
               fontWeight: (isCaiDatPage && location.search.includes('tab=email-templates')) ? '600' : '500'
@@ -198,6 +219,7 @@ const Sidebar: React.FC = () => {
           </Link>
           <Link
             to="/cai-dat?tab=backup"
+            onClick={handleNavClick}
             style={{
               color: (isCaiDatPage && location.search.includes('tab=backup')) ? 'var(--primary-color)' : 'var(--text-light)',
               fontWeight: (isCaiDatPage && location.search.includes('tab=backup')) ? '600' : '500'

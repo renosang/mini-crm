@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar.tsx';
-import { FiMenu, FiX } from 'react-icons/fi';
+import { FiMenu } from 'react-icons/fi';
 import logo from '../assets/logo.png';
 
 interface LayoutProps {
@@ -14,7 +14,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     <div className="layout">
       {/* Sidebar with mobile toggle state */}
       <div className={`sidebar-container ${sidebarOpen ? 'mobile-open' : ''}`}>
-        <Sidebar />
+        <Sidebar onClose={() => setSidebarOpen(false)} />
       </div>
 
       {/* Backdrop overlay for mobile menu */}
