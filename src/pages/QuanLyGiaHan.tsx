@@ -428,10 +428,10 @@ const QuanLyGiaHan: React.FC = () => {
       </div>
 
       {/* Thanh Tìm kiếm và Lọc thông minh */}
-      <div className="search-filter-card" style={{ marginBottom: '1.5rem', padding: '1.25rem', borderRadius: '16px', backgroundColor: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(10px)', border: '1px solid var(--border-color)' }}>
+      <div className="renewal-filter-card">
         
         {/* Hàng 1: Ô Tìm kiếm 100% rộng */}
-        <div style={{ position: 'relative', width: '100%', marginBottom: '1rem' }}>
+        <div style={{ position: 'relative', width: '100%' }}>
           <FiSearch style={{ position: 'absolute', left: '16px', top: '13px', color: 'var(--text-light)', fontSize: '1.1rem' }} />
           <input 
             type="text" 
@@ -447,7 +447,8 @@ const QuanLyGiaHan: React.FC = () => {
               outline: 'none', 
               fontSize: '0.925rem',
               backgroundColor: '#F5F5F7',
-              transition: 'all 0.3s'
+              transition: 'all 0.3s',
+              marginBottom: 0
             }}
           />
           {searchQuery && (
@@ -461,34 +462,30 @@ const QuanLyGiaHan: React.FC = () => {
         </div>
 
         {/* Hàng 2: Bộ lọc linh hoạt */}
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-dark)', fontWeight: 600, fontSize: '0.85rem' }}>
-            <FiSliders /> Bộ Lọc:
+        <div className="renewal-filter-row-bottom">
+          <div className="renewal-dropdowns-group">
+            <select 
+              value={timeFilter} 
+              onChange={e => setTimeFilter(e.target.value)}
+            >
+              <option value="all">Tất cả Hạn Dùng</option>
+              <option value="expired">🚨 Đã Hết Hạn</option>
+              <option value="soon">⏳ Cần Gia Hạn Gấp (≤7 ngày)</option>
+              <option value="safe">✅ Đang Hoạt Động</option>
+            </select>
+
+            <select 
+              value={typeFilter} 
+              onChange={e => setTypeFilter(e.target.value)}
+            >
+              <option value="all">Tất cả Phân Loại</option>
+              <option value="id_pass">🔑 Tài Khoản (ID:Pass)</option>
+              <option value="key">🎟️ Key Kích Hoạt</option>
+              <option value="slot">👥 Gán Slot Family/Team</option>
+            </select>
           </div>
 
-          <select 
-            value={timeFilter} 
-            onChange={e => setTimeFilter(e.target.value)}
-            style={{ padding: '0 1rem', borderRadius: '20px', border: '1px solid var(--border-color)', outline: 'none', minWidth: '160px', height: '36px', fontSize: '0.85rem' }}
-          >
-            <option value="all">Tất cả Hạn Dùng</option>
-            <option value="expired">🚨 Đã Hết Hạn</option>
-            <option value="soon">⏳ Cần Gia Hạn Gấp (≤7 ngày)</option>
-            <option value="safe">✅ Đang Hoạt Động</option>
-          </select>
-
-          <select 
-            value={typeFilter} 
-            onChange={e => setTypeFilter(e.target.value)}
-            style={{ padding: '0 1rem', borderRadius: '20px', border: '1px solid var(--border-color)', outline: 'none', minWidth: '160px', height: '36px', fontSize: '0.85rem' }}
-          >
-            <option value="all">Tất cả Phân Loại</option>
-            <option value="id_pass">🔑 Tài Khoản (ID:Pass)</option>
-            <option value="key">🎟️ Key Kích Hoạt</option>
-            <option value="slot">👥 Gán Slot Family/Team</option>
-          </select>
-
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-light)', marginLeft: 'auto' }}>
+          <span className="renewal-match-count">
             Tìm thấy <strong>{filteredSubs.length}</strong> thuê bao phù hợp
           </span>
         </div>
@@ -510,13 +507,13 @@ const QuanLyGiaHan: React.FC = () => {
           <table className="styled-table">
             <thead>
               <tr>
-                <th>Khách Hàng</th>
-                <th>Sản Phẩm & Dịch Vụ</th>
-                <th>Chi Tiết Tài Nguyên</th>
-                <th>Thời Hạn Còn Lại</th>
-                <th>Hạn Sử Dụng</th>
-                <th>MMO Social Chat</th>
-                <th style={{ textAlign: 'right' }}>Thao Tác</th>
+                <th className="nowrap">Khách Hàng</th>
+                <th className="nowrap">Sản Phẩm & Dịch Vụ</th>
+                <th className="nowrap">Chi Tiết Tài Nguyên</th>
+                <th className="nowrap">Thời Hạn Còn Lại</th>
+                <th className="nowrap">Hạn Sử Dụng</th>
+                <th className="nowrap">MMO Social Chat</th>
+                <th className="nowrap" style={{ textAlign: 'right' }}>Thao Tác</th>
               </tr>
             </thead>
             <tbody>
@@ -526,7 +523,7 @@ const QuanLyGiaHan: React.FC = () => {
                   <tr key={sub.id} style={{ borderLeft: `4px solid ${expiry.color}` }}>
                     
                     {/* 1. Khách Hàng */}
-                    <td>
+                    <td className="nowrap">
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <Link 
                           to={`/customers/${sub.customer._id}`} 
@@ -540,7 +537,7 @@ const QuanLyGiaHan: React.FC = () => {
                     </td>
 
                     {/* 2. Sản phẩm */}
-                    <td>
+                    <td className="nowrap">
                       <span className="product-badge" style={{ 
                         backgroundColor: sub.resourceType === 'slot' ? '#FAF5FE' : sub.resourceType === 'key' ? '#F4FBF6' : '#F2F7FD',
                         color: sub.resourceType === 'slot' ? '#AF52DE' : sub.resourceType === 'key' ? '#34C759' : '#0071E3',
@@ -556,14 +553,14 @@ const QuanLyGiaHan: React.FC = () => {
                     </td>
 
                     {/* 3. Chi tiết tài nguyên */}
-                    <td>
+                    <td className="nowrap">
                       <code style={{ fontSize: '0.8rem', fontFamily: 'monospace', color: '#1D1D1F' }}>
                         {sub.detailsText}
                       </code>
                     </td>
 
                     {/* 4. Thời hạn còn lại */}
-                    <td style={{ whiteSpace: 'nowrap' }}>
+                    <td className="nowrap">
                       <span style={{ 
                         padding: '4px 10px', 
                         borderRadius: '20px', 
@@ -579,7 +576,7 @@ const QuanLyGiaHan: React.FC = () => {
                     </td>
 
                     {/* 5. Hạn sử dụng */}
-                    <td>
+                    <td className="nowrap">
                       <div style={{ fontSize: '0.85rem', color: '#1D1D1F', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <FiCalendar />
                         {sub.validUntil ? new Date(sub.validUntil).toLocaleDateString('vi-VN') : 'Không thời hạn'}
@@ -587,7 +584,7 @@ const QuanLyGiaHan: React.FC = () => {
                     </td>
 
                     {/* 6. Social MMO Chat Link */}
-                    <td>
+                    <td className="nowrap">
                       <div style={{ display: 'flex', gap: '6px' }}>
                         {sub.customer.facebook ? (
                           <a 

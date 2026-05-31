@@ -356,20 +356,20 @@ const BanHang: React.FC = () => {
           <table className="styled-table">
             <thead>
               <tr>
-                <th>Mã Đơn</th>
-                <th>Khách Hàng</th>
-                <th>Tài Nguyên Bàn Giao</th>
-                <th>Số tiền</th>
-                <th>Thanh Toán</th>
-                <th>Ngày Bàn Giao</th>
-                <th>Thao Tác</th>
+                <th className="nowrap">Mã Đơn</th>
+                <th className="nowrap">Khách Hàng</th>
+                <th className="nowrap">Tài Nguyên Bàn Giao</th>
+                <th className="nowrap">Số tiền</th>
+                <th className="nowrap">Thanh Toán</th>
+                <th className="nowrap">Ngày Bàn Giao</th>
+                <th className="nowrap">Thao Tác</th>
               </tr>
             </thead>
             <tbody>
               {orders.length > 0 ? (
                 orders.map(order => (
                   <tr key={order._id}>
-                    <td>
+                    <td className="nowrap">
                       <button 
                         type="button"
                         onClick={() => setViewingOrder(order)}
@@ -388,7 +388,7 @@ const BanHang: React.FC = () => {
                         #{order._id.substring(order._id.length - 6).toUpperCase()}
                       </button>
                     </td>
-                    <td>
+                    <td className="nowrap">
                       {order.customer_id ? (
                         <div>
                           <Link to={`/customers/${order.customer_id._id}`} className="customer-link" style={{ fontWeight: 600 }}>
@@ -407,7 +407,7 @@ const BanHang: React.FC = () => {
                         <span style={{ color: 'var(--text-light)', fontStyle: 'italic' }}>Khách đã bị xóa</span>
                       )}
                     </td>
-                    <td>
+                    <td className="nowrap">
                       {order.accounts && order.accounts.length > 0 ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
                           {order.accounts.map((acc, index) => (
@@ -430,10 +430,10 @@ const BanHang: React.FC = () => {
                         <span style={{ color: 'var(--text-light)' }}>Không có chi tiết tài khoản</span>
                       )}
                     </td>
-                    <td style={{ fontWeight: 700, color: '#1D1D1F' }}>
+                    <td className="nowrap" style={{ fontWeight: 700, color: '#1D1D1F' }}>
                       {order.total_amount.toLocaleString('vi-VN')} đ
                     </td>
-                    <td>
+                    <td className="nowrap">
                       {order.status === 'paid' ? (
                         <span className="payment-status-paid">
                           <FiCheckCircle /> Đã Thu
@@ -444,13 +444,13 @@ const BanHang: React.FC = () => {
                         </span>
                       )}
                     </td>
-                    <td>
+                    <td className="nowrap">
                       <div style={{ fontSize: '0.85rem', color: 'var(--text-light)' }}>
                         <FiCalendar style={{ marginRight: '4px', verticalAlign: 'middle' }} />
                         {new Date(order.createdAt).toLocaleDateString('vi-VN')}
                       </div>
                     </td>
-                    <td>
+                    <td className="nowrap">
                       <button 
                         onClick={() => handleSendEmailReminder(order._id)} 
                         disabled={isSendingEmailId === order._id}

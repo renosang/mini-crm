@@ -440,25 +440,34 @@ const NhaCungCap: React.FC = () => {
         </div>
 
         {/* Top Suppliers + Debt */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
+        <div className="supplier-dashboard-grid" style={{ marginBottom: '2rem' }}>
           <div className="widget" style={{ padding: '1.25rem' }}>
             <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem' }}>Top Đối Tác Nhập Hàng Nhiều Nhất</h3>
             {d.topSuppliers.length === 0 ? (
               <p style={{ color: 'var(--text-light)', fontSize: '0.875rem' }}>Chưa có dữ liệu nhập hàng.</p>
             ) : (
-              <table style={{ width: '100%', fontSize: '0.85rem' }}>
-                <thead><tr><th>Đối Tác</th><th>SL Nhập</th><th>Tổng Chi</th><th>Đã Trả</th></tr></thead>
-                <tbody>
-                  {d.topSuppliers.map((s, i) => (
-                    <tr key={i}>
-                      <td><strong>{s.name}</strong></td>
-                      <td>{s.importCount}</td>
-                      <td>{formatCurrency(s.totalImportCost)}</td>
-                      <td style={{ color: '#34C759' }}>{formatCurrency(s.totalPaid)}</td>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', fontSize: '0.85rem', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-light)', textAlign: 'left' }}>
+                      <th style={{ padding: '8px 4px', whiteSpace: 'nowrap' }}>Đối Tác</th>
+                      <th style={{ padding: '8px 4px', whiteSpace: 'nowrap' }}>SL Nhập</th>
+                      <th style={{ padding: '8px 4px', whiteSpace: 'nowrap' }}>Tổng Chi</th>
+                      <th style={{ padding: '8px 4px', whiteSpace: 'nowrap' }}>Đã Trả</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {d.topSuppliers.map((s, i) => (
+                      <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                        <td style={{ padding: '8px 4px', whiteSpace: 'nowrap' }}><strong>{s.name}</strong></td>
+                        <td style={{ padding: '8px 4px', whiteSpace: 'nowrap' }}>{s.importCount}</td>
+                        <td style={{ padding: '8px 4px', whiteSpace: 'nowrap' }}>{formatCurrency(s.totalImportCost)}</td>
+                        <td style={{ padding: '8px 4px', whiteSpace: 'nowrap', color: '#34C759' }}>{formatCurrency(s.totalPaid)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
           <div className="widget" style={{ padding: '1.25rem' }}>
@@ -466,21 +475,30 @@ const NhaCungCap: React.FC = () => {
             {d.debtBySupplier.length === 0 ? (
               <p style={{ color: 'var(--text-light)', fontSize: '0.875rem' }}>Không có công nợ.</p>
             ) : (
-              <table style={{ width: '100%', fontSize: '0.85rem' }}>
-                <thead><tr><th>Đối Tác</th><th>Tổng Nhập</th><th>Đã Trả</th><th>Còn Nợ</th></tr></thead>
-                <tbody>
-                  {d.debtBySupplier.map((s, i) => (
-                    <tr key={i}>
-                      <td><strong>{s.name}</strong></td>
-                      <td>{formatCurrency(s.totalImportCost)}</td>
-                      <td>{formatCurrency(s.totalPaid)}</td>
-                      <td style={{ color: s.debt > 0 ? '#FF3B30' : '#34C759', fontWeight: 600 }}>
-                        {formatCurrency(s.debt)}
-                      </td>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', fontSize: '0.85rem', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-light)', textAlign: 'left' }}>
+                      <th style={{ padding: '8px 4px', whiteSpace: 'nowrap' }}>Đối Tác</th>
+                      <th style={{ padding: '8px 4px', whiteSpace: 'nowrap' }}>Tổng Nhập</th>
+                      <th style={{ padding: '8px 4px', whiteSpace: 'nowrap' }}>Đã Trả</th>
+                      <th style={{ padding: '8px 4px', whiteSpace: 'nowrap' }}>Còn Nợ</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {d.debtBySupplier.map((s, i) => (
+                      <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                        <td style={{ padding: '8px 4px', whiteSpace: 'nowrap' }}><strong>{s.name}</strong></td>
+                        <td style={{ padding: '8px 4px', whiteSpace: 'nowrap' }}>{formatCurrency(s.totalImportCost)}</td>
+                        <td style={{ padding: '8px 4px', whiteSpace: 'nowrap' }}>{formatCurrency(s.totalPaid)}</td>
+                        <td style={{ padding: '8px 4px', whiteSpace: 'nowrap', color: s.debt > 0 ? '#FF3B30' : '#34C759', fontWeight: 600 }}>
+                          {formatCurrency(s.debt)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>
@@ -685,14 +703,14 @@ const NhaCungCap: React.FC = () => {
             <table className="styled-table">
               <thead>
                 <tr>
-                  <th>Ngày Nhập</th>
-                  <th>Nhà Cung Cấp</th>
-                  <th>Số Mặt Hàng</th>
-                  <th>Tổng Chi Phí</th>
-                  <th>Đã Thanh Toán</th>
-                  <th>Trạng Thái TT</th>
-                  <th>TK Đã Tạo</th>
-                  <th>Ghi Chú</th>
+                  <th className="nowrap">Ngày Nhập</th>
+                  <th className="nowrap">Nhà Cung Cấp</th>
+                  <th className="nowrap">Số Mặt Hàng</th>
+                  <th className="nowrap">Tổng Chi Phí</th>
+                  <th className="nowrap">Đã Thanh Toán</th>
+                  <th className="nowrap">Trạng Thái TT</th>
+                  <th className="nowrap">TK Đã Tạo</th>
+                  <th className="nowrap">Ghi Chú</th>
                 </tr>
               </thead>
               <tbody>
@@ -702,12 +720,12 @@ const NhaCungCap: React.FC = () => {
                   const supplier = typeof item.supplier_id === 'object' ? item.supplier_id : null;
                   return (
                     <tr key={item._id}>
-                      <td style={{ fontSize: '0.85rem' }}>{formatShortDate(item.import_date)}</td>
-                      <td><strong>{supplier?.name || 'N/A'}</strong></td>
-                      <td>{item.items.length} loại · {item.items.reduce((s, i) => s + i.quantity, 0)} cái</td>
-                      <td><strong>{formatCurrency(item.total_cost)}</strong></td>
-                      <td style={{ color: '#34C759' }}>{formatCurrency(item.paid_amount)}</td>
-                      <td>
+                      <td style={{ fontSize: '0.85rem' }} className="nowrap">{formatShortDate(item.import_date)}</td>
+                      <td className="nowrap"><strong>{supplier?.name || 'N/A'}</strong></td>
+                      <td className="nowrap">{item.items.length} loại · {item.items.reduce((s, i) => s + i.quantity, 0)} cái</td>
+                      <td className="nowrap"><strong>{formatCurrency(item.total_cost)}</strong></td>
+                      <td className="nowrap" style={{ color: '#34C759' }}>{formatCurrency(item.paid_amount)}</td>
+                      <td className="nowrap">
                         <span className="product-badge" style={{
                           backgroundColor: item.payment_status === 'paid' ? '#EBF9EB' : item.payment_status === 'partial' ? '#FFF8E1' : '#FFEBEA',
                           color: item.payment_status === 'paid' ? '#34C759' : item.payment_status === 'partial' ? '#FF9500' : '#FF3B30',
@@ -716,8 +734,8 @@ const NhaCungCap: React.FC = () => {
                           {item.payment_status === 'paid' ? 'Đã trả' : item.payment_status === 'partial' ? 'Trả 1 phần' : 'Chưa trả'}
                         </span>
                       </td>
-                      <td>{item.accounts_created}</td>
-                      <td style={{ fontSize: '0.8rem', color: 'var(--text-light)', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.notes || '—'}</td>
+                      <td className="nowrap">{item.accounts_created}</td>
+                      <td style={{ fontSize: '0.8rem', color: 'var(--text-light)', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }} className="nowrap">{item.notes || '—'}</td>
                     </tr>
                   );
                 })}
@@ -851,11 +869,32 @@ const NhaCungCap: React.FC = () => {
               {totalDebt > 0 ? formatCurrency(totalDebt) : 'Không nợ'}
             </p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
-            <button className="login-button" style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '38px', padding: '0 1rem', borderRadius: '10px', fontSize: '0.85rem' }}
-              onClick={() => setIsPaymentModalOpen(true)}>
-              <FiPlusCircle /> Ghi Nhận Thanh Toán
-            </button>
+          <div className="widget stat-card" 
+            onClick={() => setIsPaymentModalOpen(true)}
+            style={{ 
+              padding: '1rem', 
+              background: 'linear-gradient(135deg, #0071E3, #005BB5)', 
+              color: 'white',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+              boxShadow: '0 8px 20px rgba(0, 113, 227, 0.15)',
+              border: 'none'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 12px 24px rgba(0, 113, 227, 0.25)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 113, 227, 0.15)';
+            }}
+          >
+            <FiPlusCircle size={20} style={{ marginBottom: '0.25rem' }} />
+            <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Ghi Nhận Thanh Toán</span>
           </div>
         </div>
 
@@ -864,12 +903,12 @@ const NhaCungCap: React.FC = () => {
             <table className="styled-table">
               <thead>
                 <tr>
-                  <th>Ngày TT</th>
-                  <th>Nhà Cung Cấp</th>
-                  <th>Số Tiền</th>
-                  <th>Phương Thức</th>
-                  <th>Mã Giao Dịch</th>
-                  <th>Ghi Chú</th>
+                  <th className="nowrap">Ngày TT</th>
+                  <th className="nowrap">Nhà Cung Cấp</th>
+                  <th className="nowrap">Số Tiền</th>
+                  <th className="nowrap">Phương Thức</th>
+                  <th className="nowrap">Mã Giao Dịch</th>
+                  <th className="nowrap">Ghi Chú</th>
                 </tr>
               </thead>
               <tbody>
@@ -880,16 +919,16 @@ const NhaCungCap: React.FC = () => {
                   const methodLabels: Record<string, string> = { bank_transfer: 'Chuyển khoản', crypto: 'Crypto/USDT', cash: 'Tiền mặt', other: 'Khác' };
                   return (
                     <tr key={p._id}>
-                      <td style={{ fontSize: '0.85rem' }}>{formatShortDate(p.payment_date)}</td>
-                      <td><strong>{supplier?.name || 'N/A'}</strong></td>
-                      <td><strong style={{ color: '#34C759' }}>{formatCurrency(p.amount)}</strong></td>
-                      <td>
+                      <td style={{ fontSize: '0.85rem' }} className="nowrap">{formatShortDate(p.payment_date)}</td>
+                      <td className="nowrap"><strong>{supplier?.name || 'N/A'}</strong></td>
+                      <td className="nowrap"><strong style={{ color: '#34C759' }}>{formatCurrency(p.amount)}</strong></td>
+                      <td className="nowrap">
                         <span className="product-badge" style={{
                           backgroundColor: '#E3F2FD', color: '#0071E3', fontSize: '0.75rem', padding: '3px 8px', borderRadius: '10px'
                         }}>{methodLabels[p.method] || p.method}</span>
                       </td>
-                      <td style={{ fontSize: '0.85rem', color: 'var(--text-light)' }}>{p.reference || '—'}</td>
-                      <td style={{ fontSize: '0.8rem', color: 'var(--text-light)', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.notes || '—'}</td>
+                      <td style={{ fontSize: '0.85rem', color: 'var(--text-light)' }} className="nowrap">{p.reference || '—'}</td>
+                      <td style={{ fontSize: '0.8rem', color: 'var(--text-light)', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }} className="nowrap">{p.notes || '—'}</td>
                     </tr>
                   );
                 })}
@@ -975,22 +1014,32 @@ const NhaCungCap: React.FC = () => {
   const renderProfit = () => {
     return (
       <div>
-        <div className="widget" style={{ padding: '1rem 1.25rem', marginBottom: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          <FiTrendingUp size={20} color="#FF9500" />
-          <span style={{ fontWeight: 600 }}>Phân Tích Lợi Nhuận Theo Nhà Cung Cấp</span>
-          <select value={profitFilter.supplier_id} onChange={e => setProfitFilter(prev => ({ ...prev, supplier_id: e.target.value }))}
-            style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.85rem', marginLeft: 'auto' }}>
-            <option value="">Tất cả nhà cung cấp</option>
-            {suppliers.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-          </select>
-          <input type="date" value={profitFilter.from} onChange={e => setProfitFilter(prev => ({ ...prev, from: e.target.value }))}
-            style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.85rem' }} />
-          <span style={{ color: 'var(--text-light)' }}>→</span>
-          <input type="date" value={profitFilter.to} onChange={e => setProfitFilter(prev => ({ ...prev, to: e.target.value }))}
-            style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.85rem' }} />
-          <button onClick={loadProfit} className="btn-save" style={{ height: '36px', padding: '0 1rem', borderRadius: '8px', fontSize: '0.85rem' }}>
-            <FiSearch size={14} style={{ marginRight: 4 }} /> Lọc
-          </button>
+        <div className="widget" style={{ padding: '1.25rem', marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
+            <FiTrendingUp size={20} color="#FF9500" style={{ flexShrink: 0 }} />
+            <span style={{ fontWeight: 600 }}>Phân Tích Lợi Nhuận Theo Nhà Cung Cấp</span>
+          </div>
+          
+          {/* Filters Row */}
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'nowrap', width: '100%' }}>
+            <select value={profitFilter.supplier_id} onChange={e => setProfitFilter(prev => ({ ...prev, supplier_id: e.target.value }))}
+              style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.85rem', flex: 2, minWidth: 0 }}>
+              <option value="">Tất cả NCC</option>
+              {suppliers.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+            </select>
+            <input type="date" value={profitFilter.from} onChange={e => setProfitFilter(prev => ({ ...prev, from: e.target.value }))}
+              style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.85rem', flex: 1.5, minWidth: 0 }} />
+            <span style={{ color: 'var(--text-light)', flexShrink: 0 }}>→</span>
+            <input type="date" value={profitFilter.to} onChange={e => setProfitFilter(prev => ({ ...prev, to: e.target.value }))}
+              style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.85rem', flex: 1.5, minWidth: 0 }} />
+          </div>
+
+          {/* Button Row */}
+          <div>
+            <button onClick={loadProfit} className="login-button" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', height: '38px', padding: '0 1.5rem', borderRadius: '8px', fontSize: '0.85rem', width: '100%', cursor: 'pointer' }}>
+              <FiSearch size={14} /> Lọc Kết Quả
+            </button>
+          </div>
         </div>
 
         {loadingProfit ? <p>Đang tải...</p> : !profitData ? <p>Nhấn "Lọc" để xem dữ liệu.</p> : (
@@ -1076,7 +1125,7 @@ const NhaCungCap: React.FC = () => {
       </div>
 
       {/* Tab Selector */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '1.5rem', borderBottom: '1px solid #E5E5EA', paddingBottom: '0.6rem', flexWrap: 'wrap' }}>
+      <div className="supplier-tabs" style={{ display: 'flex', gap: '8px', marginBottom: '1.5rem', borderBottom: '1px solid #E5E5EA', paddingBottom: '0.6rem' }}>
         {tabItems.map(tab => (
           <button key={tab.key} onClick={() => setSearchParams({ tab: tab.key })}
             style={{
@@ -1086,7 +1135,8 @@ const NhaCungCap: React.FC = () => {
               fontWeight: 600, borderRadius: '10px',
               display: 'flex', alignItems: 'center', gap: '6px',
               boxShadow: activeTab === tab.key ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
-              transition: 'all 0.2s'
+              transition: 'all 0.2s',
+              flexShrink: 0
             }}>
             {tab.icon} {tab.label}
           </button>

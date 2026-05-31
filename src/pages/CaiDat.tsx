@@ -663,7 +663,7 @@ const CaiDat: React.FC = () => {
       </div>
 
       {/* Tab Selector */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '1.75rem', borderBottom: '1px solid #E5E5EA', paddingBottom: '0.6rem', flexWrap: 'wrap' }}>
+      <div className="settings-tabs" style={{ display: 'flex', gap: '8px', marginBottom: '1.75rem', borderBottom: '1px solid #E5E5EA', paddingBottom: '0.6rem' }}>
         <button
           onClick={() => setSearchParams({ tab: 'smtp' })}
           style={{
@@ -679,7 +679,8 @@ const CaiDat: React.FC = () => {
             alignItems: 'center',
             gap: '6px',
             boxShadow: activeTab === 'smtp' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
-            transition: 'all 0.2s'
+            transition: 'all 0.2s',
+            flexShrink: 0
           }}
         >
           <FiServer /> SMTP Email
@@ -699,7 +700,8 @@ const CaiDat: React.FC = () => {
             alignItems: 'center',
             gap: '6px',
             boxShadow: activeTab === 'bank' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
-            transition: 'all 0.2s'
+            transition: 'all 0.2s',
+            flexShrink: 0
           }}
         >
           <FiCreditCard /> Chuyển Khoản (VietQR)
@@ -719,7 +721,8 @@ const CaiDat: React.FC = () => {
             alignItems: 'center',
             gap: '6px',
             boxShadow: activeTab === 'general' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
-            transition: 'all 0.2s'
+            transition: 'all 0.2s',
+            flexShrink: 0
           }}
         >
           <FiGlobe /> Cài Đặt Chung
@@ -739,7 +742,8 @@ const CaiDat: React.FC = () => {
             alignItems: 'center',
             gap: '6px',
             boxShadow: activeTab === 'invoice' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
-            transition: 'all 0.2s'
+            transition: 'all 0.2s',
+            flexShrink: 0
           }}
         >
           <FiFileText /> Mẫu Hóa Đơn
@@ -759,7 +763,8 @@ const CaiDat: React.FC = () => {
             alignItems: 'center',
             gap: '6px',
             boxShadow: activeTab === 'renewal' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
-            transition: 'all 0.2s'
+            transition: 'all 0.2s',
+            flexShrink: 0
           }}
         >
           <FiClock /> Gia Hạn
@@ -779,7 +784,8 @@ const CaiDat: React.FC = () => {
             alignItems: 'center',
             gap: '6px',
             boxShadow: activeTab === 'account' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
-            transition: 'all 0.2s'
+            transition: 'all 0.2s',
+            flexShrink: 0
           }}
         >
           <FiShield /> Admin
@@ -799,7 +805,8 @@ const CaiDat: React.FC = () => {
             alignItems: 'center',
             gap: '6px',
             boxShadow: activeTab === 'email-templates' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
-            transition: 'all 0.2s'
+            transition: 'all 0.2s',
+            flexShrink: 0
           }}
         >
           <FiMessageSquare /> Mẫu Email
@@ -819,7 +826,8 @@ const CaiDat: React.FC = () => {
             alignItems: 'center',
             gap: '6px',
             boxShadow: activeTab === 'backup' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
-            transition: 'all 0.2s'
+            transition: 'all 0.2s',
+            flexShrink: 0
           }}
         >
           <FiDownloadCloud /> Sao Lưu
@@ -839,7 +847,8 @@ const CaiDat: React.FC = () => {
             alignItems: 'center',
             gap: '6px',
             boxShadow: activeTab === 'omnichannel' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
-            transition: 'all 0.2s'
+            transition: 'all 0.2s',
+            flexShrink: 0
           }}
         >
           <FiMessageSquare /> Đấu nối Chat (Omni)
@@ -875,10 +884,10 @@ const CaiDat: React.FC = () => {
         <div>
           {/* TAB 1: CẤU HÌNH SMTP */}
           {activeTab === 'smtp' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '1.75rem' }}>
+            <div className="settings-responsive-grid">
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
                 <div className="table-card widget" style={{ padding: '1.75rem', borderRadius: '20px', backgroundColor: '#FFF' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #F5F5F7', paddingBottom: '0.75rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '1px solid #F5F5F7', paddingBottom: '1rem' }}>
                     <h2 style={{ fontSize: '1.2rem', color: '#1D1D1F', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
                       <FiServer style={{ color: '#0071E3' }} /> Máy Chủ Gửi Email (SMTP)
                     </h2>
@@ -886,14 +895,18 @@ const CaiDat: React.FC = () => {
                       type="button"
                       onClick={applyGmailDefaults}
                       style={{
-                        backgroundColor: '#F5F5F7',
+                        backgroundColor: '#E1EFFF',
                         color: '#0071E3',
-                        border: '1px solid rgba(0,0,0,0.05)',
-                        padding: '6px 12px',
-                        borderRadius: '14px',
-                        fontSize: '0.75rem',
+                        border: '1px solid rgba(0, 113, 227, 0.15)',
+                        padding: '8px 12px',
+                        borderRadius: '10px',
+                        fontSize: '0.8rem',
                         fontWeight: 600,
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        width: '100%',
+                        textAlign: 'center',
+                        display: 'block',
+                        transition: 'all 0.2s'
                       }}
                     >
                       Mặc định Gmail
@@ -901,7 +914,7 @@ const CaiDat: React.FC = () => {
                   </div>
 
                   <form onSubmit={handleSaveSMTPConfig}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
                       <div className="form-group" style={{ marginBottom: 0 }}>
                         <label htmlFor="smtp_host" style={{ fontSize: '0.8rem', fontWeight: 600 }}>SMTP Server Host:</label>
                         <input
@@ -1073,7 +1086,7 @@ const CaiDat: React.FC = () => {
 
           {/* TAB 2: CÀI ĐẶT CHUYỂN KHOẢN (VIETQR) */}
           {activeTab === 'bank' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.75rem' }}>
+            <div className="settings-responsive-grid">
 
               {/* Form Cấu hình */}
               <div className="table-card widget" style={{ padding: '1.75rem', borderRadius: '20px', backgroundColor: '#FFF' }}>
@@ -1412,32 +1425,32 @@ const CaiDat: React.FC = () => {
                 <FiGlobe style={{ color: '#0071E3' }} /> Cài Đặt Chung
               </h2>
               <form onSubmit={handleSaveGeneral}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                  <div className="form-group">
+                <div className="settings-grid-2">
+                  <div className="form-group" style={{ marginBottom: 0 }}>
                     <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Tên cửa hàng / Doanh nghiệp:</label>
                     <input type="text" name="storeName" value={generalConfig.storeName} onChange={handleGeneralChange} placeholder="e.g. Mini CRM" required style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
                   </div>
-                  <div className="form-group">
+                  <div className="form-group" style={{ marginBottom: 0 }}>
                     <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Mã số thuế:</label>
                     <input type="text" name="taxCode" value={generalConfig.taxCode} onChange={handleGeneralChange} placeholder="e.g. 0123456789" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
                   </div>
                 </div>
-                <div className="form-group" style={{ marginBottom: '1rem' }}>
+                <div className="form-group" style={{ marginBottom: '1.25rem' }}>
                   <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Địa chỉ:</label>
                   <input type="text" name="address" value={generalConfig.address} onChange={handleGeneralChange} placeholder="Nhập địa chỉ doanh nghiệp" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                  <div className="form-group">
+                <div className="settings-grid-2">
+                  <div className="form-group" style={{ marginBottom: 0 }}>
                     <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Số điện thoại:</label>
                     <input type="text" name="phone" value={generalConfig.phone} onChange={handleGeneralChange} placeholder="e.g. 0987654321" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
                   </div>
-                  <div className="form-group">
+                  <div className="form-group" style={{ marginBottom: 0 }}>
                     <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Email:</label>
                     <input type="email" name="email" value={generalConfig.email} onChange={handleGeneralChange} placeholder="e.g. info@example.com" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
                   </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-                  <div className="form-group">
+                <div className="settings-grid-3">
+                  <div className="form-group" style={{ marginBottom: 0 }}>
                     <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Múi giờ:</label>
                     <select name="timezone" value={generalConfig.timezone} onChange={handleGeneralChange} style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }}>
                       <option value="Asia/Ho_Chi_Minh">Asia/Ho_Chi_Minh (GMT+7)</option>
@@ -1445,14 +1458,14 @@ const CaiDat: React.FC = () => {
                       <option value="Asia/Singapore">Asia/Singapore (GMT+8)</option>
                     </select>
                   </div>
-                  <div className="form-group">
+                  <div className="form-group" style={{ marginBottom: 0 }}>
                     <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Đơn vị tiền tệ:</label>
                     <select name="currency" value={generalConfig.currency} onChange={handleGeneralChange} style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }}>
                       <option value="VND">VND (₫)</option>
                       <option value="USD">USD ($)</option>
                     </select>
                   </div>
-                  <div className="form-group">
+                  <div className="form-group" style={{ marginBottom: 0 }}>
                     <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>URL Logo:</label>
                     <input type="text" name="logo" value={generalConfig.logo} onChange={handleGeneralChange} placeholder="https://..." style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
                   </div>
@@ -1565,7 +1578,7 @@ const CaiDat: React.FC = () => {
 
           {/* TAB 6: TÀI KHOẢN ADMIN */}
           {activeTab === 'account' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.75rem' }}>
+            <div className="settings-responsive-grid">
               <div className="table-card widget" style={{ padding: '1.75rem', borderRadius: '20px', backgroundColor: '#FFF' }}>
                 <h2 style={{ fontSize: '1.2rem', color: '#1D1D1F', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem', borderBottom: '1px solid #F5F5F7', paddingBottom: '0.75rem' }}>
                   <FiUser style={{ color: '#0071E3' }} /> Thông Tin Cá Nhân
@@ -1678,7 +1691,7 @@ const CaiDat: React.FC = () => {
 
           {/* TAB 8: SAO LƯU DỮ LIỆU */}
           {activeTab === 'backup' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.75rem' }}>
+            <div className="settings-responsive-grid">
               <div className="table-card widget" style={{ padding: '1.75rem', borderRadius: '20px', backgroundColor: '#FFF' }}>
                 <h2 style={{ fontSize: '1.2rem', color: '#1D1D1F', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem', borderBottom: '1px solid #F5F5F7', paddingBottom: '0.75rem' }}>
                   <FiDownloadCloud style={{ color: '#0071E3' }} /> Xuất Dữ Liệu

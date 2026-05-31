@@ -206,35 +206,34 @@ const BanQuyenCaNhan: React.FC = () => {
       </div>
 
       {/* Thanh bộ lọc & Tìm kiếm */}
-      <div className="widget" style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', padding: '1rem 1.25rem' }}>
-        <div style={{ flex: 1, position: 'relative', minWidth: '200px' }}>
-          <FiSearch style={{ position: 'absolute', left: '14px', top: '14px', color: 'var(--text-light)', zIndex: 5 }} />
-          <input 
-            type="text" 
-            className="search-input"
-            placeholder="Tìm tên, tài khoản hoặc key..." 
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            style={{ maxWidth: '100%', width: '100%', marginBottom: 0 }}
-          />
-        </div>
-        <div>
-          <select 
-            value={selectedCategoryFilter} 
-            onChange={e => setSelectedCategoryFilter(e.target.value)}
-            style={{ padding: '0.65rem 1rem', borderRadius: '10px', border: '1px solid var(--border-color)', outline: 'none', minWidth: '180px' }}
-          >
-            <option value="all">Tất cả Phân Loại</option>
-            <option value="Premium Account">Tài khoản Premium (Google, Spotify...)</option>
-            <option value="WordPress Plugin/Theme">WordPress Plugin/Theme Key</option>
-            <option value="SEO Tool">SEO & MMO Tool</option>
-            <option value="VPS/Server">VPS / Máy chủ cá nhân</option>
-            <option value="Khác">Khác / Dịch vụ khác</option>
-          </select>
+      <div className="widget personal-filter-card">
+        <div className="filter-row-top">
+          <div className="search-wrapper">
+            <FiSearch className="search-icon" />
+            <input 
+              type="text" 
+              className="search-input"
+              placeholder="Tìm tên, tài khoản hoặc key..." 
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="select-wrapper">
+            <select 
+              value={selectedCategoryFilter} 
+              onChange={e => setSelectedCategoryFilter(e.target.value)}
+            >
+              <option value="all">Tất cả Phân Loại</option>
+              <option value="Premium Account">Tài khoản Premium (Google, Spotify...)</option>
+              <option value="WordPress Plugin/Theme">WordPress Plugin/Theme Key</option>
+              <option value="SEO Tool">SEO & MMO Tool</option>
+              <option value="VPS/Server">VPS / Máy chủ cá nhân</option>
+              <option value="Khác">Khác / Dịch vụ khác</option>
+            </select>
+          </div>
         </div>
         <button 
           className="login-button" 
-          style={{ width: 'auto', display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.65rem 1.25rem' }} 
           onClick={openAddModal}
         >
           <FiPlusCircle /> Thêm Bản Quyền
@@ -251,20 +250,20 @@ const BanQuyenCaNhan: React.FC = () => {
           <table className="styled-table">
             <thead>
               <tr>
-                <th>Tên Dịch Vụ / Tài Nguyên</th>
-                <th>Phân Loại</th>
-                <th>Thông Tin Tài Khoản / Key</th>
-                <th>Chi Phí</th>
-                <th>Hạn Sử Dụng</th>
-                <th>Trạng Thái</th>
-                <th>Thao Tác</th>
+                <th className="nowrap">Tên Dịch Vụ / Tài Nguyên</th>
+                <th className="nowrap">Phân Loại</th>
+                <th className="nowrap">Thông Tin Tài Khoản / Key</th>
+                <th className="nowrap">Chi Phí</th>
+                <th className="nowrap">Hạn Sử Dụng</th>
+                <th className="nowrap">Trạng Thái</th>
+                <th className="nowrap">Thao Tác</th>
               </tr>
             </thead>
             <tbody>
               {filteredLicenses.length > 0 ? (
                 filteredLicenses.map(item => (
                   <tr key={item._id}>
-                    <td>
+                    <td className="nowrap">
                       <strong style={{ color: 'var(--text-dark)', fontSize: '0.95rem' }}>{item.name}</strong>
                       {item.supplier && (
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-light)', marginTop: '2px' }}>
@@ -272,12 +271,12 @@ const BanQuyenCaNhan: React.FC = () => {
                         </div>
                       )}
                     </td>
-                    <td>
+                    <td className="nowrap">
                       <span className="status-badge status-binh-thuong" style={{ fontSize: '0.8rem', padding: '0.2rem 0.5rem' }}>
                         {item.category}
                       </span>
                     </td>
-                    <td>
+                    <td className="nowrap">
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '0.85rem' }}>
                         {item.account_details?.username && (
                           <div><span style={{ color: 'var(--text-light)' }}>User:</span> <strong>{item.account_details.username}</strong></div>
@@ -293,10 +292,10 @@ const BanQuyenCaNhan: React.FC = () => {
                         )}
                       </div>
                     </td>
-                    <td style={{ fontWeight: 700, color: '#1D1D1F', fontSize: '0.95rem' }}>
+                    <td className="nowrap" style={{ fontWeight: 700, color: '#1D1D1F', fontSize: '0.95rem' }}>
                       {item.cost.toLocaleString('vi-VN')} đ
                     </td>
-                    <td>
+                    <td className="nowrap">
                       {item.valid_until ? (() => {
                         const expiry = new Date(item.valid_until);
                         const today = new Date();
@@ -329,7 +328,7 @@ const BanQuyenCaNhan: React.FC = () => {
                         <span style={{ color: 'var(--text-light)', fontStyle: 'italic' }}>Không thời hạn</span>
                       )}
                     </td>
-                    <td>
+                    <td className="nowrap">
                       {item.status === 'active' ? (
                         <span className="status-badge status-tiem-nang" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
                           <FiCheckCircle /> Đang dùng
@@ -344,7 +343,7 @@ const BanQuyenCaNhan: React.FC = () => {
                         </span>
                       )}
                     </td>
-                    <td>
+                    <td className="nowrap">
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <button onClick={() => openEditModal(item)} style={{ border: 'none', background: 'none', color: '#0071E3', cursor: 'pointer', fontSize: '1rem', padding: '4px' }} title="Sửa">
                           <FiEdit3 />
