@@ -1663,14 +1663,26 @@ h5 {
   gap: 1.25rem !important;
 }
 
+.stats-grid-3 {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 1.25rem !important;
+}
+
 @media (max-width: 1024px) {
   .stats-grid-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .stats-grid-3 {
     grid-template-columns: repeat(2, 1fr) !important;
   }
 }
 
 @media (max-width: 600px) {
   .stats-grid-4 {
+    grid-template-columns: 1fr !important;
+  }
+  .stats-grid-3 {
     grid-template-columns: 1fr !important;
   }
 }

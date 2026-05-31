@@ -269,12 +269,12 @@ const KhachHang: React.FC = () => {
           <table className="styled-table">
             <thead>
               <tr>
-                <th>Họ và Tên</th>
-                <th>Liên hệ</th>
-                <th>Mạng xã hội MMO</th>
-                <th>Trạng thái</th>
-                <th>Nguồn</th>
-                <th>Hành Động</th>
+                <th className="nowrap">Họ và Tên</th>
+                <th className="nowrap">Liên hệ</th>
+                <th className="nowrap">Mạng xã hội MMO</th>
+                <th className="nowrap">Trạng thái</th>
+                <th className="nowrap">Nguồn</th>
+                <th className="nowrap">Hành Động</th>
               </tr>
             </thead>
             <tbody>
@@ -298,7 +298,7 @@ const KhachHang: React.FC = () => {
 
                   return (
                     <tr key={customer._id}>
-                      <td>
+                      <td className="nowrap">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <div className={`customer-avatar-circle ${getAvatarColorClass(customer.name)}`}>
                             {getInitials(customer.name)}
@@ -308,43 +308,43 @@ const KhachHang: React.FC = () => {
                           </Link>
                         </div>
                       </td>
-                      <td>
+                      <td className="nowrap">
                         <div style={{ fontWeight: 500, fontSize: '0.925rem' }}>{customer.email || '—'}</div>
                         <div style={{ color: 'var(--text-light)', fontSize: '0.825rem', marginTop: '2px' }}>{customer.phone || '—'}</div>
                       </td>
-                    <td className="mmo-social-links">
-                      {customer.facebook ? (
-                        <a href={customer.facebook.startsWith('http') ? customer.facebook : `https://facebook.com/${customer.facebook}`} target="_blank" rel="noopener noreferrer" className="mmo-icon-btn mmo-facebook" title="Facebook Messenger">
-                          <FiFacebook />
-                        </a>
-                      ) : (
-                        <span className="mmo-icon-btn mmo-empty" title="Không có Facebook"><FiFacebook /></span>
-                      )}
-                      {customer.telegram ? (
-                        <a href={customer.telegram.startsWith('http') ? customer.telegram : `https://t.me/${customer.telegram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="mmo-icon-btn mmo-telegram" title="Chat Telegram">
-                          <FiSend />
-                        </a>
-                      ) : (
-                        <span className="mmo-icon-btn mmo-empty" title="Không có Telegram"><FiSend /></span>
-                      )}
-                      {customer.zalo ? (
-                        <a href={customer.zalo.startsWith('http') ? customer.zalo : `https://zalo.me/${customer.zalo}`} target="_blank" rel="noopener noreferrer" className="mmo-icon-btn mmo-zalo" title="Chat Zalo">
-                          <FiMessageCircle />
-                        </a>
-                      ) : (
-                        <span className="mmo-icon-btn mmo-empty" title="Không có Zalo"><FiMessageCircle /></span>
-                      )}
-                    </td>
-                    <td><StatusBadge status={customer.status} /></td>
-                    <td><SourceBadge source={customer.source} /></td>
-                    <td className="action-buttons">
-                      <button onClick={() => openModal(customer)} title="Sửa">
-                        <FiEdit />
-                      </button>
-                      <button onClick={() => handleDelete(customer._id)} title="Xóa" className="delete">
-                        <FiTrash2 />
-                      </button>
-                    </td>
+                      <td className="mmo-social-links nowrap">
+                        {customer.facebook ? (
+                          <a href={customer.facebook.startsWith('http') ? customer.facebook : `https://facebook.com/${customer.facebook}`} target="_blank" rel="noopener noreferrer" className="mmo-icon-btn mmo-facebook" title="Facebook Messenger">
+                            <FiFacebook />
+                          </a>
+                        ) : (
+                          <span className="mmo-icon-btn mmo-empty" title="Không có Facebook"><FiFacebook /></span>
+                        )}
+                        {customer.telegram ? (
+                          <a href={customer.telegram.startsWith('http') ? customer.telegram : `https://t.me/${customer.telegram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="mmo-icon-btn mmo-telegram" title="Chat Telegram">
+                            <FiSend />
+                          </a>
+                        ) : (
+                          <span className="mmo-icon-btn mmo-empty" title="Không có Telegram"><FiSend /></span>
+                        )}
+                        {customer.zalo ? (
+                          <a href={customer.zalo.startsWith('http') ? customer.zalo : `https://zalo.me/${customer.zalo}`} target="_blank" rel="noopener noreferrer" className="mmo-icon-btn mmo-zalo" title="Chat Zalo">
+                            <FiMessageCircle />
+                          </a>
+                        ) : (
+                          <span className="mmo-icon-btn mmo-empty" title="Không có Zalo"><FiMessageCircle /></span>
+                        )}
+                      </td>
+                      <td className="nowrap"><StatusBadge status={customer.status} /></td>
+                      <td className="nowrap"><SourceBadge source={customer.source} /></td>
+                      <td className="action-buttons nowrap">
+                        <button onClick={() => openModal(customer)} title="Sửa">
+                          <FiEdit />
+                        </button>
+                        <button onClick={() => handleDelete(customer._id)} title="Xóa" className="delete">
+                          <FiTrash2 />
+                        </button>
+                      </td>
                     </tr>
                   );
                 })
