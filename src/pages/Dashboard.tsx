@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
-import { 
-  FiUsers, FiBox, FiShoppingCart, FiCreditCard, 
+import {
+  FiUsers, FiBox, FiShoppingCart, FiCreditCard,
   FiPlusCircle, FiClock, FiUserPlus, FiSettings,
   FiMail, FiRefreshCw, FiCalendar, FiAlertTriangle, FiCheckCircle, FiInfo
 } from 'react-icons/fi';
@@ -84,7 +84,7 @@ const Dashboard: React.FC = () => {
     try {
       setLoading(true);
       setError('');
-      
+
       const [statsRes, ordersRes, accountsRes] = await Promise.all([
         api.get<{ success: boolean; data: IDashboardStats }>('/dashboard/stats'),
         api.get<{ success: boolean; data: IOrder[] }>('/orders'),
@@ -155,15 +155,15 @@ const Dashboard: React.FC = () => {
   // 2. Tính số ngày hết hạn
   const getDaysRemaining = (validUntil?: string) => {
     if (!validUntil) return { days: Infinity, text: 'Không thời hạn', color: '#34C759', bg: '#EBF9EB', label: 'safe' };
-    
+
     const expiry = new Date(validUntil);
     const today = new Date();
-    expiry.setHours(0,0,0,0);
-    today.setHours(0,0,0,0);
-    
+    expiry.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
     const diffTime = expiry.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays < 0) {
       return { days: diffDays, text: `Quá hạn ${Math.abs(diffDays)} ngày`, color: '#FF3B30', bg: '#FFEBEA', label: 'expired' };
     } else if (diffDays === 0) {
@@ -217,7 +217,7 @@ const Dashboard: React.FC = () => {
   // Kích hoạt Gửi email nhắc gia hạn tự động qua API
   const handleSendReminder = async (sub: IFlattenedSub, forceSend = false) => {
     const matchedOrder = orders.find(o => o.accounts?.some(acc => acc._id === sub.parentAccountId));
-    
+
     try {
       setSendingEmailId(sub.id);
       let baseUrl = '';
@@ -229,10 +229,10 @@ const Dashboard: React.FC = () => {
 
       const url = forceSend ? baseUrl : `${baseUrl}&preview=true`;
 
-      const res = await api.post<{ 
-        success: boolean; 
-        mode: 'smtp' | 'simulation' | 'preview'; 
-        message: string; 
+      const res = await api.post<{
+        success: boolean;
+        mode: 'smtp' | 'simulation' | 'preview';
+        message: string;
         previewHtml?: string;
         recipient?: string;
         subject?: string;
@@ -290,7 +290,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard-page" style={{ padding: '0 0.5rem' }}>
-      
+
       {/* 1. Header Chào Mừng */}
       <div className="customer-detail-header" style={{ marginBottom: '1.75rem' }}>
         <h1 className="gradient-title">Chào mừng trở lại, Admin! 🚀</h1>
@@ -378,15 +378,15 @@ const Dashboard: React.FC = () => {
 
       {/* 4. Split Layout - Liên Kết Chặt Chẽ Các Chức Năng Cốt Lõi */}
       <div className="dashboard-split-grid">
-        
+
         {/* Cột 1: Cảnh Báo Gia Hạn Gấp (Urgent Renewals Alert) */}
         <div className="dashboard-section-card">
           <div className="dashboard-section-header">
             <h2><FiClock style={{ color: '#FF3B30' }} /> Cảnh Báo Gia Hạn Gấp</h2>
             <Link to="/gia-han" className="dashboard-view-all">Xem tất cả →</Link>
           </div>
-          
-          <div style={{ overflowX: 'auto', flex: 1 }}>
+
+          <div className="table-responsive-wrapper" style={{ flex: 1 }}>
             {urgentRenewals.length > 0 ? (
               <table className="styled-table" style={{ fontSize: '0.85rem', margin: 0 }}>
                 <thead>
@@ -405,7 +405,7 @@ const Dashboard: React.FC = () => {
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-light)' }}>{sub.customer.email || 'N/A'}</span>
                       </td>
                       <td>
-                        <span className="product-badge" style={{ 
+                        <span className="product-badge nowrap" style={{
                           backgroundColor: sub.resourceType === 'slot' ? '#FAF5FE' : '#F2F7FD',
                           color: sub.resourceType === 'slot' ? '#AF52DE' : '#0071E3',
                           fontSize: '0.7rem',
@@ -415,18 +415,18 @@ const Dashboard: React.FC = () => {
                         }}>{sub.productType}</span>
                       </td>
                       <td>
-                        <span style={{ 
-                          color: sub.expiry.color, 
-                          backgroundColor: sub.expiry.bg, 
-                          padding: '2px 8px', 
-                          borderRadius: '12px', 
+                        <span className="nowrap" style={{
+                          color: sub.expiry.color,
+                          backgroundColor: sub.expiry.bg,
+                          padding: '2px 8px',
+                          borderRadius: '12px',
                           fontWeight: 600,
-                          fontSize: '0.75rem' 
+                          fontSize: '0.75rem'
                         }}>{sub.expiry.text}</span>
                       </td>
                       <td style={{ textAlign: 'right' }}>
-                        <button 
-                          className="btn-remind-action" 
+                        <button
+                          className="btn-remind-action nowrap"
                           onClick={() => handleSendReminder(sub)}
                           disabled={sendingEmailId === sub.id}
                           style={{ height: '26px', padding: '0 10px', fontSize: '0.75rem', borderRadius: '13px' }}
@@ -455,7 +455,7 @@ const Dashboard: React.FC = () => {
             <Link to="/ban-hang" className="dashboard-view-all">Xem tất cả →</Link>
           </div>
 
-          <div style={{ overflowX: 'auto', flex: 1 }}>
+          <div className="table-responsive-wrapper" style={{ flex: 1 }}>
             {recentOrders.length > 0 ? (
               <table className="styled-table" style={{ fontSize: '0.85rem', margin: 0 }}>
                 <thead>
@@ -469,18 +469,18 @@ const Dashboard: React.FC = () => {
                 <tbody>
                   {recentOrders.map(o => (
                     <tr key={o._id}>
-                      <td style={{ fontWeight: 700, color: '#0071E3' }}>
+                      <td className="nowrap" style={{ fontWeight: 700, color: '#0071E3' }}>
                         #{o._id.substring(18).toUpperCase()}
                       </td>
                       <td>
                         <div style={{ fontWeight: 600 }}>{o.customer_id?.name || 'N/A'}</div>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-light)' }}>{new Date(o.order_date).toLocaleDateString('vi-VN')}</span>
+                        <span className="nowrap" style={{ fontSize: '0.75rem', color: 'var(--text-light)' }}>{new Date(o.order_date).toLocaleDateString('vi-VN')}</span>
                       </td>
-                      <td style={{ fontWeight: 700, color: '#D27B00' }}>
+                      <td className="nowrap" style={{ fontWeight: 700, color: '#D27B00' }}>
                         {o.total_amount.toLocaleString('vi-VN')} đ
                       </td>
                       <td>
-                        <span className="product-badge" style={{ 
+                        <span className="product-badge nowrap" style={{
                           backgroundColor: o.status === 'paid' ? '#EBF9EB' : o.status === 'pending' ? '#FFF3E0' : '#FFEBEA',
                           color: o.status === 'paid' ? '#34C759' : o.status === 'pending' ? '#FF9500' : '#FF3B30',
                           fontSize: '0.7rem',
@@ -510,17 +510,17 @@ const Dashboard: React.FC = () => {
       {/* 5. Phân Hệ Tồn Kho Khả Dụng Theo Sản Phẩm */}
       <div className="dashboard-section-card" style={{ marginTop: '1.75rem', marginBottom: '1.75rem' }}>
         <div className="dashboard-section-header" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', marginBottom: '1rem' }}>
-          <h2><FiBox style={{ color: '#34C759' }} /> Tình Trạng Kho Hàng Khả Dụng</h2>
+          <h2><FiBox style={{ color: '#34C759' }} /> Tình Trạng Kho Hàng</h2>
           <Link to="/kho-tai-nguyen" className="dashboard-view-all">Chi tiết kho →</Link>
         </div>
-        <div style={{ overflowX: 'auto' }}>
+        <div className="table-responsive-wrapper">
           <table className="styled-table" style={{ fontSize: '0.875rem', margin: 0 }}>
             <thead>
               <tr>
                 <th>Tên sản phẩm</th>
                 <th>Dạng tài nguyên</th>
                 <th>Hàng có sẵn (Còn trong kho)</th>
-                <th>Tổng nhập kho</th>
+                <th className="hide-mobile">Tổng nhập kho</th>
               </tr>
             </thead>
             <tbody>
@@ -529,12 +529,12 @@ const Dashboard: React.FC = () => {
                   const sampleAcc = accounts.find(a => a.product_type === prod.name);
                   const resType = sampleAcc?.resource_type || 'id_pass';
                   const resTypeLabel = resType === 'slot' ? '👥 Slot' : resType === 'key' ? '🎟️ Key' : '🔑 ID:Pass';
-                  
+
                   return (
                     <tr key={idx}>
                       <td><strong>{prod.name}</strong></td>
                       <td>
-                        <span className="product-badge" style={{
+                        <span className="product-badge nowrap" style={{
                           backgroundColor: resType === 'slot' ? '#FAF5FE' : resType === 'key' ? '#F4FBF6' : '#F2F7FD',
                           color: resType === 'slot' ? '#AF52DE' : resType === 'key' ? '#34C759' : '#0071E3',
                           fontSize: '0.75rem',
@@ -545,15 +545,15 @@ const Dashboard: React.FC = () => {
                       </td>
                       <td>
                         {resType === 'slot' ? (
-                          <div>
+                          <div className="nowrap">
                             <strong style={{ color: prod.slotsFree > 0 ? '#34C759' : '#FF3B30' }}>{prod.slotsFree} slots trống</strong>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-light)', marginLeft: '6px' }}>(trong {prod.slotsTotal} tổng slots)</span>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-light)', marginLeft: '6px' }}>(trong {prod.slotsTotal} tổng)</span>
                           </div>
                         ) : (
-                          <strong style={{ color: prod.available > 0 ? '#34C759' : '#FF3B30' }}>{prod.available} sản phẩm</strong>
+                          <strong className="nowrap" style={{ color: prod.available > 0 ? '#34C759' : '#FF3B30' }}>{prod.available} sản phẩm</strong>
                         )}
                       </td>
-                      <td>{prod.total} sản phẩm</td>
+                      <td className="hide-mobile nowrap">{prod.total} sản phẩm</td>
                     </tr>
                   );
                 })
@@ -579,20 +579,20 @@ const Dashboard: React.FC = () => {
               <h2>{previewEmailData?.isSimulation ? '✉️ Xem Trước Hóa Đơn (Giả lập gửi Email)' : '✉️ Xem Trước & Xác Nhận Gửi Hóa Đơn'}</h2>
               <button className="close-button" onClick={() => { setPreviewEmailData(null); setActivePreviewSub(null); }}>&times;</button>
             </div>
-            
+
             <div style={{ backgroundColor: '#F5F5F7', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-color)', fontSize: '0.85rem', display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '1rem', flexShrink: 0 }}>
               <div><span style={{ color: 'var(--text-light)' }}>Người nhận:</span> <strong>{previewEmailData?.recipient}</strong></div>
               <div><span style={{ color: 'var(--text-light)' }}>Tiêu đề:</span> <strong>{previewEmailData?.subject}</strong></div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: previewEmailData?.isSimulation ? '#FF9500' : '#0071E3', fontWeight: 600, fontSize: '0.8rem', marginTop: '4px' }}>
-                <FiInfo /> {previewEmailData?.isSimulation 
-                  ? 'Chưa cấu hình SMTP - Hệ thống đang sử dụng chế độ xem trước giả lập.' 
+                <FiInfo /> {previewEmailData?.isSimulation
+                  ? 'Chưa cấu hình SMTP - Hệ thống đang sử dụng chế độ xem trước giả lập.'
                   : 'Hệ thống đã kết nối SMTP thành công. Vui lòng kiểm tra kỹ trước khi xác nhận gửi.'}
               </div>
             </div>
 
             {/* Iframe Preview */}
             <div style={{ flex: 1, minHeight: '350px', border: '1px solid #E5E5EA', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#FFF', display: 'flex', flexDirection: 'column' }}>
-              <iframe 
+              <iframe
                 title="Dashboard Preview Email Billing"
                 srcDoc={previewEmailData?.html || ''}
                 style={{ width: '100%', height: '100%', border: 'none', flex: 1 }}
@@ -601,9 +601,9 @@ const Dashboard: React.FC = () => {
 
             <div className="modal-footer" style={{ borderTop: '1px solid #E5E5EA', padding: '1rem 0 0 0', marginTop: '1.25rem', flexShrink: 0, display: 'flex', gap: '0.75rem' }}>
               {previewEmailData?.isSimulation ? (
-                <button 
-                  type="button" 
-                  className="btn-cancel" 
+                <button
+                  type="button"
+                  className="btn-cancel"
                   onClick={() => { setPreviewEmailData(null); setActivePreviewSub(null); }}
                   style={{ width: '100%', height: '44px', fontWeight: 600, backgroundColor: '#1D1D1F', color: '#FFF' }}
                 >
@@ -611,16 +611,16 @@ const Dashboard: React.FC = () => {
                 </button>
               ) : (
                 <>
-                  <button 
-                    type="button" 
-                    className="btn-cancel" 
+                  <button
+                    type="button"
+                    className="btn-cancel"
                     onClick={() => { setPreviewEmailData(null); setActivePreviewSub(null); }}
                     style={{ flex: 1, height: '44px', fontWeight: 600 }}
                   >
                     Hủy bỏ
                   </button>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="btn-save"
                     onClick={() => activePreviewSub && handleSendReminder(activePreviewSub, true)}
                     disabled={sendingEmailId === activePreviewSub?.id}

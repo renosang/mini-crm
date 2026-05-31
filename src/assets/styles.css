@@ -2774,6 +2774,11 @@ h5 {
 
 /* === Mobile Responsive CSS Customization === */
 @media (max-width: 768px) {
+  html, body {
+    max-width: 100vw;
+    overflow-x: hidden !important;
+  }
+
   .mobile-only-header {
     display: flex !important;
   }
@@ -2797,17 +2802,69 @@ h5 {
     height: 100vh;
     display: flex;
     flex-direction: column;
+    max-width: 100vw;
+    overflow-x: hidden;
   }
   
   .page-content {
     padding: 0.75rem !important;
     height: calc(100vh - 50px);
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  
+  /* Grids and Columns wraps */
+  .widgets-grid-4, .widgets-grid-3, .metric-cards-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.75rem !important;
+  }
+  
+  .widgets-grid-2, .customer-detail-grid, .two-col-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .form-row {
+    flex-direction: column !important;
+  }
+  
+  .form-row .form-group {
+    width: 100% !important;
+    margin-right: 0 !important;
+    margin-bottom: 1rem !important;
   }
   
   /* Tables wrap */
   .table-card {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  .dashboard-section-card {
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  .table-responsive-wrapper, .table-container, .table-card {
+    width: 100%;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 0.5rem;
+    border-radius: 10px;
+  }
+
+  .table-responsive-wrapper table, .table-container table, .table-card table {
+    min-width: 750px; /* Lock minimum width on mobile to avoid squeezing columns */
+  }
+
+  .hide-mobile {
+    display: none !important;
+  }
+
+  .nowrap {
+    white-space: nowrap !important;
   }
   
   /* Inputs wrap */
@@ -2815,4 +2872,5 @@ h5 {
     font-size: 0.9rem !important;
   }
 }
+
 

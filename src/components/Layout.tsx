@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar.tsx';
 import { FiMenu, FiX } from 'react-icons/fi';
+import logo from '../assets/logo.png';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -38,7 +39,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         {/* Mobile Header Top-Bar */}
         <header 
           style={{
-            height: '50px',
+            height: '55px',
             borderBottom: '1px solid var(--border-color)',
             backgroundColor: 'var(--header-bg)',
             backdropFilter: 'blur(20px)',
@@ -50,6 +51,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           }}
           className="mobile-only-header"
         >
+          {/* Logo bên trái */}
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <img src={logo} alt="Logo" style={{ maxHeight: '35px', maxWidth: '120px', objectFit: 'contain' }} />
+          </div>
+
+          {/* Nút menu bên phải */}
           <button
             onClick={() => setSidebarOpen(true)}
             style={{
@@ -62,10 +69,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               padding: '6px'
             }}
           >
-            <FiMenu size={22} />
+            <FiMenu size={24} />
           </button>
-          <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--primary-color)' }}>ALTCRM Mobile</span>
-          <div style={{ width: '34px' }} /> {/* Spacer */}
         </header>
 
         <main className="page-content">
