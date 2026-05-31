@@ -241,6 +241,16 @@ const CaiDat: React.FC = () => {
   });
   const [savingOmnichannel, setSavingOmnichannel] = useState(false);
 
+  // --- MACROS STATE ---
+  interface IMacro {
+    shortcut: string;
+    text: string;
+  }
+  const [macros, setMacros] = useState<IMacro[]>([]);
+  const [newShortcut, setNewShortcut] = useState('');
+  const [newText, setNewText] = useState('');
+  const [savingMacros, setSavingMacros] = useState(false);
+
   // --- NEW LOAD FUNCTIONS ---
   const loadGeneralConfig = async () => {
     try {
@@ -291,6 +301,13 @@ const CaiDat: React.FC = () => {
     } catch (err) { console.error(err); }
   };
 
+  const loadMacros = async () => {
+    try {
+      const res = await api.get<{ success: boolean; data: IMacro[] }>('/settings/macros');
+      if (res.data.success && res.data.data) setMacros(res.data.data);
+    } catch (err) { console.error(err); }
+  };
+
   useEffect(() => {
     const init = async () => {
       setLoading(true);
@@ -298,7 +315,7 @@ const CaiDat: React.FC = () => {
         loadConfig(), loadBankConfig(), fetchBanks(),
         loadGeneralConfig(), loadInvoiceConfig(), loadRenewalConfig(),
         loadAccountInfo(), loadEmailTemplates(), loadBackupConfig(),
-        loadOmnichannelConfig()
+        loadOmnichannelConfig(), loadMacros()
       ]);
       setLoading(false);
     };
@@ -468,6 +485,46 @@ const CaiDat: React.FC = () => {
       setMessage({ text: err.response?.data?.message || 'Lỗi khi lưu cấu hình đấu nối', type: 'error' });
     } finally {
       setSavingOmnichannel(false);
+    }
+  };
+
+  // --- MACROS HANDLERS ---
+  const handleSaveMacros = async (updatedMacros: IMacro[]) => {
+    try {
+      setSavingMacros(true);
+      const res = await api.post('/settings/macros', { macros: updatedMacros });
+      if (res.data.success) {
+        setMacros(res.data.data);
+      }
+    } catch (err: any) {
+      alert('Lỗi khi lưu câu trả lời nhanh: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setSavingMacros(false);
+    }
+  };
+
+  const handleAddMacro = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newShortcut.startsWith('/')) {
+      alert('Phím tắt phải bắt đầu bằng dấu gạch chéo / (Ví dụ: /payment)');
+      return;
+    }
+    if (macros.some(m => m.shortcut.toLowerCase() === newShortcut.toLowerCase())) {
+      alert('Phím tắt này đã tồn tại!');
+      return;
+    }
+    const updated = [...macros, { shortcut: newShortcut, text: newText }];
+    setMacros(updated);
+    handleSaveMacros(updated);
+    setNewShortcut('');
+    setNewText('');
+  };
+
+  const handleDeleteMacro = (index: number) => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa câu trả lời nhanh này?')) {
+      const updated = macros.filter((_, i) => i !== index);
+      setMacros(updated);
+      handleSaveMacros(updated);
     }
   };
 
@@ -2102,6 +2159,96 @@ const CaiDat: React.FC = () => {
 
                 </div>
 
+                <div style={{ marginTop: '2.5rem', borderTop: '1px solid #E5E5EA', paddingTop: '2rem' }}>
+                  <h3 style={{ fontSize: '1.1rem', color: '#1D1D1F', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.5rem' }}>
+                    ⚡ Quản Lý Phím Tắt Trả Lời Nhanh (Macros / Snippets)
+                  </h3>
+                  <p style={{ color: '#86868B', fontSize: '0.8rem', marginBottom: '1.25rem' }}>
+                    Tạo các mẫu tin nhắn soạn sẵn. Nhân viên có thể gõ phím tắt `/` trong khung chat để tự động điền nhanh câu trả lời mẫu.
+                  </p>
+
+                  {/* List of existing macros */}
+                  {macros.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '1.5rem' }}>
+                      {macros.map((m, idx) => (
+                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', backgroundColor: '#F5F5F7', borderRadius: '10px', border: '1px solid #E5E5EA' }}>
+                          <div style={{ display: 'flex', gap: '15px', alignItems: 'flex-start' }}>
+                            <span style={{ fontFamily: 'monospace', fontWeight: 600, color: 'var(--primary-color)', fontSize: '0.9rem', backgroundColor: '#E1EFFF', padding: '2px 8px', borderRadius: '6px' }}>
+                              {m.shortcut}
+                            </span>
+                            <span style={{ fontSize: '0.85rem', color: '#323235', lineHeight: '1.4' }}>{m.text}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteMacro(idx)}
+                            style={{
+                              border: 'none',
+                              background: 'none',
+                              color: '#FF3B30',
+                              fontSize: '0.8rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              padding: '4px 8px'
+                            }}
+                          >
+                            Xóa
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ padding: '1.5rem', textAlign: 'center', backgroundColor: '#F5F5F7', borderRadius: '10px', color: '#86868B', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+                      Chưa có câu trả lời nhanh nào được cấu hình.
+                    </div>
+                  )}
+
+                  {/* Add Macro Form */}
+                  <div style={{ backgroundColor: '#F9FCFF', border: '1px solid #D2E9FF', borderRadius: '12px', padding: '1.25rem' }}>
+                    <h4 style={{ fontSize: '0.85rem', color: '#102A43', margin: '0 0 1rem 0' }}>➕ Thêm câu trả lời nhanh mới</h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 2.2fr auto', gap: '12px', alignItems: 'end' }}>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 600 }}>Phím tắt (bắt đầu bằng /):</label>
+                        <input
+                          type="text"
+                          value={newShortcut}
+                          onChange={e => setNewShortcut(e.target.value)}
+                          placeholder="e.g. /payment"
+                          style={{ height: '36px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 8px', width: '100%', outline: 'none', fontSize: '0.85rem' }}
+                        />
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 600 }}>Nội dung tin nhắn thay thế:</label>
+                        <input
+                          type="text"
+                          value={newText}
+                          onChange={e => setNewText(e.target.value)}
+                          placeholder="Nhập nội dung mẫu câu trả lời..."
+                          style={{ height: '36px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none', fontSize: '0.85rem' }}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleAddMacro}
+                        disabled={savingMacros || !newShortcut || !newText}
+                        style={{
+                          height: '36px',
+                          backgroundColor: '#34C759',
+                          color: '#FFF',
+                          border: 'none',
+                          padding: '0 16px',
+                          borderRadius: '8px',
+                          fontWeight: 600,
+                          fontSize: '0.8rem',
+                          cursor: 'pointer',
+                          opacity: (!newShortcut || !newText) ? 0.6 : 1
+                        }}
+                      >
+                        {savingMacros ? 'Đang lưu...' : 'Thêm Mẫu'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
                 <div style={{ marginTop: '2rem', borderTop: '1px solid #F5F5F7', paddingTop: '1.5rem' }}>
                   <button
                     type="submit"
@@ -2109,7 +2256,7 @@ const CaiDat: React.FC = () => {
                     disabled={savingOmnichannel}
                     style={{ width: '100%', height: '46px', fontWeight: 600, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.95rem' }}
                   >
-                    {savingOmnichannel ? 'Đang lưu cấu hình...' : <><FiSave /> Lưu Cấu Hình Đấu Nối</>}
+                    {savingOmnichannel ? 'Đang lưu cấu hình...' : <><FiSave /> Lưu Cấu Hướng Đấu Nối & Đa Kênh</>}
                   </button>
                 </div>
               </div>
