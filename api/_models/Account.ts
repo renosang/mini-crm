@@ -7,6 +7,11 @@ const AccountSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Vui lòng nhập loại sản phẩm'],
     },
+    product_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product',
+      default: null,
+    },
     account_details: {
       username: String,
       password_acc: String,

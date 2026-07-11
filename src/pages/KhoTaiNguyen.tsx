@@ -53,6 +53,7 @@ const KhoTaiNguyen: React.FC = () => {
   // States cho Modal thêm/sửa kho mới
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [editingAccount, setEditingAccount] = useState<IAccount | null>(null);
+  const [isReusable, setIsReusable] = useState<boolean>(false);
 
   // Tab của Modal: 'single' (thêm 1 cái) hoặc 'bulk' (nhập hàng loạt)
   const [activeTab, setActiveTab] = useState<'single' | 'bulk'>('single');
@@ -144,6 +145,7 @@ const KhoTaiNguyen: React.FC = () => {
     
     setResourceType(acc.resource_type || 'id_pass');
     setTotalSlots(String(acc.total_slots || 5));
+    setIsReusable(acc.resource_type !== 'slot' && (acc.total_slots || 1) > 1);
     setUsername(acc.account_details?.username || '');
     setPasswordAcc(acc.account_details?.password_acc || '');
     licenseKey || setLicenseKey(acc.account_details?.license_key || '');
@@ -158,6 +160,7 @@ const KhoTaiNguyen: React.FC = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingAccount(null);
+    setIsReusable(false);
     setActiveTab('single');
     setBulkText('');
     
@@ -246,7 +249,7 @@ const KhoTaiNguyen: React.FC = () => {
     const body = {
       product_type: finalProductType,
       resource_type: resourceType,
-      total_slots: resourceType === 'slot' ? Number(totalSlots || 1) : 1,
+      total_slots: (resourceType === 'slot' || isReusable) ? Number(totalSlots || 1) : 1,
       account_details: {
         username: resourceType !== 'key' ? username : '',
         password_acc: resourceType === 'id_pass' ? passwordAcc : '',
@@ -559,26 +562,56 @@ const KhoTaiNguyen: React.FC = () => {
                     <td>
                       {/* HIỂN THỊ THÔNG TIN CHI TIẾT THEO LOẠI TÀI NGUYÊN */}
                       {item.resource_type === 'key' ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <code style={{ 
-                            backgroundColor: '#F5F5F7', 
-                            padding: '4px 8px', 
-                            borderRadius: '6px', 
-                            fontFamily: 'monospace', 
-                            fontWeight: 600,
-                            color: '#1D1D1F',
-                            fontSize: '0.85rem'
-                          }}>
-                            {item.account_details?.license_key || '(Trống Key)'}
-                          </code>
-                          {item.account_details?.license_key && (
-                            <button 
-                              onClick={() => handleCopy(item.account_details!.license_key!, item._id)}
-                              style={{ background: 'none', border: 'none', color: '#0071E3', cursor: 'pointer', display: 'inline-flex', padding: 0 }}
-                              title="Sao chép Key"
-                            >
-                              {copiedId === item._id ? <FiCheck style={{ color: '#34C759' }} /> : <FiCopy />}
-                            </button>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <code style={{ 
+                              backgroundColor: '#F5F5F7', 
+                              padding: '4px 8px', 
+                              borderRadius: '6px', 
+                              fontFamily: 'monospace', 
+                              fontWeight: 600,
+                              color: '#1D1D1F',
+                              fontSize: '0.85rem'
+                            }}>
+                              {item.account_details?.license_key || '(Trống Key)'}
+                            </code>
+                            {item.account_details?.license_key && (
+                              <button 
+                                onClick={() => handleCopy(item.account_details!.license_key!, item._id)}
+                                style={{ background: 'none', border: 'none', color: '#0071E3', cursor: 'pointer', display: 'inline-flex', padding: 0 }}
+                                title="Sao chép Key"
+                              >
+                                {copiedId === item._id ? <FiCheck style={{ color: '#34C759' }} /> : <FiCopy />}
+                              </button>
+                            )}
+                          </div>
+                          {(item.total_slots || 1) > 1 && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '3px' }}>
+                              <div style={{ flex: 1, backgroundColor: '#E5E5EA', height: '6px', borderRadius: '3px', overflow: 'hidden', minWidth: '80px' }}>
+                                <div style={{ 
+                                  width: `${Math.min(100, ((item.used_slots || 0) / (item.total_slots || 1)) * 100)}%`, 
+                                  backgroundColor: '#34C759', 
+                                  height: '100%', 
+                                  borderRadius: '3px',
+                                  transition: 'width 0.3s ease'
+                                }}></div>
+                              </div>
+                              <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#2E7D32' }}>
+                                {item.used_slots}/{item.total_slots} đã active
+                              </span>
+                            </div>
+                          )}
+                          {(item.total_slots || 1) > 1 && item.slots_assigned && item.slots_assigned.length > 0 && (
+                            <div style={{ marginTop: '4px', backgroundColor: '#F4FBF6', padding: '6px 10px', borderRadius: '8px', border: '1px solid #E8F5E9' }}>
+                              <div style={{ fontWeight: 600, fontSize: '0.72rem', color: '#2E7D32', marginBottom: '2px' }}>Khách hàng đã active:</div>
+                              <ul style={{ margin: 0, paddingLeft: '12px', fontSize: '0.75rem', color: '#1D1D1F', lineHeight: '1.4' }}>
+                                {item.slots_assigned.map((slot: any, idx: number) => (
+                                  <li key={idx}>
+                                    <strong>{slot.customer_id?.name || 'Khách hàng'}</strong> ({slot.assigned_email || 'n/a'})
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
                           )}
                         </div>
                       ) : item.resource_type === 'slot' ? (
@@ -604,7 +637,7 @@ const KhoTaiNguyen: React.FC = () => {
                               {item.used_slots}/{item.total_slots} slot đã gán
                             </span>
                           </div>
-
+ 
                           {/* List of assigned slots details */}
                           {item.slots_assigned && item.slots_assigned.length > 0 ? (
                             <div style={{ marginTop: '4px', backgroundColor: '#FAF9FC', padding: '6px 10px', borderRadius: '8px', border: '1px solid #F0EDF5' }}>
@@ -643,6 +676,34 @@ const KhoTaiNguyen: React.FC = () => {
                           )}
                           {item.account_details?.pin && (
                             <div><span style={{ color: 'var(--text-light)' }}>PIN:</span> <code>{item.account_details.pin}</code></div>
+                          )}
+                          {(item.total_slots || 1) > 1 && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
+                              <div style={{ flex: 1, backgroundColor: '#E5E5EA', height: '6px', borderRadius: '3px', overflow: 'hidden', minWidth: '80px' }}>
+                                <div style={{ 
+                                  width: `${Math.min(100, ((item.used_slots || 0) / (item.total_slots || 1)) * 100)}%`, 
+                                  backgroundColor: '#0071E3', 
+                                  height: '100%', 
+                                  borderRadius: '3px',
+                                  transition: 'width 0.3s ease'
+                                }}></div>
+                              </div>
+                              <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#0071E3' }}>
+                                {item.used_slots}/{item.total_slots} đã active
+                              </span>
+                            </div>
+                          )}
+                          {(item.total_slots || 1) > 1 && item.slots_assigned && item.slots_assigned.length > 0 && (
+                            <div style={{ marginTop: '4px', backgroundColor: '#F0F7FF', padding: '6px 10px', borderRadius: '8px', border: '1px solid #E1F0FF' }}>
+                              <div style={{ fontWeight: 600, fontSize: '0.72rem', color: '#0071E3', marginBottom: '2px' }}>Khách hàng đã active:</div>
+                              <ul style={{ margin: 0, paddingLeft: '12px', fontSize: '0.75rem', color: '#1D1D1F', lineHeight: '1.4' }}>
+                                {item.slots_assigned.map((slot: any, idx: number) => (
+                                  <li key={idx}>
+                                    <strong>{slot.customer_id?.name || 'Khách hàng'}</strong> ({slot.assigned_email || 'n/a'})
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
                           )}
                         </div>
                       )}
@@ -837,18 +898,54 @@ const KhoTaiNguyen: React.FC = () => {
                       {resourceType === 'key' ? 'Thông tin Key bản quyền' : resourceType === 'slot' ? 'Thông tin Host Family & Số lượng slot' : 'Thông tin Tài khoản & Mật khẩu'}
                     </h3>
                     
+                    {resourceType !== 'slot' && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem', padding: '8px 12px', backgroundColor: '#FFF', borderRadius: '8px', border: '1px solid #E5E5EA' }}>
+                        <input 
+                          type="checkbox" 
+                          id="is-reusable-check" 
+                          checked={isReusable} 
+                          onChange={e => {
+                            setIsReusable(e.target.checked);
+                            if (e.target.checked && (totalSlots === '1' || totalSlots === '5')) {
+                              setTotalSlots('1000');
+                            }
+                          }}
+                          style={{ width: 'auto', cursor: 'pointer', margin: 0 }}
+                        />
+                        <label htmlFor="is-reusable-check" style={{ margin: 0, cursor: 'pointer', fontWeight: 600, color: 'var(--primary-color)' }}>
+                          Tái sử dụng (Kích hoạt được nhiều lần / Multi-use)
+                        </label>
+                      </div>
+                    )}
+                    
                     {resourceType === 'key' ? (
                       /* DẠNG 1: KEY KÍCH HOẠT */
-                      <div className="form-group" style={{ marginBottom: 0 }}>
-                        <label htmlFor="acc-key">License Key / Dòng Key Kích Hoạt</label>
-                        <input 
-                          type="text" 
-                          id="acc-key" 
-                          placeholder="Nhập Key (Ví dụ: WP-KEY-8F8D-9E9C)" 
-                          value={licenseKey} 
-                          onChange={e => setLicenseKey(e.target.value)} 
-                          required={resourceType === 'key' && activeTab === 'single'}
-                        />
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                          <label htmlFor="acc-key">License Key / Dòng Key Kích Hoạt</label>
+                          <input 
+                            type="text" 
+                            id="acc-key" 
+                            placeholder="Nhập Key (Ví dụ: WP-KEY-8F8D-9E9C)" 
+                            value={licenseKey} 
+                            onChange={e => setLicenseKey(e.target.value)} 
+                            required={resourceType === 'key' && activeTab === 'single'}
+                          />
+                        </div>
+                        {isReusable && (
+                          <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label htmlFor="total-slots">Số lần kích hoạt tối đa của Key này</label>
+                            <input 
+                              type="number" 
+                              id="total-slots" 
+                              placeholder="Ví dụ: 1000" 
+                              value={totalSlots} 
+                              onChange={e => setTotalSlots(e.target.value)} 
+                              required={isReusable}
+                              min="1"
+                            />
+                          </div>
+                        )}
                       </div>
                     ) : resourceType === 'slot' ? (
                       /* DẠNG 2: GÁN SLOT FAMILY / TEAM */
@@ -966,15 +1063,31 @@ const KhoTaiNguyen: React.FC = () => {
                             </div>
                           </div>
                         </div>
-                        <div className="form-group" style={{ marginBottom: 0 }}>
-                          <label htmlFor="acc-pin">PIN Profile / Ghi chú profile</label>
-                          <input 
-                            type="text" 
-                            id="acc-pin" 
-                            placeholder="Ví dụ: Profile 3 - PIN 1234" 
-                            value={pin} 
-                            onChange={e => setPin(e.target.value)} 
-                          />
+                        <div style={{ display: 'grid', gridTemplateColumns: isReusable ? '1fr 1fr' : '1fr', gap: '1rem' }}>
+                          <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label htmlFor="acc-pin">PIN Profile / Ghi chú profile</label>
+                            <input 
+                              type="text" 
+                              id="acc-pin" 
+                              placeholder="Ví dụ: Profile 3 - PIN 1234" 
+                              value={pin} 
+                              onChange={e => setPin(e.target.value)} 
+                            />
+                          </div>
+                          {isReusable && (
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                              <label htmlFor="total-slots">Số lần sử dụng tối đa của Tài khoản này</label>
+                              <input 
+                                type="number" 
+                                id="total-slots" 
+                                placeholder="Ví dụ: 1000" 
+                                value={totalSlots} 
+                                onChange={e => setTotalSlots(e.target.value)} 
+                                required={isReusable}
+                                min="1"
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}

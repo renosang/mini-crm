@@ -38,6 +38,20 @@ import supplierDashboardStatsHandler from './api/suppliers/dashboard-stats.ts';
 import supplierImportsHandler from './api/suppliers/imports/index.ts';
 import supplierPaymentsHandler from './api/suppliers/payments/index.ts';
 import supplierProfitHandler from './api/suppliers/profit.ts';
+
+import productsHandler from './api/products/index.ts';
+import productDetailHandler from './api/products/[id].ts';
+
+import discountsHandler from './api/discounts/index.ts';
+import discountDetailHandler from './api/discounts/[id].ts';
+
+// Quotation routes
+import quotationsHandler from './api/quotations/index.ts';
+import quotationSendEmailHandler from './api/quotations/send-email.ts';
+import quotationActionsHandler from './api/quotations/actions.ts';
+import quotationTrackOpenHandler from './api/quotations/track-open.ts';
+import quotationTrackClickHandler from './api/quotations/track-click.ts';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -146,6 +160,32 @@ app.post('/api/suppliers', suppliersHandler);
 app.get('/api/suppliers/:id', mapParams, supplierDetailHandler);
 app.put('/api/suppliers/:id', mapParams, supplierDetailHandler);
 app.delete('/api/suppliers/:id', mapParams, supplierDetailHandler);
+
+// Product Routes
+app.get('/api/products', productsHandler);
+app.post('/api/products', productsHandler);
+app.get('/api/products/:id', mapParams, productDetailHandler);
+app.put('/api/products/:id', mapParams, productDetailHandler);
+app.delete('/api/products/:id', mapParams, productDetailHandler);
+
+// Discount Routes
+app.get('/api/discounts', discountsHandler);
+app.post('/api/discounts', discountsHandler);
+app.get('/api/discounts/:id', mapParams, discountDetailHandler);
+app.put('/api/discounts/:id', mapParams, discountDetailHandler);
+app.delete('/api/discounts/:id', mapParams, discountDetailHandler);
+
+// Quotation Routes
+app.get('/api/quotations', quotationsHandler);
+app.post('/api/quotations', quotationsHandler);
+app.get('/api/quotations/:id', mapParams, quotationsHandler);
+app.put('/api/quotations/:id', mapParams, quotationsHandler);
+app.delete('/api/quotations/:id', mapParams, quotationsHandler);
+app.get('/api/quotations/:id/send-email', mapParams, quotationSendEmailHandler);
+app.post('/api/quotations/:id/actions', mapParams, quotationActionsHandler);
+app.put('/api/quotations/:id/actions', mapParams, quotationActionsHandler);
+app.get('/api/quotations/track-open', quotationTrackOpenHandler);
+app.get('/api/quotations/track-click', quotationTrackClickHandler);
 
 // In Production, serve the static Vite build from dist/
 const distPath = path.join(__dirname, 'dist');

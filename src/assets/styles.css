@@ -107,12 +107,14 @@ h5 {
   height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 }
 
 .page-content {
   padding: 2rem 2.5rem;
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .logout-button {
@@ -582,6 +584,12 @@ h5 {
 /* --- CSS cho Bảng (Table) - NÂNG CẤP --- */
 .table-container {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+
+.nowrap {
+  white-space: nowrap;
 }
 
 .styled-table {
@@ -608,8 +616,7 @@ h5 {
 
 .styled-table th,
 .styled-table td {
-  padding: 1rem 1.25rem;
-  /* Tăng padding */
+  padding: 0.85rem 1rem;
   border-bottom: 1px solid var(--border-color);
 }
 

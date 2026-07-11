@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import api from '../services/api';
-import { 
-  FiShoppingCart, FiPlus, FiTrash2, FiUser, FiCreditCard, 
-  FiPackage, FiSearch, FiCalendar, FiCheckCircle, FiClock, 
-  FiXCircle, FiLock, FiPlusCircle, FiList, FiMail, FiInfo
+import {
+  FiShoppingCart, FiPlus, FiTrash2, FiUser, FiCreditCard,
+  FiPackage, FiSearch, FiCalendar, FiCheckCircle, FiClock,
+  FiXCircle, FiPlusCircle, FiMail, FiInfo, FiTag, FiShoppingBag
 } from 'react-icons/fi';
 
 // === KIỂU DỮ LIỆU ===
@@ -20,6 +20,7 @@ interface ICustomer {
 interface IAccount {
   _id: string;
   product_type: string;
+  product_id?: any;
   account_details?: {
     username?: string;
     password_acc?: string;
@@ -28,13 +29,51 @@ interface IAccount {
   };
   cost: number;
   status: string;
+  resource_type?: string;
+  used_slots?: number;
+  total_slots?: number;
+}
+
+interface IProduct {
+  _id: string;
+  name: string;
+  productType?: string;
+  packages: Array<{
+    _id: string;
+    name: string;
+    price: number;
+    durationDays: number;
+  }>;
 }
 
 interface IOrder {
   _id: string;
   customer_id: ICustomer | null;
   accounts: IAccount[];
+  items?: Array<{
+    product_id: any;
+    package_id: string;
+    name: string;
+    price: number;
+    quantity: number;
+  }>;
+  product_name?: string;
+  quantity?: number;
+  cost_price?: number;
+  selling_price?: number;
+  expiry_date?: string | null;
+  recurring_invoice?: {
+    enabled: boolean;
+    interval_months: number;
+    custom_interval: string;
+  };
+  discount_code?: string;
+  discount_reason?: string;
+  discount_amount?: number;
   total_amount: number;
+  payment_method?: string;
+  customer_note?: string;
+  internal_note?: string;
   status: 'paid' | 'pending' | 'cancelled';
   createdAt: string;
 }
@@ -43,10 +82,10 @@ interface IOrder {
 const BanHang: React.FC = () => {
   const [orders, setOrders] = useState<IOrder[]>([]);
   const [customers, setCustomers] = useState<ICustomer[]>([]);
-  const [stockAccounts, setStockAccounts] = useState<IAccount[]>([]);
+  const [products, setProducts] = useState<IProduct[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
-  
+
   const location = useLocation();
   const [viewingOrder, setViewingOrder] = useState<any | null>(null);
 
@@ -55,28 +94,27 @@ const BanHang: React.FC = () => {
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
   const [customerSearchQuery, setCustomerSearchQuery] = useState<string>('');
   const [showCustomerDropdown, setShowCustomerDropdown] = useState<boolean>(false);
-  
+
   // Thêm nhanh khách hàng inline
   const [showQuickCustomerForm, setShowQuickCustomerForm] = useState<boolean>(false);
   const [quickCustomerName, setQuickCustomerName] = useState<string>('');
   const [quickCustomerPhone, setQuickCustomerPhone] = useState<string>('');
 
-  // Cấu trúc sản phẩm bán trong đơn hàng
-  const [sellMode, setSellMode] = useState<'inventory' | 'direct'>('direct');
-  const [selectedInventoryAccountIds, setSelectedInventoryAccountIds] = useState<string[]>([]);
-  
-  // Tạo tài khoản trực tiếp
-  const [directProductType, setDirectProductType] = useState<string>('Proxy IPv4');
-  const [directUsername, setDirectUsername] = useState<string>('');
-  const [directPassword, setDirectPassword] = useState<string>('');
-  const [directLicense, setDirectLicense] = useState<string>('');
-  const [directCost, setDirectCost] = useState<number>(0);
-  const [directValidUntil, setDirectValidUntil] = useState<string>('');
+  // === NEW: Fields cho modal đơn giản ===
+  const [productName, setProductName] = useState<string>('');
+  const [quantity, setQuantity] = useState<number>(1);
+  const [costPrice, setCostPrice] = useState<string>('');
+  const [sellingPrice, setSellingPrice] = useState<string>('');
+  const [expiryDate, setExpiryDate] = useState<string>('');
+  const [recurringEnabled, setRecurringEnabled] = useState<boolean>(false);
+  const [recurringInterval, setRecurringInterval] = useState<string>('1');
+  const [recurringCustom, setRecurringCustom] = useState<string>('');
+  const [discountAmount, setDiscountAmount] = useState<string>('');
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
+  const [customerNote, setCustomerNote] = useState<string>('');
+  const [internalNote, setInternalNote] = useState<string>('');
 
-  // Giá bán & trạng thái đơn hàng
-  const [totalAmount, setTotalAmount] = useState<string>('');
   const [orderStatus, setOrderStatus] = useState<'paid' | 'pending'>('paid');
-  const [isDirectUpgrade, setIsDirectUpgrade] = useState<boolean>(false);
 
   // States gửi Email nhắc nợ / gia hạn
   const [isSendingEmailId, setIsSendingEmailId] = useState<string | null>(null);
@@ -88,20 +126,15 @@ const BanHang: React.FC = () => {
   const loadAllData = async () => {
     try {
       setLoading(true);
-      const [resOrders, resCustomers, resAccounts] = await Promise.all([
+      const [resOrders, resCustomers, resProducts] = await Promise.all([
         api.get<{ success: boolean, data: IOrder[] }>('/orders'),
         api.get<{ success: boolean, data: ICustomer[] }>('/customers'),
-        api.get<{ success: boolean, data: IAccount[] }>('/accounts')
+        api.get<{ success: boolean, data: IProduct[] }>('/products')
       ]);
 
       if (resOrders.data.success) setOrders(resOrders.data.data);
       if (resCustomers.data.success) setCustomers(resCustomers.data.data);
-      
-      // Lọc các tài khoản còn trống trong kho (status = available)
-      if (resAccounts.data.success) {
-        const availableStock = resAccounts.data.data.filter(acc => acc.status === 'available');
-        setStockAccounts(availableStock);
-      }
+      if (resProducts.data.success) setProducts(resProducts.data.data);
     } catch (err) {
       console.error("Lỗi nạp dữ liệu bán hàng:", err);
       setError('Không thể kết nối API máy chủ để nạp dữ liệu bán hàng.');
@@ -113,6 +146,14 @@ const BanHang: React.FC = () => {
   useEffect(() => {
     loadAllData();
   }, []);
+
+  // Tự động mở modal nếu được chuyển hướng từ trang khác với state openCreateModal
+  useEffect(() => {
+    if (location.state && (location.state as any).openCreateModal) {
+      setIsModalOpen(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   // Hỗ trợ tự động mở chi tiết đơn hàng nếu có ?viewOrder=... trong URL
   useEffect(() => {
@@ -129,7 +170,7 @@ const BanHang: React.FC = () => {
   }, [location.search, orders]);
 
   // Tìm kiếm khách hàng trong Modal
-  const filteredCustomers = customers.filter(c => 
+  const filteredCustomers = customers.filter(c =>
     c.name.toLowerCase().includes(customerSearchQuery.toLowerCase()) ||
     (c.phone && c.phone.includes(customerSearchQuery))
   );
@@ -159,14 +200,46 @@ const BanHang: React.FC = () => {
     }
   };
 
-  // Submit tạo Đơn hàng mới
+  // Tính tổng tiền
+  const getFinalTotal = () => {
+    const sell = Number(sellingPrice) || 0;
+    const qty = quantity || 1;
+    const disc = Number(discountAmount) || 0;
+    return Math.max(0, sell * qty - disc);
+  };
+
+  // Reset form
+  const resetForm = () => {
+    setSelectedCustomerId('');
+    setCustomerSearchQuery('');
+    setProductName('');
+    setQuantity(1);
+    setCostPrice('');
+    setSellingPrice('');
+    setExpiryDate('');
+    setRecurringEnabled(false);
+    setRecurringInterval('1');
+    setRecurringCustom('');
+    setDiscountAmount('');
+    setPaymentMethod('');
+    setCustomerNote('');
+    setInternalNote('');
+    setOrderStatus('paid');
+  };
+
   const handleOrderSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCustomerId) {
       alert('Vui lòng chọn khách hàng.');
       return;
     }
-    if (!totalAmount || isNaN(Number(totalAmount))) {
+
+    if (!productName.trim()) {
+      alert('Vui lòng nhập tên sản phẩm.');
+      return;
+    }
+
+    if (!sellingPrice || Number(sellingPrice) <= 0) {
       alert('Vui lòng nhập giá bán hợp lệ.');
       return;
     }
@@ -174,44 +247,28 @@ const BanHang: React.FC = () => {
     try {
       const reqBody: any = {
         customer_id: selectedCustomerId,
-        total_amount: Number(totalAmount),
         status: orderStatus,
+        product_name: productName,
+        quantity: quantity,
+        cost_price: Number(costPrice) || 0,
+        selling_price: Number(sellingPrice),
+        expiry_date: expiryDate || null,
+        recurring_invoice: {
+          enabled: recurringEnabled,
+          interval_months: recurringCustom ? 0 : Number(recurringInterval),
+          custom_interval: recurringCustom || '',
+        },
+        discount_amount: Number(discountAmount) || 0,
+        payment_method: paymentMethod,
+        customer_note: customerNote,
+        internal_note: internalNote,
+        total_amount: getFinalTotal(),
       };
-
-      if (sellMode === 'inventory') {
-        if (selectedInventoryAccountIds.length === 0) {
-          alert('Vui lòng chọn ít nhất một tài khoản trong kho.');
-          return;
-        }
-        reqBody.existingAccountIds = selectedInventoryAccountIds;
-      } else {
-        // Direct creation of account/service
-        reqBody.accountsData = [{
-          product_type: directProductType,
-          username: directUsername,
-          password_acc: isDirectUpgrade ? '' : directPassword,
-          license_key: directLicense,
-          cost: directCost,
-          valid_until: directValidUntil || null
-        }];
-      }
 
       const res = await api.post<{ success: boolean }>('/orders', reqBody);
       if (res.data.success) {
         setIsModalOpen(false);
-        setIsDirectUpgrade(false);
-        // Reset form
-        setSelectedCustomerId('');
-        setCustomerSearchQuery('');
-        setSelectedInventoryAccountIds([]);
-        setDirectUsername('');
-        setDirectPassword('');
-        setDirectLicense('');
-        setDirectCost(0);
-        setDirectValidUntil('');
-        setTotalAmount('');
-        setOrderStatus('paid');
-        // Reload data
+        resetForm();
         await loadAllData();
       }
     } catch (err: any) {
@@ -237,22 +294,21 @@ const BanHang: React.FC = () => {
   const handleSendEmailReminder = async (orderId: string, forceSend = false) => {
     try {
       setIsSendingEmailId(orderId);
-      
+
       const baseUrl = `/orders/${orderId}/send-reminder`;
       const url = forceSend ? baseUrl : `${baseUrl}?preview=true`;
-      
-      const res = await api.post<{ 
-        success: boolean; 
-        mode: 'smtp' | 'simulation' | 'preview'; 
-        message: string; 
-        previewHtml?: string; 
-        recipient?: string; 
+
+      const res = await api.post<{
+        success: boolean;
+        mode: 'smtp' | 'simulation' | 'preview';
+        message: string;
+        previewHtml?: string;
+        recipient?: string;
         subject?: string;
       }>(url);
-      
+
       if (res.data.success) {
         if (res.data.mode === 'preview') {
-          // SMTP cấu hình thành công -> Mở modal xem trước trước khi bấm gửi thực tế
           setActivePreviewOrderId(orderId);
           setEmailPreview({
             recipient: res.data.recipient || '',
@@ -262,7 +318,6 @@ const BanHang: React.FC = () => {
           });
           setShowEmailPreviewModal(true);
         } else if (res.data.mode === 'simulation' && res.data.previewHtml) {
-          // Simulation mode / SMTP chưa cấu hình
           setActivePreviewOrderId(orderId);
           setEmailPreview({
             recipient: res.data.recipient || '',
@@ -272,7 +327,6 @@ const BanHang: React.FC = () => {
           });
           setShowEmailPreviewModal(true);
         } else {
-          // SMTP mode gửi thực tế thành công
           alert(res.data.message);
           setShowEmailPreviewModal(false);
           setEmailPreview(null);
@@ -292,6 +346,58 @@ const BanHang: React.FC = () => {
     totalOrders: orders.length,
     pendingPayments: orders.filter(o => o.status === 'pending').reduce((sum, o) => sum + o.total_amount, 0),
     accountsSold: orders.reduce((sum, o) => sum + (o.accounts?.length || 0), 0)
+  };
+
+  // Helper: hiển thị tên sản phẩm trong bảng
+  const getOrderProductDisplay = (order: IOrder) => {
+    if (order.product_name) {
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+            {order.product_name} <span style={{ color: '#8E8E93' }}>x{order.quantity || 1}</span>
+          </span>
+          {order.discount_amount && order.discount_amount > 0 ? (
+            <span style={{ color: 'var(--primary-color)', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '3px' }}>
+              <FiTag size={12} /> Giảm giá: -{order.discount_amount.toLocaleString('vi-VN')} đ
+            </span>
+          ) : null}
+        </div>
+      );
+    }
+
+    if (order.items && order.items.length > 0) {
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          {order.items.map((it, idx) => (
+            <span key={idx} style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+              {it.name} <span style={{ color: '#8E8E93' }}>x{it.quantity}</span>
+            </span>
+          ))}
+          {order.discount_amount && order.discount_amount > 0 ? (
+            <span style={{ color: 'var(--primary-color)', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '3px' }}>
+              <FiTag size={12} /> Giảm giá: -{order.discount_amount.toLocaleString('vi-VN')} đ
+              {order.discount_reason && ` (${order.discount_reason})`}
+            </span>
+          ) : null}
+        </div>
+      );
+    }
+
+    return (
+      <span style={{ color: 'var(--text-light)', fontStyle: 'italic', fontSize: '0.85rem' }}>
+        Đơn nhập tay trực tiếp
+        {order.discount_amount && order.discount_amount > 0 ? ` (Giảm -${order.discount_amount.toLocaleString('vi-VN')}đ)` : ''}
+      </span>
+    );
+  };
+
+  // Helper: payment method label
+  const paymentMethodLabel = (method?: string) => {
+    switch (method) {
+      case 'bank_transfer': return 'Chuyển khoản';
+      case 'cash': return 'Tiền mặt';
+      default: return '';
+    }
   };
 
   return (
@@ -358,7 +464,8 @@ const BanHang: React.FC = () => {
               <tr>
                 <th className="nowrap">Mã Đơn</th>
                 <th className="nowrap">Khách Hàng</th>
-                <th className="nowrap">Tài Nguyên Bàn Giao</th>
+                <th className="nowrap">Chi tiết Gói đã mua</th>
+                <th className="nowrap">Hình thức TT</th>
                 <th className="nowrap">Số tiền</th>
                 <th className="nowrap">Thanh Toán</th>
                 <th className="nowrap">Ngày Bàn Giao</th>
@@ -370,20 +477,20 @@ const BanHang: React.FC = () => {
                 orders.map(order => (
                   <tr key={order._id}>
                     <td className="nowrap">
-                      <button 
+                      <button
                         type="button"
                         onClick={() => setViewingOrder(order)}
-                        style={{ 
-                          background: 'none', 
-                          border: 'none', 
-                          padding: 0, 
-                          color: '#0071E3', 
-                          fontFamily: 'monospace', 
-                          fontWeight: 600, 
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          padding: 0,
+                          color: '#0071E3',
+                          fontFamily: 'monospace',
+                          fontWeight: 600,
                           cursor: 'pointer',
                           textDecoration: 'underline'
                         }}
-                        title="Click để xem chi tiết hóa đơn & phân tích lợi nhuận"
+                        title="Xem hóa đơn đơn hàng"
                       >
                         #{order._id.substring(order._id.length - 6).toUpperCase()}
                       </button>
@@ -395,7 +502,7 @@ const BanHang: React.FC = () => {
                             {order.customer_id.name}
                           </Link>
                           {order.customer_id.status && (
-                            <span 
+                            <span
                               className={`status-badge ${order.customer_id.status.toLowerCase() === 'vip' ? 'status-vip' : order.customer_id.status.toLowerCase() === 'tiềm năng' ? 'status-tiem-nang' : 'status-binh-thuong'}`}
                               style={{ marginLeft: '6px', fontSize: '0.75rem', padding: '0.1rem 0.4rem' }}
                             >
@@ -408,26 +515,11 @@ const BanHang: React.FC = () => {
                       )}
                     </td>
                     <td className="nowrap">
-                      {order.accounts && order.accounts.length > 0 ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                          {order.accounts.map((acc, index) => (
-                            <div key={index} style={{ fontSize: '0.875rem' }}>
-                              <strong style={{ color: '#0071E3' }}>{acc.product_type}</strong>
-                              {acc.account_details?.username && (
-                                <span style={{ color: 'var(--text-light)', marginLeft: '6px', fontSize: '0.8rem' }}>
-                                  ({acc.account_details.username})
-                                </span>
-                              )}
-                              {acc.account_details?.license_key && (
-                                <span style={{ color: 'var(--text-light)', marginLeft: '6px', fontSize: '0.8rem', fontFamily: 'monospace' }}>
-                                  ({acc.account_details.license_key.substring(0, 10)}...)
-                                </span>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <span style={{ color: 'var(--text-light)' }}>Không có chi tiết tài khoản</span>
+                      {getOrderProductDisplay(order)}
+                    </td>
+                    <td className="nowrap">
+                      {paymentMethodLabel(order.payment_method) || (
+                        <span style={{ color: 'var(--text-light)', fontSize: '0.85rem' }}>—</span>
                       )}
                     </td>
                     <td className="nowrap" style={{ fontWeight: 700, color: '#1D1D1F' }}>
@@ -451,17 +543,17 @@ const BanHang: React.FC = () => {
                       </div>
                     </td>
                     <td className="nowrap">
-                      <button 
-                        onClick={() => handleSendEmailReminder(order._id)} 
+                      <button
+                        onClick={() => handleSendEmailReminder(order._id)}
                         disabled={isSendingEmailId === order._id}
-                        title="Gửi Email Nhắc Nhở & Hóa Đơn" 
+                        title="Gửi Email Nhắc Nhở & Hóa Đơn"
                         style={{ border: 'none', background: 'none', color: '#0071E3', cursor: 'pointer', fontSize: '1.05rem', padding: '4px', marginRight: '8px' }}
                       >
                         {isSendingEmailId === order._id ? '...' : <FiMail />}
                       </button>
-                      <button 
-                        onClick={() => handleDeleteOrder(order._id)} 
-                        title="Hủy Đơn & Hoàn Kho" 
+                      <button
+                        onClick={() => handleDeleteOrder(order._id)}
+                        title="Hủy Đơn & Hoàn Kho"
                         style={{ border: 'none', background: 'none', color: '#FF3B30', cursor: 'pointer', fontSize: '1.05rem', padding: '4px' }}
                       >
                         <FiTrash2 />
@@ -471,7 +563,7 @@ const BanHang: React.FC = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-light)' }}>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-light)' }}>
                     Chưa có đơn hàng bán ra nào được tạo.
                   </td>
                 </tr>
@@ -481,285 +573,251 @@ const BanHang: React.FC = () => {
         </div>
       )}
 
-      {/* MODAL TẠO ĐƠN HÀNG MỚI (STYLE APPLE) */}
+      {/* ================================================================ */}
+      {/* MODAL TẠO ĐƠN HÀNG MỚI — TRỰC QUAN & CHUYÊN NGHIỆP */}
+      {/* ================================================================ */}
       {isModalOpen && (
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ width: '850px', maxWidth: '95vw' }}>
-            <div className="modal-header">
-              <h2><FiShoppingCart style={{ marginRight: '6px', verticalAlign: 'middle' }} /> Tạo Đơn Bàn Giao Tài Nguyên</h2>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ width: '960px', maxWidth: '97vw' }}>
+            <div className="modal-header" style={{ paddingBottom: '1rem', borderBottom: '1px solid #EEEEEF' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: 'linear-gradient(135deg, #0071E3, #005BB5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <FiShoppingCart style={{ color: '#FFF', fontSize: '1.1rem' }} />
+                </div>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: '1.15rem' }}>Tạo Đơn Hàng Mới</h2>
+                  <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: 'var(--text-light)' }}>Điền thông tin đơn hàng bên dưới</p>
+                </div>
+              </div>
               <button onClick={() => setIsModalOpen(false)} className="modal-close-btn">&times;</button>
             </div>
-            
+
             <form onSubmit={handleOrderSubmit}>
-              <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '5px' }}>
-                
-                {/* 1. CHỌN KHÁCH HÀNG (INTEGRATION) */}
-                <div className="form-group" style={{ position: 'relative' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                    <label htmlFor="customer-search" style={{ margin: 0 }}>Chọn khách hàng mua (Tìm tên / SĐT)</label>
-                    <button 
-                      type="button" 
-                      style={{ border: 'none', background: 'none', color: '#0071E3', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.2rem' }}
-                      onClick={() => setShowQuickCustomerForm(!showQuickCustomerForm)}
-                    >
-                      <FiPlus /> Tạo Nhanh Khách Hàng
-                    </button>
-                  </div>
+              <div className="modal-body" style={{ maxHeight: '62vh', overflowY: 'auto', padding: '1.5rem 0', display: 'flex', gap: '1.5rem' }}>
 
-                  {/* Form tạo nhanh inline */}
-                  {showQuickCustomerForm && (
-                    <div style={{ border: '1px solid rgba(0, 113, 227, 0.2)', backgroundColor: '#F5F5F7', padding: '1rem', borderRadius: '12px', marginBottom: '1rem' }}>
-                      <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.9rem', color: 'var(--text-dark)' }}>Tạo Nhanh Khách Hàng Mới</h4>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                        <input 
-                          type="text" 
-                          placeholder="Họ và Tên" 
-                          value={quickCustomerName} 
-                          onChange={e => setQuickCustomerName(e.target.value)} 
-                          style={{ padding: '0.5rem 0.75rem', borderRadius: '8px', border: '1px solid #D2D2D7' }}
-                        />
-                        <input 
-                          type="text" 
-                          placeholder="Số Điện Thoại" 
-                          value={quickCustomerPhone} 
-                          onChange={e => setQuickCustomerPhone(e.target.value)} 
-                          style={{ padding: '0.5rem 0.75rem', borderRadius: '8px', border: '1px solid #D2D2D7' }}
-                        />
+                {/* ==== CỘT TRÁI: THÔNG TIN SẢN PHẨM ==== */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+
+                  {/* ── Card: Khách hàng ── */}
+                  <div style={{ background: '#F8F9FC', borderRadius: 14, padding: '1.25rem', marginBottom: '1.25rem', border: '1px solid #EEEEEF' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.85rem' }}>
+                      <div style={{ width: 26, height: 26, borderRadius: 8, background: '#30D158', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <FiUser style={{ color: '#FFF', fontSize: '0.75rem' }} />
                       </div>
-                      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                        <button type="button" className="btn-cancel" style={{ padding: '0.3rem 0.75rem', fontSize: '0.85rem' }} onClick={() => setShowQuickCustomerForm(false)}>Hủy</button>
-                        <button type="button" className="btn-save" style={{ padding: '0.3rem 0.75rem', fontSize: '0.85rem', width: 'auto' }} onClick={handleQuickCustomerSubmit}>Lưu Khách</button>
-                      </div>
+                      <span style={{ fontWeight: 600, fontSize: '0.92rem' }}>Khách hàng</span>
+                      <button type="button" onClick={() => setShowQuickCustomerForm(!showQuickCustomerForm)}
+                        style={{ marginLeft: 'auto', border: 'none', background: 'none', color: '#0071E3', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                        <FiPlus size={14} /> Tạo nhanh
+                      </button>
                     </div>
-                  )}
-
-                  {/* Ô tìm kiếm thông minh */}
-                  <div style={{ position: 'relative' }}>
-                    <FiSearch style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-light)' }} />
-                    <input 
-                      type="text" 
-                      id="customer-search"
-                      placeholder="Gõ tên hoặc số điện thoại để lọc..." 
-                      value={customerSearchQuery}
-                      onChange={(e) => {
-                        setCustomerSearchQuery(e.target.value);
-                        setShowCustomerDropdown(true);
-                      }}
-                      onFocus={() => setShowCustomerDropdown(true)}
-                      style={{ paddingLeft: '35px' }}
-                    />
-                  </div>
-
-                  {/* Dropdown tìm kiếm thông minh phong cách Apple */}
-                  {showCustomerDropdown && customerSearchQuery.trim() !== '' && (
-                    <div className="widget" style={{ position: 'absolute', width: '100%', zIndex: 100, border: '1px solid var(--border-color)', top: '100%', left: 0, padding: '0.5rem 0', boxShadow: '0 8px 30px rgba(0,0,0,0.1)', maxHeight: '180px', overflowY: 'auto' }}>
-                      {filteredCustomers.length > 0 ? (
-                        filteredCustomers.map(cust => (
-                          <div 
-                            key={cust._id}
-                            style={{ padding: '0.6rem 1.25rem', cursor: 'pointer', hover: { backgroundColor: '#F5F5F7' }, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                            onClick={() => {
-                              setSelectedCustomerId(cust._id);
-                              setCustomerSearchQuery(cust.name);
-                              setShowCustomerDropdown(false);
-                            }}
-                            className="nav-item"
-                          >
-                            <span style={{ fontWeight: 600 }}>{cust.name}</span>
-                            <span style={{ fontSize: '0.8rem', color: 'var(--text-light)' }}>
-                              {cust.phone || cust.email || 'Không có liên hệ'}
-                            </span>
-                          </div>
-                        ))
-                      ) : (
-                        <div style={{ padding: '0.6rem 1.25rem', color: 'var(--text-light)', fontStyle: 'italic' }}>
-                          Không tìm thấy khách hàng nào.
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* 2. CHỌN CHẾ ĐỘ CUNG CẤP TÀI NGUYÊN */}
-                <div className="form-group">
-                  <label>Chọn chế độ cung cấp tài nguyên</label>
-                  <div className="segmented-control" style={{ marginTop: '0.4rem' }}>
-                    <button 
-                      type="button" 
-                      className={`segment-button ${sellMode === 'direct' ? 'active' : ''}`}
-                      onClick={() => setSellMode('direct')}
-                    >
-                      Nhập Tài khoản / Cấp Proxy trực tiếp
-                    </button>
-                    <button 
-                      type="button" 
-                      className={`segment-button ${sellMode === 'inventory' ? 'active' : ''}`}
-                      onClick={() => setSellMode('inventory')}
-                    >
-                      Bán Tài khoản có sẵn trong kho ({stockAccounts.length})
-                    </button>
-                  </div>
-                </div>
-
-                {/* A. FORM NHẬP TRỰC TIẾP */}
-                {sellMode === 'direct' && (
-                  <div style={{ border: '1px solid var(--border-color)', padding: '1.25rem', borderRadius: '12px', backgroundColor: '#FAFBFD', marginBottom: '1.25rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                      <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--text-dark)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                        <FiLock /> Chi Tiết Tài Nguyên MMO
-                      </h3>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', margin: 0, fontSize: '0.85rem', fontWeight: 600, color: 'var(--primary-color)', cursor: 'pointer' }}>
-                        <input 
-                          type="checkbox" 
-                          checked={isDirectUpgrade} 
-                          onChange={e => {
-                            setIsDirectUpgrade(e.target.checked);
-                            if (e.target.checked) {
-                              setDirectPassword('');
-                            }
-                          }}
-                          style={{ width: 'auto', cursor: 'pointer', margin: 0 }}
-                        />
-                        Nâng cấp trực tiếp trên tài khoản khách (Không cấp ID/Pass mới)
-                      </label>
-                    </div>
-                    
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '0.75rem' }}>
-                      <div className="form-group" style={{ marginBottom: 0 }}>
-                        <label htmlFor="prod-type">Loại Sản phẩm / dịch vụ</label>
-                        <select id="prod-type" value={directProductType} onChange={e => setDirectProductType(e.target.value)} style={{ padding: '0.6rem 0.75rem' }}>
-                          <option value="Proxy IPv4 US">Proxy IPv4 US</option>
-                          <option value="Proxy IPv6 Sỉ">Proxy IPv6 Sỉ</option>
-                          <option value="Tài khoản Facebook clone">Tài khoản Facebook Clone</option>
-                          <option value="VPS Windows Server">VPS Windows Server</option>
-                          <option value="License Key Tool MMO">License Key Tool MMO</option>
-                          <option value="Khác">Khác / Dịch vụ tùy chỉnh</option>
-                        </select>
+                    {showQuickCustomerForm && (
+                      <div style={{ background: '#FFF', padding: '0.85rem', borderRadius: 10, border: '1px solid #D2D2D7', marginBottom: '0.75rem', display: 'flex', gap: '0.5rem' }}>
+                        <input type="text" placeholder="Họ và Tên" value={quickCustomerName} onChange={e => setQuickCustomerName(e.target.value)}
+                          style={{ flex: 1, padding: '0.45rem 0.65rem', borderRadius: 7, border: '1px solid #D2D2D7', fontSize: '0.85rem' }} />
+                        <input type="text" placeholder="SĐT" value={quickCustomerPhone} onChange={e => setQuickCustomerPhone(e.target.value)}
+                          style={{ flex: 1, padding: '0.45rem 0.65rem', borderRadius: 7, border: '1px solid #D2D2D7', fontSize: '0.85rem' }} />
+                        <button type="button" className="btn-save" onClick={handleQuickCustomerSubmit}
+                          style={{ padding: '0.35rem 0.75rem', fontSize: '0.82rem', width: 'auto', whiteSpace: 'nowrap' }}>Lưu</button>
                       </div>
-                      <div className="form-group" style={{ marginBottom: 0 }}>
-                        <label htmlFor="prod-license">License Key / Dòng bàn giao</label>
-                        <input type="text" id="prod-license" placeholder="Ví dụ: LCSF-1293-8472-XDFE" value={directLicense} onChange={e => setDirectLicense(e.target.value)} />
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '0.75rem' }}>
-                      <div className="form-group" style={{ marginBottom: 0 }}>
-                        <label htmlFor="prod-user">{isDirectUpgrade ? 'Email / Tài khoản của khách hàng cần nâng cấp' : 'Tên Đăng Nhập / Host'}</label>
-                        <input type="text" id="prod-user" placeholder={isDirectUpgrade ? 'Nhập Email của khách hàng' : 'Ví dụ: proxy_user hoặc 127.0.0.1'} value={directUsername} onChange={e => setDirectUsername(e.target.value)} />
-                      </div>
-                      {isDirectUpgrade ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0.75rem 1rem', backgroundColor: '#FFF9E6', border: '1px solid #FFE0B2', borderRadius: '10px', color: '#D84315', fontSize: '0.85rem' }}>
-                          ℹ️ Đang bật gán bản quyền trực tiếp. Khách hàng sẽ sử dụng tài khoản hiện tại của họ để đăng nhập. Không cấp mật khẩu mới.
-                        </div>
-                      ) : (
-                        <div className="form-group" style={{ marginBottom: 0 }}>
-                          <label htmlFor="prod-pass">Mật Khẩu / Port</label>
-                          <input type="text" id="prod-pass" placeholder="Ví dụ: proxy_pass hoặc 8080" value={directPassword} onChange={e => setDirectPassword(e.target.value)} />
-                        </div>
-                      )}
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                      <div className="form-group" style={{ marginBottom: 0 }}>
-                        <label htmlFor="prod-cost">Giá vốn từ nhà cung cấp (đ)</label>
-                        <input type="number" id="prod-cost" value={directCost} onChange={e => setDirectCost(Number(e.target.value))} />
-                      </div>
-                      <div className="form-group" style={{ marginBottom: 0 }}>
-                        <label htmlFor="prod-valid">Hạn Sử Dụng (Valid until)</label>
-                        <input type="date" id="prod-valid" value={directValidUntil} onChange={e => setDirectValidUntil(e.target.value)} />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* B. HỘP CHỌN TỪ KHO */}
-                {sellMode === 'inventory' && (
-                  <div style={{ border: '1px solid var(--border-color)', padding: '1.25rem', borderRadius: '12px', backgroundColor: '#FAFBFD', marginBottom: '1.25rem' }}>
-                    <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', fontWeight: 600, color: 'var(--text-dark)' }}>
-                      Chọn từ Kho Tài khoản sẵn có
-                    </h3>
-                    <p style={{ color: 'var(--text-light)', fontSize: '0.85rem', marginBottom: '1rem' }}>
-                      Chọn các tài khoản trống để gán bán cho khách hàng.
-                    </p>
-                    
-                    {stockAccounts.length > 0 ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', maxHeight: '180px', overflowY: 'auto', paddingRight: '4px' }}>
-                        {stockAccounts.map(acc => (
-                          <label 
-                            key={acc._id}
-                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#FFFFFF', padding: '0.6rem 1rem', borderRadius: '8px', border: '1px solid #E5E5EA', cursor: 'pointer', fontSize: '0.9rem' }}
-                          >
-                            <input 
-                              type="checkbox" 
-                              checked={selectedInventoryAccountIds.includes(acc._id)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setSelectedInventoryAccountIds([...selectedInventoryAccountIds, acc._id]);
-                                } else {
-                                  setSelectedInventoryAccountIds(selectedInventoryAccountIds.filter(id => id !== acc._id));
-                                }
-                              }}
-                              style={{ width: 'auto', cursor: 'pointer' }}
-                            />
-                            <div style={{ flex: 1, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
-                              {acc.resource_type === 'slot' ? (
-                                <span style={{ backgroundColor: '#FAF5FE', color: '#7B1FA2', padding: '2px 6px', borderRadius: '10px', fontSize: '0.7rem', fontWeight: 600 }}>
-                                  👥 Slot ({acc.used_slots}/{acc.total_slots})
-                                </span>
-                              ) : acc.resource_type === 'key' ? (
-                                <span style={{ backgroundColor: '#EBF9EB', color: '#2E7D32', padding: '2px 6px', borderRadius: '10px', fontSize: '0.7rem', fontWeight: 600 }}>
-                                  🎟️ Key
-                                </span>
-                              ) : (
-                                <span style={{ backgroundColor: '#E1F5FE', color: '#0288D1', padding: '2px 6px', borderRadius: '10px', fontSize: '0.7rem', fontWeight: 600 }}>
-                                  🔑 ID:Pass
-                                </span>
-                              )}
-                              <strong style={{ color: '#0071E3' }}>{acc.product_type}</strong>
-                              {acc.account_details?.username && <span style={{ color: 'var(--text-light)', fontSize: '0.8rem' }}>({acc.account_details.username})</span>}
-                              {acc.account_details?.license_key && <span style={{ color: 'var(--text-light)', fontSize: '0.8rem', fontFamily: 'monospace' }}>({acc.account_details.license_key.substring(0, 15)}...)</span>}
+                    )}
+                    <div style={{ position: 'relative' }}>
+                      <FiSearch style={{ position: 'absolute', left: 12, top: 13, color: 'var(--text-light)' }} />
+                      <input type="text" id="customer-search" placeholder="Tìm tên hoặc SĐT..."
+                        value={customerSearchQuery}
+                        onChange={(e) => { setCustomerSearchQuery(e.target.value); setShowCustomerDropdown(true); }}
+                        onFocus={() => setShowCustomerDropdown(true)}
+                        style={{ paddingLeft: 35, padding: '0.55rem 0.75rem 0.55rem 35px', borderRadius: 9, border: '1px solid #D2D2D7', width: '100%', fontSize: '0.88rem' }} />
+                      {showCustomerDropdown && customerSearchQuery.trim() !== '' && (
+                        <div style={{ position: 'absolute', width: '100%', zIndex: 100, border: '1px solid #DDD', top: '100%', left: 0, background: '#FFF', borderRadius: 10, boxShadow: '0 12px 40px rgba(0,0,0,0.12)', maxHeight: 170, overflowY: 'auto' }}>
+                          {filteredCustomers.length > 0 ? filteredCustomers.map(cust => (
+                            <div key={cust._id} onClick={() => { setSelectedCustomerId(cust._id); setCustomerSearchQuery(cust.name); setShowCustomerDropdown(false); }}
+                              style={{ padding: '0.55rem 1rem', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F5F5F7' }}>
+                              <span style={{ fontWeight: 600, fontSize: '0.88rem' }}>{cust.name}</span>
+                              <span style={{ fontSize: '0.78rem', color: '#8E8E93' }}>{cust.phone || cust.email || '—'}</span>
                             </div>
-                            <span style={{ fontWeight: 600, color: 'var(--text-dark)' }}>
-                              Vốn: {acc.cost.toLocaleString('vi-VN')} đ
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    ) : (
-                      <div style={{ padding: '1rem', backgroundColor: '#FFEBEB', color: '#FF3B30', borderRadius: '8px', fontSize: '0.9rem', textAlign: 'center' }}>
-                        Không còn tài khoản trống nào khả dụng trong kho! Hãy dùng chế độ gán bán trực tiếp.
+                          )) : (
+                            <div style={{ padding: '0.75rem 1rem', color: '#8E8E93', fontSize: '0.85rem', fontStyle: 'italic' }}>Không tìm thấy</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {selectedCustomerId && (
+                      <div style={{ marginTop: '0.65rem', padding: '0.45rem 0.85rem', background: 'linear-gradient(135deg, #EBF5FF, #D6EAFF)', borderRadius: 8, fontSize: '0.85rem', fontWeight: 600, color: '#0071E3', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <FiUser size={14} /> {customers.find(c => c._id === selectedCustomerId)?.name || 'Đã chọn'}
                       </div>
                     )}
                   </div>
-                )}
 
-                {/* 3. THÔNG TIN GIÁ BÁN & THANH TOÁN */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div className="form-group">
-                    <label htmlFor="total-amount">Giá bán thực thu (Tổng tiền đ)</label>
-                    <input 
-                      type="number" 
-                      id="total-amount" 
-                      placeholder="Ví dụ: 150000" 
-                      value={totalAmount} 
-                      onChange={e => setTotalAmount(e.target.value)} 
-                      required 
-                    />
+                  {/* ── Card: Sản phẩm ── */}
+                  <div style={{ background: '#F8F9FC', borderRadius: 14, padding: '1.25rem', marginBottom: '1.25rem', border: '1px solid #EEEEEF' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.85rem' }}>
+                      <div style={{ width: 26, height: 26, borderRadius: 8, background: '#0071E3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <FiShoppingBag style={{ color: '#FFF', fontSize: '0.75rem' }} />
+                      </div>
+                      <span style={{ fontWeight: 600, fontSize: '0.92rem' }}>Sản phẩm</span>
+                    </div>
+                    <input type="text" id="product-name" placeholder="Nhập tên sản phẩm..."
+                      value={productName}
+                      onChange={e => setProductName(e.target.value)}
+                      style={{ padding: '0.6rem 0.85rem', borderRadius: 9, border: '1px solid #D2D2D7', width: '100%', fontSize: '0.9rem', marginBottom: '0.85rem' }} />
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
+                      <div>
+                        <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#6E6E73', display: 'block', marginBottom: 4 }}>Số lượng</label>
+                        <div style={{ display: 'flex', alignItems: 'center', borderRadius: 9, border: '1px solid #D2D2D7', background: '#FFF', overflow: 'hidden' }}>
+                          <button type="button" onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                            style={{ border: 'none', background: 'none', padding: '0.5rem 0.65rem', cursor: 'pointer', color: '#8E8E93', fontSize: '1rem', fontWeight: 600 }}>−</button>
+                          <span style={{ flex: 1, textAlign: 'center', fontWeight: 700, fontSize: '0.95rem', minWidth: 40 }}>{quantity}</span>
+                          <button type="button" onClick={() => setQuantity(quantity + 1)}
+                            style={{ border: 'none', background: 'none', padding: '0.5rem 0.65rem', cursor: 'pointer', color: '#0071E3', fontSize: '1rem', fontWeight: 600 }}>+</button>
+                        </div>
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#6E6E73', display: 'block', marginBottom: 4 }}>Giá gốc</label>
+                        <div style={{ position: 'relative' }}>
+                          <input type="number" id="cost-price" placeholder="0" value={costPrice} onChange={e => setCostPrice(e.target.value)} min={0}
+                            style={{ padding: '0.6rem 0.75rem 0.6rem 1.8rem', borderRadius: 9, border: '1px solid #D2D2D7', width: '100%', fontSize: '0.88rem' }} />
+                          <span style={{ position: 'absolute', left: 10, top: 10, fontSize: '0.78rem', color: '#8E8E93', fontWeight: 600 }}>đ</span>
+                        </div>
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#6E6E73', display: 'block', marginBottom: 4 }}>Giá bán <span style={{ color: '#FF3B30' }}>*</span></label>
+                        <div style={{ position: 'relative' }}>
+                          <input type="number" id="selling-price" placeholder="0" value={sellingPrice} onChange={e => setSellingPrice(e.target.value)} min={0} required
+                            style={{ padding: '0.6rem 0.75rem 0.6rem 1.8rem', borderRadius: 9, border: '1px solid #D2D2D7', width: '100%', fontSize: '0.88rem', background: '#FFFEF5' }} />
+                          <span style={{ position: 'absolute', left: 10, top: 10, fontSize: '0.78rem', color: '#8E8E93', fontWeight: 600 }}>đ</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="form-group">
-                    <label htmlFor="order-status">Trạng thái thanh toán</label>
-                    <select id="order-status" value={orderStatus} onChange={e => setOrderStatus(e.target.value as any)}>
-                      <option value="paid">Đã Thu Tiền (paid)</option>
-                      <option value="pending">Dư Nợ / Thu Sau (pending)</option>
+
+                  {/* ── Card: Hạn sử dụng & Định kỳ ── */}
+                  <div style={{ background: '#F8F9FC', borderRadius: 14, padding: '1.25rem', border: '1px solid #EEEEEF', marginBottom: '1.25rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.85rem' }}>
+                      <div style={{ width: 26, height: 26, borderRadius: 8, background: '#FF9500', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <FiCalendar style={{ color: '#FFF', fontSize: '0.75rem' }} />
+                      </div>
+                      <span style={{ fontWeight: 600, fontSize: '0.92rem' }}>Thời hạn & Định kỳ</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                      <div style={{ flex: 1, minWidth: 140 }}>
+                        <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#6E6E73', display: 'block', marginBottom: 4 }}>Hạn sử dụng</label>
+                        <input type="date" id="expiry-date" value={expiryDate} onChange={e => setExpiryDate(e.target.value)}
+                          style={{ padding: '0.55rem 0.75rem', borderRadius: 9, border: '1px solid #D2D2D7', width: '100%', fontSize: '0.88rem' }} />
+                      </div>
+                      <div style={{ flex: 2, minWidth: 200 }}>
+                        <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#6E6E73', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: 4 }}>
+                          <input type="checkbox" checked={recurringEnabled} onChange={e => setRecurringEnabled(e.target.checked)}
+                            style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#0071E3' }} />
+                          Gửi hóa đơn định kỳ
+                        </label>
+                        {recurringEnabled && (
+                          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                            <select value={recurringCustom ? 'custom' : recurringInterval}
+                              onChange={e => { const v = e.target.value; if (v === 'custom') { setRecurringCustom(''); setRecurringInterval('custom'); } else { setRecurringCustom(''); setRecurringInterval(v); } }}
+                              style={{ padding: '0.5rem 0.65rem', borderRadius: 9, border: '1px solid #D2D2D7', fontSize: '0.85rem', minWidth: 110 }}>
+                              <option value="1">1 tháng</option>
+                              <option value="2">2 tháng</option>
+                              <option value="3">3 tháng</option>
+                              <option value="6">6 tháng</option>
+                              <option value="12">12 tháng</option>
+                              <option value="custom">Tùy chỉnh...</option>
+                            </select>
+                            {recurringInterval === 'custom' && (
+                              <input type="text" placeholder="Ví dụ: 2 tuần..." value={recurringCustom} onChange={e => setRecurringCustom(e.target.value)}
+                                style={{ padding: '0.5rem 0.65rem', borderRadius: 9, border: '1px solid #D2D2D7', flex: 1, fontSize: '0.85rem' }} />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ==== CỘT PHẢI: THANH TOÁN & GHI CHÚ ==== */}
+                <div style={{ width: 340, minWidth: 280, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+                  {/* ── Tóm tắt đơn hàng ── */}
+                  <div style={{ background: 'linear-gradient(135deg, #1D1D1F 0%, #2C2C2E 100%)', borderRadius: 16, padding: '1.35rem 1.25rem', color: '#FFF', boxShadow: '0 8px 30px rgba(0,0,0,0.15)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '1rem' }}>
+                      <FiCreditCard style={{ fontSize: '1rem' }} />
+                      <span style={{ fontWeight: 600, fontSize: '0.92rem' }}>Tóm tắt đơn hàng</span>
+                    </div>
+
+                    {/* Tạm tính rows */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', fontSize: '0.88rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#AEAEB2' }}>
+                        <span>{productName || 'Sản phẩm'} x{quantity}</span>
+                        <span style={{ color: '#C7C7CC' }}>{((Number(sellingPrice) || 0) * quantity).toLocaleString('vi-VN')} đ</span>
+                      </div>
+                      {Number(costPrice) > 0 && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#8E8E93' }}>
+                          <span>Giá vốn</span>
+                          <span>{(Number(costPrice) * quantity).toLocaleString('vi-VN')} đ</span>
+                        </div>
+                      )}
+                      {Number(discountAmount) > 0 && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#FF6B6B' }}>
+                          <span>Giảm giá</span>
+                          <span>−{Number(discountAmount).toLocaleString('vi-VN')} đ</span>
+                        </div>
+                      )}
+                      <div style={{ height: 1, background: 'rgba(255,255,255,0.12)', margin: '0.25rem 0' }} />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: '1.2rem' }}>
+                        <span>Tổng cộng</span>
+                        <span>{getFinalTotal().toLocaleString('vi-VN')} đ</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ── Giảm giá + Thanh toán + Trạng thái ── */}
+                  <div style={{ background: '#F8F9FC', borderRadius: 14, padding: '1.25rem', border: '1px solid #EEEEEF' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.85rem' }}>
+                      <div style={{ width: 26, height: 26, borderRadius: 8, background: '#5856D6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <FiTag style={{ color: '#FFF', fontSize: '0.75rem' }} />
+                      </div>
+                      <span style={{ fontWeight: 600, fontSize: '0.92rem' }}>Thanh toán</span>
+                    </div>
+                    <div style={{ position: 'relative', marginBottom: '0.75rem' }}>
+                      <span style={{ position: 'absolute', left: 10, top: 10, fontSize: '0.78rem', color: '#8E8E93', fontWeight: 600 }}>đ</span>
+                      <input type="number" id="discount-amount" placeholder="Giảm giá" value={discountAmount} onChange={e => setDiscountAmount(e.target.value)} min={0}
+                        style={{ padding: '0.55rem 0.75rem 0.55rem 1.6rem', borderRadius: 9, border: '1px solid #D2D2D7', width: '100%', fontSize: '0.88rem', marginBottom: '0.65rem' }} />
+                    </div>
+                    <select id="payment-method" value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)}
+                      style={{ padding: '0.55rem 0.75rem', borderRadius: 9, border: '1px solid #D2D2D7', width: '100%', fontSize: '0.88rem', marginBottom: '0.65rem', background: '#FFF' }}>
+                      <option value="">Chọn hình thức thanh toán</option>
+                      <option value="bank_transfer">🏦 Chuyển khoản ngân hàng</option>
+                      <option value="cash">💵 Tiền mặt</option>
                     </select>
+                    <select id="order-status-field" value={orderStatus} onChange={e => setOrderStatus(e.target.value as any)}
+                      style={{ padding: '0.55rem 0.75rem', borderRadius: 9, border: '1px solid #D2D2D7', width: '100%', fontSize: '0.88rem', background: orderStatus === 'paid' ? '#EBF9EB' : '#FFF8E7' }}>
+                      <option value="paid">✅ Đã thu tiền — Cấp phát ngay</option>
+                      <option value="pending">⏳ Dư nợ / Thu sau</option>
+                    </select>
+                  </div>
+
+                  {/* ── Ghi chú ── */}
+                  <div style={{ background: '#F8F9FC', borderRadius: 14, padding: '1.25rem', border: '1px solid #EEEEEF', flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.85rem' }}>
+                      <div style={{ width: 26, height: 26, borderRadius: 8, background: '#8E8E93', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <FiInfo style={{ color: '#FFF', fontSize: '0.75rem' }} />
+                      </div>
+                      <span style={{ fontWeight: 600, fontSize: '0.92rem' }}>Ghi chú</span>
+                    </div>
+                    <textarea id="customer-note" rows={2} placeholder="Note hiển thị với khách hàng..." value={customerNote} onChange={e => setCustomerNote(e.target.value)}
+                      style={{ padding: '0.6rem 0.75rem', borderRadius: 9, border: '1px solid #D2D2D7', width: '100%', fontSize: '0.85rem', resize: 'vertical', marginBottom: '0.6rem' }} />
+                    <textarea id="internal-note" rows={2} placeholder="Note nội bộ (không hiển thị)..." value={internalNote} onChange={e => setInternalNote(e.target.value)}
+                      style={{ padding: '0.6rem 0.75rem', borderRadius: 9, border: '1px solid #D2D2D7', width: '100%', fontSize: '0.85rem', resize: 'vertical', background: '#FFFEF5' }} />
                   </div>
                 </div>
 
               </div>
-              
-              <div className="modal-footer">
+
+              <div className="modal-footer" style={{ borderTop: '1px solid #EEEEEF', paddingTop: '1rem' }}>
                 <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)}>Hủy bỏ</button>
-                <button type="submit" className="btn-save">Hoàn tất & Bàn Giao</button>
+                <button type="submit" className="btn-save" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.75rem 1.75rem', fontSize: '0.95rem' }}>
+                  <FiCheckCircle /> Hoàn tất & Tạo Đơn
+                </button>
               </div>
             </form>
           </div>
@@ -774,24 +832,24 @@ const BanHang: React.FC = () => {
               <h2><FiMail style={{ marginRight: '6px', verticalAlign: 'middle' }} /> {emailPreview?.isSimulation ? 'Bản Xem Trước Hóa Đơn Email (Giả lập gửi)' : 'Xem Trước & Xác Nhận Gửi Hóa Đơn'}</h2>
               <button onClick={() => { setShowEmailPreviewModal(false); setActivePreviewOrderId(null); }} className="modal-close-btn">&times;</button>
             </div>
-            
+
             <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto', backgroundColor: '#F5F5F7', padding: '1.5rem' }}>
-              <div style={{ 
-                backgroundColor: emailPreview?.isSimulation ? '#FFEBEB' : '#EBF9EB', 
-                border: `1px solid ${emailPreview?.isSimulation ? '#FFD2D2' : '#C8E6C9'}`, 
-                padding: '0.75rem 1rem', 
-                borderRadius: '10px', 
-                color: emailPreview?.isSimulation ? '#D32F2F' : '#2E7D32', 
-                fontSize: '0.85rem', 
-                marginBottom: '1rem', 
+              <div style={{
+                backgroundColor: emailPreview?.isSimulation ? '#FFEBEB' : '#EBF9EB',
+                border: `1px solid ${emailPreview?.isSimulation ? '#FFD2D2' : '#C8E6C9'}`,
+                padding: '0.75rem 1rem',
+                borderRadius: '10px',
+                color: emailPreview?.isSimulation ? '#D32F2F' : '#2E7D32',
+                fontSize: '0.85rem',
+                marginBottom: '1rem',
                 fontWeight: 600,
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px'
               }}>
-                <FiInfo /> 
-                {emailPreview?.isSimulation 
-                  ? 'Hệ thống đang chạy ở chế độ GIẢ LẬP (Chưa cấu hình SMTP trong phần Cài đặt). Dưới đây là email hóa đơn thực tế sẽ được gửi tới khách hàng.' 
+                <FiInfo />
+                {emailPreview?.isSimulation
+                  ? 'Hệ thống đang chạy ở chế độ GIẢ LẬP (Chưa cấu hình SMTP trong phần Cài đặt). Dưới đây là email hóa đơn thực tế sẽ được gửi tới khách hàng.'
                   : 'Hệ thống đã kết nối SMTP. Vui lòng kiểm tra kỹ nội dung hóa đơn và tài nguyên bàn giao trước khi xác nhận gửi email thực tế.'}
               </div>
 
@@ -800,19 +858,18 @@ const BanHang: React.FC = () => {
                 <div style={{ marginTop: '4px' }}><strong>Tiêu đề (Subject):</strong> {emailPreview?.subject}</div>
               </div>
 
-              {/* Nhúng mã HTML hóa đơn */}
-              <div 
+              <div
                 style={{ border: '1px solid rgba(0,0,0,0.1)', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', backgroundColor: '#FFF' }}
                 dangerouslySetInnerHTML={{ __html: emailPreview?.previewHtml || '' }}
               />
             </div>
-            
+
             <div className="modal-footer" style={{ justifyContent: 'flex-end', gap: '0.75rem' }}>
               {emailPreview?.isSimulation ? (
                 <>
-                  <button 
-                    type="button" 
-                    className="btn-cancel" 
+                  <button
+                    type="button"
+                    className="btn-cancel"
                     style={{ backgroundColor: '#8E8E93', color: '#FFFFFF', cursor: 'pointer', marginRight: 'auto' }}
                     onClick={() => {
                       if (emailPreview?.previewHtml) {
@@ -827,16 +884,16 @@ const BanHang: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <button 
-                    type="button" 
-                    className="btn-cancel" 
+                  <button
+                    type="button"
+                    className="btn-cancel"
                     onClick={() => { setShowEmailPreviewModal(false); setActivePreviewOrderId(null); }}
                   >
                     Hủy bỏ
                   </button>
-                  <button 
-                    type="button" 
-                    className="btn-save" 
+                  <button
+                    type="button"
+                    className="btn-save"
                     style={{ backgroundColor: '#0071E3' }}
                     onClick={() => activePreviewOrderId && handleSendEmailReminder(activePreviewOrderId, true)}
                     disabled={isSendingEmailId === activePreviewOrderId}
@@ -871,6 +928,7 @@ const BanHang: React.FC = () => {
             </div>
 
             <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto', padding: '1.5rem 0' }}>
+
               {/* Thông tin khách hàng */}
               <div style={{ display: 'grid', gridTemplateColumns: '1.7fr 1.3fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
                 <div style={{ backgroundColor: '#FAFBFD', border: '1px solid var(--border-color)', padding: '1.25rem', borderRadius: '12px' }}>
@@ -902,12 +960,118 @@ const BanHang: React.FC = () => {
                   <div style={{ fontSize: '1.1rem', fontWeight: 700, margin: '4px 0 8px 0', color: 'var(--text-dark)' }}>
                     {new Date(viewingOrder.createdAt).toLocaleDateString('vi-VN')}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>Trạng thái: <span className={`badge badge-${viewingOrder.status === 'paid' ? 'success' : 'pending'}`} style={{ fontSize: '0.8rem' }}>{viewingOrder.status === 'paid' ? 'Đã Thanh Toán' : 'Chờ Thanh Toán'}</span></div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    Trạng thái:
+                    <span className={`badge badge-${viewingOrder.status === 'paid' ? 'success' : 'pending'}`} style={{ fontSize: '0.8rem' }}>
+                      {viewingOrder.status === 'paid' ? 'Đã Thanh Toán' : 'Chờ Thanh Toán'}
+                    </span>
+                  </div>
+                  {viewingOrder.payment_method && (
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-dark)', marginTop: '6px' }}>
+                      Hình thức: <strong>{paymentMethodLabel(viewingOrder.payment_method)}</strong>
+                    </div>
+                  )}
                 </div>
               </div>
 
+              {/* Chi tiết đơn hàng (sản phẩm tùy chỉnh) */}
+              {viewingOrder.product_name && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <h4 style={{ margin: '0 0 0.75rem 0', color: 'var(--text-dark)', fontSize: '0.95rem', fontWeight: 600 }}>Chi Tiết Sản Phẩm</h4>
+                  <div className="table-container" style={{ border: '1px solid var(--border-color)', borderRadius: '12px', overflow: 'hidden' }}>
+                    <table className="styled-table" style={{ margin: 0 }}>
+                      <thead>
+                        <tr>
+                          <th>Sản phẩm</th>
+                          <th>Số lượng</th>
+                          <th>Giá gốc</th>
+                          <th>Giá bán</th>
+                          <th style={{ textAlign: 'right' }}>Thành tiền</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong style={{ color: 'var(--text-dark)' }}>{viewingOrder.product_name}</strong></td>
+                          <td>{viewingOrder.quantity || 1}</td>
+                          <td>{(viewingOrder.cost_price || 0).toLocaleString('vi-VN')} đ</td>
+                          <td>{(viewingOrder.selling_price || 0).toLocaleString('vi-VN')} đ</td>
+                          <td style={{ textAlign: 'right', fontWeight: 700, color: 'var(--primary-color)' }}>
+                            {((viewingOrder.selling_price || 0) * (viewingOrder.quantity || 1)).toLocaleString('vi-VN')} đ
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Chi tiết đơn hàng (Items cũ) */}
+              {!viewingOrder.product_name && viewingOrder.items && viewingOrder.items.length > 0 && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <h4 style={{ margin: '0 0 0.75rem 0', color: 'var(--text-dark)', fontSize: '0.95rem', fontWeight: 600 }}>Chi Tiết Gói Dịch Vụ MMO đã chọn mua</h4>
+                  <div className="table-container" style={{ border: '1px solid var(--border-color)', borderRadius: '12px', overflow: 'hidden' }}>
+                    <table className="styled-table" style={{ margin: 0 }}>
+                      <thead>
+                        <tr>
+                          <th>Mặt hàng</th>
+                          <th>Giá gói</th>
+                          <th>Số lượng</th>
+                          <th style={{ textAlign: 'right' }}>Thành tiền</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(viewingOrder.items || []).map((it: any, idx: number) => (
+                          <tr key={idx}>
+                            <td><strong style={{ color: 'var(--text-dark)' }}>{it.name}</strong></td>
+                            <td>{it.price.toLocaleString('vi-VN')} đ</td>
+                            <td>{it.quantity}</td>
+                            <td style={{ textAlign: 'right', fontWeight: 700, color: 'var(--primary-color)' }}>
+                              {(it.price * it.quantity).toLocaleString('vi-VN')} đ
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Thông tin bổ sung từ modal đơn giản */}
+              {viewingOrder.product_name && (
+                <div style={{ backgroundColor: '#FAFBFD', border: '1px solid var(--border-color)', padding: '1.25rem', borderRadius: '12px', marginBottom: '1.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', fontSize: '0.9rem' }}>
+                  {viewingOrder.expiry_date && (
+                    <div>
+                      <div style={{ color: 'var(--text-light)', fontSize: '0.8rem', marginBottom: '2px' }}>Hạn sử dụng</div>
+                      <strong>{new Date(viewingOrder.expiry_date).toLocaleDateString('vi-VN')}</strong>
+                    </div>
+                  )}
+                  {viewingOrder.recurring_invoice?.enabled && (
+                    <div>
+                      <div style={{ color: 'var(--text-light)', fontSize: '0.8rem', marginBottom: '2px' }}>Hóa đơn định kỳ</div>
+                      <strong>
+                        {viewingOrder.recurring_invoice.custom_interval
+                          ? viewingOrder.recurring_invoice.custom_interval
+                          : `Mỗi ${viewingOrder.recurring_invoice.interval_months} tháng`}
+                      </strong>
+                    </div>
+                  )}
+                  {viewingOrder.customer_note && (
+                    <div>
+                      <div style={{ color: 'var(--text-light)', fontSize: '0.8rem', marginBottom: '2px' }}>Note khách hàng</div>
+                      <span style={{ color: 'var(--text-dark)', fontStyle: 'italic' }}>{viewingOrder.customer_note}</span>
+                    </div>
+                  )}
+                  {viewingOrder.internal_note && (
+                    <div>
+                      <div style={{ color: 'var(--text-light)', fontSize: '0.8rem', marginBottom: '2px' }}>Note nội bộ</div>
+                      <span style={{ color: '#D84315' }}>{viewingOrder.internal_note}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Chi tiết tài nguyên giao nhận */}
-              <h4 style={{ margin: '0 0 0.75rem 0', color: 'var(--text-dark)', fontSize: '0.95rem', fontWeight: 600 }}>Danh Sách Tài Nguyên MMO Bàn Giao</h4>
+              <h4 style={{ margin: '0 0 0.75rem 0', color: 'var(--text-dark)', fontSize: '0.95rem', fontWeight: 600 }}>Danh Sách Tài Nguyên MMO Bàn Giao (Hệ thống cấp phát)</h4>
               <div className="table-container" style={{ marginBottom: '1.5rem', border: '1px solid var(--border-color)', borderRadius: '12px', overflow: 'hidden' }}>
                 <table className="styled-table" style={{ margin: 0 }}>
                   <thead>
@@ -958,7 +1122,7 @@ const BanHang: React.FC = () => {
                       })
                     ) : (
                       <tr>
-                        <td colSpan={3} style={{ textAlign: 'center', color: 'var(--text-light)', fontStyle: 'italic' }}>Không có chi tiết tài khoản</td>
+                        <td colSpan={3} style={{ textAlign: 'center', color: 'var(--text-light)', fontStyle: 'italic' }}>Chờ thanh toán thành công để cấp phát tài nguyên tự động.</td>
                       </tr>
                     )}
                   </tbody>
@@ -967,7 +1131,32 @@ const BanHang: React.FC = () => {
 
               {/* Phân tích Doanh Thu & Lợi Nhuận (Premium Widget) */}
               <div style={{ backgroundColor: '#FAFBFD', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                <h4 style={{ margin: '0 0 0.75rem 0', color: 'var(--text-dark)', fontSize: '0.95rem', fontWeight: 600 }}>Phân Tích Lợi Nhuận Đơn Hàng</h4>
+                <h4 style={{ margin: '0 0 0.75rem 0', color: 'var(--text-dark)', fontSize: '0.95rem', fontWeight: 600 }}>Phân Tích Chi Tiết Thanh Toán & Lợi Nhuận</h4>
+
+                {/* Coupon or manual discount breakdown */}
+                {(viewingOrder.discount_code || (viewingOrder.discount_amount && viewingOrder.discount_amount > 0)) && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.85rem', marginBottom: '1rem', borderBottom: '1px dashed #DDD', paddingBottom: '0.75rem' }}>
+                    {viewingOrder.discount_code && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Mã giảm giá đã áp dụng:</span>
+                        <strong style={{ color: 'var(--primary-color)' }}>{viewingOrder.discount_code}</strong>
+                      </div>
+                    )}
+                    {viewingOrder.discount_reason && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Lý do giảm giá:</span>
+                        <strong style={{ color: '#555' }}>{viewingOrder.discount_reason}</strong>
+                      </div>
+                    )}
+                    {viewingOrder.discount_amount && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#D32F2F' }}>
+                        <span>Tổng tiền được giảm:</span>
+                        <strong>-{viewingOrder.discount_amount.toLocaleString('vi-VN')} đ</strong>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1rem', textAlign: 'center' }}>
                   <div className="profit-card-blue" style={{ padding: '0.75rem', borderRadius: '10px' }}>
                     <div style={{ fontSize: '0.75rem', fontWeight: 600 }}>TỔNG DOANH THU</div>
@@ -1000,9 +1189,9 @@ const BanHang: React.FC = () => {
             </div>
 
             <div className="modal-footer" style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-              <button 
-                type="button" 
-                className="btn-cancel" 
+              <button
+                type="button"
+                className="btn-cancel"
                 style={{ backgroundColor: '#F5F5F7', color: 'var(--text-dark)', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer' }}
                 onClick={() => {
                   setViewingOrder(null);
@@ -1011,9 +1200,9 @@ const BanHang: React.FC = () => {
               >
                 Đóng
               </button>
-              <button 
-                type="button" 
-                className="btn-save" 
+              <button
+                type="button"
+                className="btn-save"
                 style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer' }}
                 onClick={() => {
                   setViewingOrder(null);

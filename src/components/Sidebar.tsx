@@ -4,7 +4,8 @@ import { useAuth } from '../contexts/AuthContext.tsx';
 import {
   FiHome, FiUsers, FiShoppingCart, FiBox, FiKey,
   FiClock, FiBriefcase, FiSettings, FiLogOut, FiChevronRight,
-  FiDollarSign, FiTrendingUp, FiDownload, FiGrid, FiMessageCircle
+  FiDollarSign, FiTrendingUp, FiDownload, FiGrid, FiMessageCircle,
+  FiLayers, FiFileText
 } from 'react-icons/fi';
 
 import logo from '../assets/logo.png';
@@ -53,17 +54,22 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
         <NavLink to="/khach-hang" className="nav-item" onClick={handleNavClick}>
           <FiUsers /> Khách Hàng
         </NavLink>
-        <NavLink to="/ban-hang" className="nav-item" onClick={handleNavClick}>
-          <FiShoppingCart /> Bán Hàng & Hóa Đơn
-        </NavLink>
+        <div style={{ marginBottom: '2px' }}>
+          <NavLink to="/ban-hang" className="nav-item" onClick={handleNavClick} style={{ marginBottom: 0 }}>
+            <FiShoppingCart /> Bán Hàng
+          </NavLink>
+          <NavLink to="/ban-hang/bao-gia" className="nav-item" onClick={handleNavClick} style={{ marginBottom: 0, paddingLeft: '2.8rem', fontSize: '0.88rem' }}>
+            <FiFileText /> Báo Giá
+          </NavLink>
+        </div>
         <NavLink to="/omnichannel" className="nav-item" onClick={handleNavClick}>
           <FiMessageCircle /> Omni-channel Inbox
         </NavLink>
 
         {/* --- NHÓM 2: QUẢN LÝ KHO & HẠN DÙNG --- */}
         <div className="sidebar-category-header">Quản Lý Kho & Bản Quyền</div>
-        <NavLink to="/kho-tai-nguyen" className="nav-item" onClick={handleNavClick}>
-          <FiBox /> Kho Tài Nguyên
+        <NavLink to="/san-pham" className="nav-item" onClick={handleNavClick}>
+          <FiLayers /> Sản Phẩm / Dịch Vụ
         </NavLink>
         <NavLink to="/ban-quyen-ca-nhan" className="nav-item" onClick={handleNavClick}>
           <FiKey /> Bản Quyền Cá Nhân
@@ -73,162 +79,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
         </NavLink>
 
         {/* --- NHÓM 3: ĐỐI TÁC & HỆ THỐNG --- */}
-        <div className="sidebar-category-header">Đối Tác & Hệ Thống</div>
-        <div
-          className={`nav-item nav-group-toggle ${isNhaCungCapPage ? 'active' : ''} ${supplierOpen ? 'open' : ''}`}
-          onClick={() => setSupplierOpen(!supplierOpen)}
-        >
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <FiBriefcase />
-            <span>Nhà Cung Cấp</span>
-          </div>
-          <FiChevronRight className="chevron" />
-        </div>
-        <div className={`sidebar-submenu ${supplierOpen ? 'open' : ''}`}>
-          <Link
-            to="/nha-cung-cap?tab=dashboard"
-            onClick={handleNavClick}
-            style={{
-              color: (isNhaCungCapPage && (location.search.includes('tab=dashboard') || !location.search.includes('tab='))) ? 'var(--primary-color)' : 'var(--text-light)',
-              fontWeight: (isNhaCungCapPage && (location.search.includes('tab=dashboard') || !location.search.includes('tab='))) ? '600' : '500'
-            }}
-          >
-            <FiGrid size={12} style={{ marginRight: 4 }} /> Dashboard
-          </Link>
-          <Link
-            to="/nha-cung-cap?tab=directory"
-            onClick={handleNavClick}
-            style={{
-              color: (isNhaCungCapPage && location.search.includes('tab=directory')) ? 'var(--primary-color)' : 'var(--text-light)',
-              fontWeight: (isNhaCungCapPage && location.search.includes('tab=directory')) ? '600' : '500'
-            }}
-          >
-            <FiBriefcase size={12} style={{ marginRight: 4 }} /> Danh Bạ Đối Tác
-          </Link>
-          <Link
-            to="/nha-cung-cap?tab=imports"
-            onClick={handleNavClick}
-            style={{
-              color: (isNhaCungCapPage && location.search.includes('tab=imports')) ? 'var(--primary-color)' : 'var(--text-light)',
-              fontWeight: (isNhaCungCapPage && location.search.includes('tab=imports')) ? '600' : '500'
-            }}
-          >
-            <FiDownload size={12} style={{ marginRight: 4 }} /> Quản Lý Hàng Nhập
-          </Link>
-          <Link
-            to="/nha-cung-cap?tab=payments"
-            onClick={handleNavClick}
-            style={{
-              color: (isNhaCungCapPage && location.search.includes('tab=payments')) ? 'var(--primary-color)' : 'var(--text-light)',
-              fontWeight: (isNhaCungCapPage && location.search.includes('tab=payments')) ? '600' : '500'
-            }}
-          >
-            <FiDollarSign size={12} style={{ marginRight: 4 }} /> Thanh Toán & Công Nợ
-          </Link>
-          <Link
-            to="/nha-cung-cap?tab=profit"
-            onClick={handleNavClick}
-            style={{
-              color: (isNhaCungCapPage && location.search.includes('tab=profit')) ? 'var(--primary-color)' : 'var(--text-light)',
-              fontWeight: (isNhaCungCapPage && location.search.includes('tab=profit')) ? '600' : '500'
-            }}
-          >
-            <FiTrendingUp size={12} style={{ marginRight: 4 }} /> Lợi Nhuận
-          </Link>
-        </div>
-        <div
-          className={`nav-item nav-group-toggle ${isCaiDatPage ? 'active' : ''} ${settingsOpen ? 'open' : ''}`}
-          onClick={() => setSettingsOpen(!settingsOpen)}
-        >
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <FiSettings />
-            <span>Cài Đặt</span>
-          </div>
-          <FiChevronRight className="chevron" />
-        </div>
-        <div className={`sidebar-submenu ${settingsOpen ? 'open' : ''}`}>
-          <Link
-            to="/cai-dat?tab=smtp"
-            onClick={handleNavClick}
-            style={{
-              color: (isCaiDatPage && (location.search.includes('tab=smtp') || !location.search.includes('tab='))) ? 'var(--primary-color)' : 'var(--text-light)',
-              fontWeight: (isCaiDatPage && (location.search.includes('tab=smtp') || !location.search.includes('tab='))) ? '600' : '500'
-            }}
-          >
-            Cấu hình SMTP
-          </Link>
-          <Link
-            to="/cai-dat?tab=bank"
-            onClick={handleNavClick}
-            style={{
-              color: (isCaiDatPage && location.search.includes('tab=bank')) ? 'var(--primary-color)' : 'var(--text-light)',
-              fontWeight: (isCaiDatPage && location.search.includes('tab=bank')) ? '600' : '500'
-            }}
-          >
-            Thông tin chuyển khoản
-          </Link>
-          <Link
-            to="/cai-dat?tab=general"
-            onClick={handleNavClick}
-            style={{
-              color: (isCaiDatPage && location.search.includes('tab=general')) ? 'var(--primary-color)' : 'var(--text-light)',
-              fontWeight: (isCaiDatPage && location.search.includes('tab=general')) ? '600' : '500'
-            }}
-          >
-            Cài đặt chung
-          </Link>
-          <Link
-            to="/cai-dat?tab=invoice"
-            onClick={handleNavClick}
-            style={{
-              color: (isCaiDatPage && location.search.includes('tab=invoice')) ? 'var(--primary-color)' : 'var(--text-light)',
-              fontWeight: (isCaiDatPage && location.search.includes('tab=invoice')) ? '600' : '500'
-            }}
-          >
-            Mẫu hóa đơn PDF
-          </Link>
-          <Link
-            to="/cai-dat?tab=renewal"
-            onClick={handleNavClick}
-            style={{
-              color: (isCaiDatPage && location.search.includes('tab=renewal')) ? 'var(--primary-color)' : 'var(--text-light)',
-              fontWeight: (isCaiDatPage && location.search.includes('tab=renewal')) ? '600' : '500'
-            }}
-          >
-            Cấu hình gia hạn
-          </Link>
-          <Link
-            to="/cai-dat?tab=account"
-            onClick={handleNavClick}
-            style={{
-              color: (isCaiDatPage && location.search.includes('tab=account')) ? 'var(--primary-color)' : 'var(--text-light)',
-              fontWeight: (isCaiDatPage && location.search.includes('tab=account')) ? '600' : '500'
-            }}
-          >
-            Tài khoản Admin
-          </Link>
-          <Link
-            to="/cai-dat?tab=email-templates"
-            onClick={handleNavClick}
-            style={{
-              color: (isCaiDatPage && location.search.includes('tab=email-templates')) ? 'var(--primary-color)' : 'var(--text-light)',
-              fontWeight: (isCaiDatPage && location.search.includes('tab=email-templates')) ? '600' : '500'
-            }}
-          >
-            Mẫu Email
-          </Link>
-          <Link
-            to="/cai-dat?tab=backup"
-            onClick={handleNavClick}
-            style={{
-              color: (isCaiDatPage && location.search.includes('tab=backup')) ? 'var(--primary-color)' : 'var(--text-light)',
-              fontWeight: (isCaiDatPage && location.search.includes('tab=backup')) ? '600' : '500'
-            }}
-          >
-            Sao lưu dữ liệu
-          </Link>
-
-        </div>
+        <div className="sidebar-category-header">Hệ Thống</div>
+        <NavLink to="/cai-dat" className="nav-item" onClick={handleNavClick}>
+          <FiSettings /> Cài Đặt
+        </NavLink>
 
       </nav>
 

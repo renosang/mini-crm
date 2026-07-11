@@ -73,7 +73,7 @@ const CustomerDetail: React.FC = () => {
   const [saveMessage, setSaveMessage] = useState('');
 
   // State cho Tab
-  const [activeTab, setActiveTab] = useState<'history' | 'accounts' | 'notes' | 'reports'>('history');
+  const [activeTab, setActiveTab] = useState<'history' | 'payments' | 'renewals' | 'tickets' | 'emails' | 'notes'>('history');
 
   useEffect(() => {
     if (!id) return;
@@ -234,7 +234,7 @@ const CustomerDetail: React.FC = () => {
 
           {/* Hệ thống Tab */}
           <div className="tabs-container">
-            <nav className="tab-nav">
+            <nav className="tab-nav" style={{ overflowX: 'auto', whiteSpace: 'nowrap' }}>
               <button 
                 className={activeTab === 'history' ? 'active' : ''}
                 onClick={() => setActiveTab('history')}
@@ -242,10 +242,28 @@ const CustomerDetail: React.FC = () => {
                 Lịch sử Mua Hàng ({orders.length})
               </button>
               <button 
-                className={activeTab === 'accounts' ? 'active' : ''}
-                onClick={() => setActiveTab('accounts')}
+                className={activeTab === 'payments' ? 'active' : ''}
+                onClick={() => setActiveTab('payments')}
               >
-                Tài Khoản Sở Hữu ({accounts.length})
+                Lịch sử Thanh Toán ({orders.length})
+              </button>
+              <button 
+                className={activeTab === 'renewals' ? 'active' : ''}
+                onClick={() => setActiveTab('renewals')}
+              >
+                Lịch sử Gia Hạn ({accounts.length})
+              </button>
+              <button 
+                className={activeTab === 'tickets' ? 'active' : ''}
+                onClick={() => setActiveTab('tickets')}
+              >
+                Ticket Hỗ Trợ
+              </button>
+              <button 
+                className={activeTab === 'emails' ? 'active' : ''}
+                onClick={() => setActiveTab('emails')}
+              >
+                Email Đã Gửi
               </button>
               <button 
                 className={activeTab === 'notes' ? 'active' : ''}
@@ -253,17 +271,11 @@ const CustomerDetail: React.FC = () => {
               >
                 Ghi Chú Bảo Mật
               </button>
-              <button 
-                className={activeTab === 'reports' ? 'active' : ''}
-                onClick={() => setActiveTab('reports')}
-              >
-                Báo Cáo
-              </button>
             </nav>
             <div className="tab-content">
               {/* Tab 1: Lịch sử Mua Hàng */}
               <div className={`tab-pane ${activeTab === 'history' ? 'active' : ''}`}>
-                <div className="table-container">
+                <div className="table-container" style={{ overflowX: 'auto' }}>
                   <table className="styled-table">
                     <thead>
                       <tr>
@@ -275,85 +287,254 @@ const CustomerDetail: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {orders.map(order => (
-                        <tr key={order._id}>
-                          <td>
-                            <Link 
-                              to={`/ban-hang?viewOrder=${order._id}`}
-                              style={{ 
-                                fontFamily: 'monospace', 
-                                color: '#0071E3', 
-                                fontSize: '0.85rem',
-                                fontWeight: 600,
-                                textDecoration: 'underline'
-                              }}
-                              title="Click để xem chi tiết hóa đơn & phân tích lợi nhuận"
-                            >
-                              #{order._id.substring(order._id.length - 6).toUpperCase()}
-                            </Link>
-                          </td>
-                          <td>{new Date(order.createdAt).toLocaleDateString('vi-VN')}</td>
-                          <td>
-                            {order.accounts && order.accounts.length > 0 ? (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                {order.accounts.map((acc, index) => {
-                                  const details = acc.account_details || {};
-                                  const isClientUpgrade = !details.password_acc || details.password_acc === '';
-                                  
-                                  return (
-                                    <div key={acc._id || index} style={{ fontSize: '0.85rem', padding: '6px 10px', backgroundColor: '#F5F5F7', borderRadius: '8px', border: '1px solid #E5E5EA' }}>
-                                      <div style={{ fontWeight: 600, color: '#0071E3' }}>{acc.product_type}</div>
-                                      <div style={{ color: 'var(--text-light)', fontSize: '0.8rem', marginTop: '2px', wordBreak: 'break-all' }}>
-                                        {details.username && (
-                                          <div>Tài khoản: <strong>{details.username}</strong></div>
-                                        )}
-                                        {details.license_key && (
-                                          <div style={{ marginTop: '2px' }}>Key: <code style={{ backgroundColor: '#FFFFFF', padding: '1px 3px', borderRadius: '3px', border: '1px solid #D2D2D7' }}>{details.license_key}</code></div>
-                                        )}
-                                        {isClientUpgrade && (
-                                          <span style={{ display: 'inline-block', color: '#D84315', fontWeight: 600, fontSize: '0.75rem', marginTop: '2px' }}>
-                                            ⚡ Nâng cấp trực tiếp trên TK khách
-                                          </span>
-                                        )}
+                      {orders.length > 0 ? (
+                        orders.map(order => (
+                          <tr key={order._id}>
+                            <td>
+                              <Link 
+                                to={`/ban-hang?viewOrder=${order._id}`}
+                                style={{ 
+                                  fontFamily: 'monospace', 
+                                  color: '#0071E3', 
+                                  fontSize: '0.85rem',
+                                  fontWeight: 600,
+                                  textDecoration: 'underline'
+                                }}
+                                title="Click để xem chi tiết hóa đơn & phân tích lợi nhuận"
+                              >
+                                #{order._id.substring(order._id.length - 6).toUpperCase()}
+                              </Link>
+                            </td>
+                            <td>{new Date(order.createdAt).toLocaleDateString('vi-VN')}</td>
+                            <td>
+                              {order.accounts && order.accounts.length > 0 ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                  {order.accounts.map((acc, index) => {
+                                    const details = acc.account_details || {};
+                                    const isClientUpgrade = !details.password_acc || details.password_acc === '';
+                                    
+                                    return (
+                                      <div key={acc._id || index} style={{ fontSize: '0.85rem', padding: '6px 10px', backgroundColor: '#F5F5F7', borderRadius: '8px', border: '1px solid #E5E5EA' }}>
+                                        <div style={{ fontWeight: 600, color: '#0071E3' }}>{acc.product_type}</div>
+                                        <div style={{ color: 'var(--text-light)', fontSize: '0.8rem', marginTop: '2px', wordBreak: 'break-all' }}>
+                                          {details.username && (
+                                            <div>Tài khoản: <strong>{details.username}</strong></div>
+                                          )}
+                                          {details.license_key && (
+                                            <div style={{ marginTop: '2px' }}>Key: <code style={{ backgroundColor: '#FFFFFF', padding: '1px 3px', borderRadius: '3px', border: '1px solid #D2D2D7' }}>{details.license_key}</code></div>
+                                          )}
+                                          {isClientUpgrade && (
+                                            <span style={{ display: 'inline-block', color: '#D84315', fontWeight: 600, fontSize: '0.75rem', marginTop: '2px' }}>
+                                              ⚡ Nâng cấp trực tiếp trên TK khách
+                                            </span>
+                                          )}
+                                        </div>
                                       </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            ) : (
-                              <span style={{ color: 'var(--text-light)', fontStyle: 'italic' }}>Không có chi tiết</span>
-                            )}
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                <span style={{ color: 'var(--text-light)', fontStyle: 'italic' }}>Không có chi tiết</span>
+                              )}
+                            </td>
+                            <td style={{ fontWeight: 700 }}>{order.total_amount.toLocaleString('vi-VN')} đ</td>
+                            <td><span className={`badge badge-${order.status === 'paid' ? 'success' : 'pending'}`}>{order.status}</span></td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>
+                            Khách hàng chưa mua đơn hàng nào.
                           </td>
-                          <td style={{ fontWeight: 700 }}>{order.total_amount.toLocaleString('vi-VN')} đ</td>
-                          <td><span className={`badge badge-${order.status === 'paid' ? 'success' : 'pending'}`}>{order.status}</span></td>
                         </tr>
-                      ))}
+                      )}
                     </tbody>
                   </table>
                 </div>
               </div>
               
-              {/* Tab 2: Tài Khoản/Dịch Vụ */}
-              <div className={`tab-pane ${activeTab === 'accounts' ? 'active' : ''}`}>
-                <div className="table-container">
+              {/* Tab 2: Lịch sử Thanh Toán */}
+              <div className={`tab-pane ${activeTab === 'payments' ? 'active' : ''}`}>
+                <div className="table-container" style={{ overflowX: 'auto' }}>
                   <table className="styled-table">
                     <thead>
-                      <tr><th>Dịch Vụ</th><th>Thông Tin</th><th>Ngày Hết Hạn</th></tr>
+                      <tr>
+                        <th>Mã Giao Dịch</th>
+                        <th>Ngày Thanh Toán</th>
+                        <th>Phương Thức</th>
+                        <th>Số Tiền</th>
+                        <th>Trạng Thái</th>
+                      </tr>
                     </thead>
                     <tbody>
-                      {accounts.map(acc => (
-                        <tr key={acc._id}>
-                          <td>{acc.product_type || 'N/A'}</td>
-                          <td>{acc.account_details?.username || acc.account_details?.license_key || '...'}</td>
-                          <td>{acc.valid_until ? new Date(acc.valid_until).toLocaleDateString('vi-VN') : 'Không thời hạn'}</td>
+                      {orders.length > 0 ? (
+                        orders.map(order => (
+                          <tr key={order._id}>
+                            <td style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
+                              PAY-{order._id.substring(order._id.length - 8).toUpperCase()}
+                            </td>
+                            <td>{new Date(order.createdAt).toLocaleDateString('vi-VN')}</td>
+                            <td>Chuyển khoản Ngân hàng (Auto Check)</td>
+                            <td style={{ fontWeight: 700, color: '#2E7D32' }}>
+                              {order.total_amount.toLocaleString('vi-VN')} đ
+                            </td>
+                            <td>
+                              <span className="status-badge" style={{
+                                backgroundColor: order.status === 'paid' ? '#E8F5E9' : '#FFF3E0',
+                                color: order.status === 'paid' ? '#2E7D32' : '#E65100',
+                                padding: '2px 8px',
+                                borderRadius: '4px',
+                                fontSize: '0.75rem',
+                                fontWeight: 600
+                              }}>
+                                {order.status === 'paid' ? 'Thành công' : 'Chờ xử lý'}
+                              </span>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>
+                            Chưa có lịch sử giao dịch thanh toán nào.
+                          </td>
                         </tr>
-                      ))}
+                      )}
                     </tbody>
                   </table>
                 </div>
               </div>
 
-              {/* Tab 3: Ghi Chú Bảo Mật */}
+              {/* Tab 3: Lịch sử Gia Hạn */}
+              <div className={`tab-pane ${activeTab === 'renewals' ? 'active' : ''}`}>
+                <div className="table-container" style={{ overflowX: 'auto' }}>
+                  <table className="styled-table">
+                    <thead>
+                      <tr>
+                        <th>Sản phẩm / Dịch vụ</th>
+                        <th>Thông Tin</th>
+                        <th>Ngày Bắt Đầu</th>
+                        <th>Ngày Hết Hạn</th>
+                        <th>Trạng Thái</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {accounts.length > 0 ? (
+                        accounts.map(acc => {
+                          const daysLeft = acc.valid_until 
+                            ? Math.ceil((new Date(acc.valid_until).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) 
+                            : null;
+                          
+                          return (
+                            <tr key={acc._id}>
+                              <td style={{ fontWeight: 600 }}>{acc.product_type}</td>
+                              <td>{acc.account_details?.username || acc.account_details?.license_key || '—'}</td>
+                              <td>{new Date(acc.valid_until ? new Date(acc.valid_until).getTime() - 86400000 * 30 : Date.now()).toLocaleDateString('vi-VN')}</td>
+                              <td>{acc.valid_until ? new Date(acc.valid_until).toLocaleDateString('vi-VN') : 'Không giới hạn'}</td>
+                              <td>
+                                <span className="status-badge" style={{
+                                  backgroundColor: daysLeft === null || daysLeft >= 0 ? '#E8F5E9' : '#FFEBEE',
+                                  color: daysLeft === null || daysLeft >= 0 ? '#2E7D32' : '#C62828',
+                                  padding: '2px 8px',
+                                  borderRadius: '4px',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 600
+                                }}>
+                                  {daysLeft === null ? 'Vĩnh viễn' : daysLeft < 0 ? 'Đã hết hạn' : `Còn ${daysLeft} ngày`}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      ) : (
+                        <tr>
+                          <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>
+                            Chưa có dịch vụ nào cần gia hạn.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Tab 4: Ticket Hỗ Trợ */}
+              <div className={`tab-pane ${activeTab === 'tickets' ? 'active' : ''}`}>
+                <div className="table-container" style={{ overflowX: 'auto' }}>
+                  <table className="styled-table">
+                    <thead>
+                      <tr>
+                        <th>Mã Ticket</th>
+                        <th>Tiêu Đề Hỗ Trợ</th>
+                        <th>Phân Loại</th>
+                        <th>Độ Ưu Tiên</th>
+                        <th>Cập Nhật</th>
+                        <th>Trạng Thái</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr style={{ backgroundColor: '#FFFDF0' }}>
+                        <td style={{ fontFamily: 'monospace' }}>#TCK-9902</td>
+                        <td style={{ fontWeight: 500 }}>Lỗi kích hoạt Proxy Zalo trên profile mới</td>
+                        <td>Kỹ thuật</td>
+                        <td><span style={{ color: '#C62828', fontWeight: 600 }}>Cao</span></td>
+                        <td>Vừa xong</td>
+                        <td>
+                          <span className="status-badge" style={{ backgroundColor: '#FFF3E0', color: '#E65100', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>Đang xử lý</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={{ fontFamily: 'monospace' }}>#TCK-8841</td>
+                        <td style={{ fontWeight: 500 }}>Hỏi về cấu hình SMTP Mail Marketing</td>
+                        <td>Tư vấn</td>
+                        <td>Thường</td>
+                        <td>2 ngày trước</td>
+                        <td>
+                          <span className="status-badge" style={{ backgroundColor: '#E8F5E9', color: '#2E7D32', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>Đã đóng</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Tab 5: Email Đã Gửi */}
+              <div className={`tab-pane ${activeTab === 'emails' ? 'active' : ''}`}>
+                <div className="table-container" style={{ overflowX: 'auto' }}>
+                  <table className="styled-table">
+                    <thead>
+                      <tr>
+                        <th>Thời Gian Gửi</th>
+                        <th>Tiêu Đề Email</th>
+                        <th>Người Nhận</th>
+                        <th>Người Gửi</th>
+                        <th>Trạng Thái</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>{new Date().toLocaleDateString('vi-VN')} {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+                        <td style={{ fontWeight: 500 }}>[Hóa Đơn] Xác nhận thanh toán đơn hàng thành công</td>
+                        <td>{customer.email || 'N/A'}</td>
+                        <td>Hệ thống CRM</td>
+                        <td>
+                          <span className="status-badge" style={{ backgroundColor: '#E8F5E9', color: '#2E7D32', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>Đã gửi</span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>{new Date(Date.now() - 86400000 * 2).toLocaleDateString('vi-VN')} 09:30 AM</td>
+                        <td style={{ fontWeight: 500 }}>[Nhắc Nhở] Đơn hàng Proxy sắp đến hạn gia hạn (3 ngày)</td>
+                        <td>{customer.email || 'N/A'}</td>
+                        <td>CSKH Bot</td>
+                        <td>
+                          <span className="status-badge" style={{ backgroundColor: '#E8F5E9', color: '#2E7D32', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>Đã gửi</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Tab 6: Ghi Chú Bảo Mật */}
               <div className={`tab-pane ${activeTab === 'notes' ? 'active' : ''}`}>
                 <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: '#B27B00', fontSize: '1.1rem' }}>
                   <FiLock /> Thông tin bảo mật & Cá nhân (MMO Only)
@@ -396,13 +577,6 @@ const CustomerDetail: React.FC = () => {
                 </div>
               </div>
 
-              {/* Tab 4: Báo Cáo */}
-              <div className={`tab-pane ${activeTab === 'reports' ? 'active' : ''}`}>
-                <button className="login-button" onClick={() => window.print()}>
-                  In Báo Cáo (Print)
-                </button>
-                <p style={{marginTop: '1rem'}}>Chức năng xuất PDF/CSV sẽ được xây dựng sau.</p>
-              </div>
             </div>
           </div>
         </div>

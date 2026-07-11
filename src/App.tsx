@@ -12,6 +12,8 @@ import Login from './pages/Login.tsx';
 // ====================================
 import KhachHang from './pages/KhachHang.tsx';
 import BanHang from './pages/BanHang.tsx';
+import BaoGia from './pages/BaoGia.tsx';
+import BaoGiaXacNhan from './pages/BaoGiaXacNhan.tsx';
 import BanQuyenCaNhan from './pages/BanQuyenCaNhan.tsx';
 import KhoTaiNguyen from './pages/KhoTaiNguyen.tsx';
 import CustomerDetail from './pages/CustomerDetail.tsx';
@@ -19,12 +21,13 @@ import QuanLyGiaHan from './pages/QuanLyGiaHan.tsx';
 import CaiDat from './pages/CaiDat.tsx';
 import NhaCungCap from './pages/NhaCungCap.tsx';
 import OmnichannelInbox from './pages/OmnichannelInbox.tsx';
+import SanPham from './pages/SanPham.tsx';
 
 
 // Component bảo vệ (Protected Route)
 function ProtectedRoute() {
   const { isAuthenticated } = useAuth();
-  
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
@@ -51,20 +54,25 @@ function App() {
       {/* Đây là các trang được bảo vệ */}
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<Dashboard />} />
-        
+
         {/* === CÁC ROUTE MỚI === */}
         <Route path="/khach-hang" element={<KhachHang />} />
         <Route path="/customers/:id" element={<CustomerDetail />} />
         <Route path="/ban-hang" element={<BanHang />} />
+        <Route path="/ban-hang/bao-gia" element={<BaoGia />} />
         <Route path="/kho-tai-nguyen" element={<KhoTaiNguyen />} />
         <Route path="/ban-quyen-ca-nhan" element={<BanQuyenCaNhan />} />
         <Route path="/omnichannel" element={<OmnichannelInbox />} />
-        
+        <Route path="/san-pham" element={<SanPham />} />
+
         {/* Các trang khác */}
         <Route path="/gia-han" element={<QuanLyGiaHan />} />
         <Route path="/nha-cung-cap" element={<NhaCungCap />} />
         <Route path="/cai-dat" element={<CaiDat />} />
       </Route>
+
+      {/* Public route for quotation confirmation */}
+      <Route path="/bao-gia/xac-nhan/:token" element={<BaoGiaXacNhan />} />
 
       {/* Route 404 */}
       <Route path="*" element={<div>404 Not Found</div>} />

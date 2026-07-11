@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // <-- THÊM IMPORT NÀY
+import { Link, useLocation } from 'react-router-dom';
 import api from '../services/api';
 import { FiEdit, FiTrash2, FiUserPlus, FiUsers, FiUserCheck, FiTarget, FiFacebook, FiSend, FiMessageCircle, FiLock, FiSearch } from 'react-icons/fi';
 
@@ -19,9 +19,11 @@ interface ICustomer {
   notes?: string;
   privateNotes?: string;
   createdAt: string;
+  orderCount?: number;
+  revenue?: number;
 }
 
-type CustomerFormData = Omit<ICustomer, '_id' | 'createdAt'>;
+type CustomerFormData = Omit<ICustomer, '_id' | 'createdAt' | 'orderCount' | 'revenue'>;
 const customerSources = ["Facebook", "Zalo", "Telegram", "Giới thiệu", "Khác"];
 const customerStatuses = ["Bình thường", "VIP", "Tiềm năng", "Cảnh báo"];
 
@@ -60,6 +62,7 @@ const StatusBadge: React.FC<{ status?: string }> = ({ status }) => {
 
 // === Component Trang Khách Hàng ===
 const KhachHang: React.FC = () => {
+  const location = useLocation();
   const [customers, setCustomers] = useState<ICustomer[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
@@ -108,6 +111,15 @@ const KhachHang: React.FC = () => {
     };
     loadData();
   }, []);
+
+  // Tự động mở modal thêm khách hàng mới nếu được chuyển hướng với state openCreateModal
+  useEffect(() => {
+    if (location.state && (location.state as any).openCreateModal) {
+      openModal(null);
+      // Xóa state để tránh việc modal liên tục mở khi refresh hoặc back
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   // Logic lọc tìm kiếm
   const filteredCustomers = customers.filter(customer => {
@@ -265,30 +277,26 @@ const KhachHang: React.FC = () => {
       {error && <p style={{ color: 'red' }}>{error}</p>}
       
       {!loading && !error && (
-        <div className="table-container widget" style={{transition: 'none', boxShadow: 'var(--shadow)'}}>
-          <table className="styled-table">
+        <div className="table-container widget" style={{transition: 'none', boxShadow: 'var(--shadow)', overflowX: 'auto'}}>
+          <table className="styled-table" style={{ width: '100%', minWidth: '1200px' }}>
             <thead>
               <tr>
-                <th className="nowrap">Họ và Tên</th>
-                <th className="nowrap">Liên hệ</th>
-                <th className="nowrap">Mạng xã hội MMO</th>
+                <th className="nowrap">Họ tên</th>
+                <th className="nowrap">Email</th>
+                <th className="nowrap">SĐT</th>
+                <th className="nowrap">Doanh thu</th>
+                <th className="nowrap">Số đơn hàng</th>
+                <th className="nowrap">Ngày đăng ký</th>
                 <th className="nowrap">Trạng thái</th>
-                <th className="nowrap">Nguồn</th>
-                <th className="nowrap">Hành Động</th>
+                <th className="nowrap">Mạng xã hội</th>
+                <th className="nowrap">Nguồn khách hàng</th>
+                <th className="nowrap">Trạng thái khách hàng</th>
+                <th className="nowrap">Hành động</th>
               </tr>
             </thead>
             <tbody>
               {filteredCustomers.length > 0 ? (
                 filteredCustomers.map(customer => {
-                  // Lấy chữ cái viết tắt của tên
-                  const getInitials = (name: string) => {
-                    const parts = name.trim().split(' ');
-                    if (parts.length >= 2) {
-                      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-                    }
-                    return name.substring(0, 2).toUpperCase();
-                  };
-                  
                   // Tạo class màu sắc ngẫu nhiên dựa trên tên
                   const getAvatarColorClass = (name: string) => {
                     const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -301,16 +309,29 @@ const KhachHang: React.FC = () => {
                       <td className="nowrap">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <div className={`customer-avatar-circle ${getAvatarColorClass(customer.name)}`}>
-                            {getInitials(customer.name)}
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                              <circle cx="12" cy="7" r="4" />
+                            </svg>
                           </div>
                           <Link to={`/customers/${customer._id}`} className="customer-link" style={{ fontWeight: 600, textDecoration: 'none' }}>
                             {customer.name}
                           </Link>
                         </div>
                       </td>
+                      <td className="nowrap">{customer.email || '—'}</td>
+                      <td className="nowrap">{customer.phone || '—'}</td>
+                      <td className="nowrap" style={{ fontWeight: 700 }}>
+                        {(customer.revenue || 0).toLocaleString('vi-VN')} đ
+                      </td>
+                      <td className="nowrap" style={{ textAlign: 'center', fontWeight: 600 }}>
+                        {customer.orderCount || 0}
+                      </td>
                       <td className="nowrap">
-                        <div style={{ fontWeight: 500, fontSize: '0.925rem' }}>{customer.email || '—'}</div>
-                        <div style={{ color: 'var(--text-light)', fontSize: '0.825rem', marginTop: '2px' }}>{customer.phone || '—'}</div>
+                        {new Date(customer.createdAt).toLocaleDateString('vi-VN')}
+                      </td>
+                      <td className="nowrap">
+                        <span className="status-badge status-vip" style={{ backgroundColor: '#E8F5E9', color: '#2E7D32' }}>Hoạt động</span>
                       </td>
                       <td className="mmo-social-links nowrap">
                         {customer.facebook ? (
@@ -335,8 +356,8 @@ const KhachHang: React.FC = () => {
                           <span className="mmo-icon-btn mmo-empty" title="Không có Zalo"><FiMessageCircle /></span>
                         )}
                       </td>
-                      <td className="nowrap"><StatusBadge status={customer.status} /></td>
                       <td className="nowrap"><SourceBadge source={customer.source} /></td>
+                      <td className="nowrap"><StatusBadge status={customer.status} /></td>
                       <td className="action-buttons nowrap">
                         <button onClick={() => openModal(customer)} title="Sửa">
                           <FiEdit />
@@ -350,7 +371,7 @@ const KhachHang: React.FC = () => {
                 })
               ) : (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>
+                  <td colSpan={11} style={{ textAlign: 'center', padding: '2rem' }}>
                     Không tìm thấy khách hàng nào.
                   </td>
                 </tr>

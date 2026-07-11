@@ -4,7 +4,7 @@ import api from '../services/api';
 import {
   FiUsers, FiBox, FiShoppingCart, FiCreditCard,
   FiPlusCircle, FiClock, FiUserPlus, FiSettings,
-  FiMail, FiRefreshCw, FiCalendar, FiAlertTriangle, FiCheckCircle, FiInfo
+  FiMail, FiRefreshCw, FiAlertTriangle, FiCheckCircle, FiInfo
 } from 'react-icons/fi';
 
 // 1. Định nghĩa kiểu dữ liệu
@@ -39,6 +39,8 @@ interface IAccount {
     customer_id?: ICustomer;
     assigned_email?: string;
   }>;
+  total_slots?: number;
+  used_slots?: number;
 }
 
 interface IOrder {
@@ -294,7 +296,7 @@ const Dashboard: React.FC = () => {
       {/* 1. Header Chào Mừng */}
       <div className="customer-detail-header" style={{ marginBottom: '1.75rem' }}>
         <h1 className="gradient-title">Chào mừng trở lại, Admin! 🚀</h1>
-        <p>Hệ thống giám sát hiệu năng kinh doanh, theo dõi tài nguyên MMO và điều phối gia hạn bản quyền thông minh</p>
+        <p>Nền tảng quản trị tài nguyên số và tự động hóa quy trình gia hạn dịch vụ.</p>
       </div>
 
       {/* 2. Grid Thống Kê 4 Chỉ Số Chủ Chốt */}
@@ -343,7 +345,7 @@ const Dashboard: React.FC = () => {
       {/* 3. Phân Hệ Hành Động Nhanh (Quick Actions) */}
       <h2 style={{ fontSize: '1.15rem', marginBottom: '0.85rem', fontWeight: 700, color: 'var(--text-color)' }}>Hành động nhanh</h2>
       <div className="quick-actions-grid" style={{ marginBottom: '1.75rem' }}>
-        <div className="quick-action-card" onClick={() => navigate('/ban-hang')}>
+        <div className="quick-action-card" onClick={() => navigate('/ban-hang', { state: { openCreateModal: true } })}>
           <div style={{ padding: '10px', backgroundColor: '#E3F2FD', color: '#0071E3', borderRadius: '10px', display: 'flex' }}><FiPlusCircle size={20} /></div>
           <div>
             <h4 style={{ fontSize: '0.875rem', fontWeight: 700, margin: 0 }}>Tạo Đơn Hàng Mới</h4>
@@ -351,7 +353,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="quick-action-card" onClick={() => navigate('/khach-hang')}>
+        <div className="quick-action-card" onClick={() => navigate('/khach-hang', { state: { openCreateModal: true } })}>
           <div style={{ padding: '10px', backgroundColor: '#EBF9EB', color: '#34C759', borderRadius: '10px', display: 'flex' }}><FiUserPlus size={20} /></div>
           <div>
             <h4 style={{ fontSize: '0.875rem', fontWeight: 700, margin: 0 }}>Thêm Khách Hàng</h4>

@@ -9,7 +9,34 @@ export default async function handler(req: any, res: any) {
   switch (req.method) {
     case 'GET':
       try {
-        const customers = await Customer.find({}).sort({ createdAt: -1 });
+        const customers = await Customer.aggregate([
+          {
+            $lookup: {
+              from: 'orders',
+              localField: '_id',
+              foreignField: 'customer_id',
+              as: 'orders'
+            }
+          },
+          {
+            $project: {
+              name: 1,
+              email: 1,
+              phone: 1,
+              source: 1,
+              facebook: 1,
+              telegram: 1,
+              zalo: 1,
+              status: 1,
+              notes: 1,
+              privateNotes: 1,
+              createdAt: 1,
+              orderCount: { $size: '$orders' },
+              revenue: { $sum: '$orders.total_amount' }
+            }
+          },
+          { $sort: { createdAt: -1 } }
+        ]);
         res.status(200).json({ success: true, data: customers });
       } catch (error) {
         res.status(500).json({ success: false, message: 'Lỗi server' });

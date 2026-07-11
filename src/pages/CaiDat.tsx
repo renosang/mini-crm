@@ -7,7 +7,7 @@ import {
   FiCheckCircle, FiAlertTriangle, FiEye, FiEyeOff, FiInfo, FiSend,
   FiCreditCard, FiSearch, FiChevronDown, FiCheck,
   FiGlobe, FiFileText, FiClock, FiShield, FiMessageSquare, FiDownloadCloud,
-  FiLock, FiSave, FiRefreshCw
+  FiLock, FiSave, FiRefreshCw, FiChevronRight, FiGrid
 } from 'react-icons/fi';
 
 
@@ -80,7 +80,7 @@ function removeVietnameseTones(str: string): string {
 
 const CaiDat: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = searchParams.get('tab') || 'smtp';
+  const activeTab = searchParams.get('tab');
 
   // --- SMTP STATE ---
   const [smtpConfig, setSMTPConfig] = useState<ISMTPConfig>({
@@ -207,6 +207,9 @@ const CaiDat: React.FC = () => {
 
   // --- EMAIL TEMPLATES STATE ---
   const [emailTemplates, setEmailTemplates] = useState({
+    welcome: { subject: '', body: '' },
+    invoice: { subject: '', body: '' },
+    renewal: { subject: '', body: '' },
     handover: { subject: '', body: '' },
     renewal_reminder: { subject: '', body: '' },
     thank_you: { subject: '', body: '' }
@@ -413,7 +416,7 @@ const CaiDat: React.FC = () => {
   };
 
   // --- EMAIL TEMPLATES HANDLERS ---
-  const handleTemplateChange = (type: 'handover' | 'renewal_reminder' | 'thank_you', field: 'subject' | 'body', value: string) => {
+  const handleTemplateChange = (type: 'welcome' | 'invoice' | 'renewal' | 'handover' | 'renewal_reminder' | 'thank_you', field: 'subject' | 'body', value: string) => {
     setEmailTemplates(prev => ({
       ...prev,
       [type]: { ...prev[type], [field]: value }
@@ -650,6 +653,7 @@ const CaiDat: React.FC = () => {
       <div className="customer-detail-header" style={{ marginBottom: '1.25rem' }}>
         <h1 className="gradient-title">Cài Đặt Hệ Thống</h1>
         <p>
+          {!activeTab && 'Quản lý toàn bộ cấu hình hệ thống cửa hàng, tích hợp kênh chat, cấu hình thanh toán và mẫu email của bạn.'}
           {activeTab === 'smtp' && 'Cấu hình máy chủ SMTP Gmail để tự động gửi thông báo hóa đơn, nhắc nợ và bàn giao tài nguyên cho khách hàng'}
           {activeTab === 'bank' && 'Cấu hình tài khoản ngân hàng nhận tiền thụ hưởng. Hệ thống sẽ tự tạo mã VietQR khớp số tiền và cú pháp trên hóa đơn PDF'}
           {activeTab === 'general' && 'Cập nhật thông tin doanh nghiệp, logo, mã số thuế, địa chỉ, múi giờ và đơn vị tiền tệ'}
@@ -662,198 +666,35 @@ const CaiDat: React.FC = () => {
         </p>
       </div>
 
-      {/* Tab Selector */}
-      <div className="settings-tabs" style={{ display: 'flex', gap: '8px', marginBottom: '1.75rem', borderBottom: '1px solid #E5E5EA', paddingBottom: '0.6rem' }}>
-        <button
-          onClick={() => setSearchParams({ tab: 'smtp' })}
+      {/* Nút Quay lại nếu đang ở trong tab chi tiết */}
+      {activeTab ? (
+        <button 
+          onClick={() => setSearchParams({})} 
           style={{
-            padding: '8px 16px',
-            border: 'none',
-            background: activeTab === 'smtp' ? 'var(--primary-color)' : 'none',
-            color: activeTab === 'smtp' ? 'white' : 'var(--text-light)',
-            fontWeight: 600,
-            borderRadius: '10px',
-            cursor: 'pointer',
-            fontSize: '0.85rem',
-            display: 'flex',
+            display: 'inline-flex',
             alignItems: 'center',
-            gap: '6px',
-            boxShadow: activeTab === 'smtp' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
+            gap: '8px',
+            backgroundColor: '#F5F5F7',
+            border: '1px solid #E5E5EA',
+            color: '#1D1D1F',
+            fontWeight: 600,
+            cursor: 'pointer',
+            marginBottom: '1.75rem',
+            padding: '8px 16px',
+            borderRadius: '10px',
             transition: 'all 0.2s',
-            flexShrink: 0
+            fontSize: '0.85rem'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#E5E5EA';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#F5F5F7';
           }}
         >
-          <FiServer /> SMTP Email
+          ← Quay lại danh mục Cài đặt
         </button>
-        <button
-          onClick={() => setSearchParams({ tab: 'bank' })}
-          style={{
-            padding: '8px 16px',
-            border: 'none',
-            background: activeTab === 'bank' ? 'var(--primary-color)' : 'none',
-            color: activeTab === 'bank' ? 'white' : 'var(--text-light)',
-            fontWeight: 600,
-            borderRadius: '10px',
-            cursor: 'pointer',
-            fontSize: '0.85rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            boxShadow: activeTab === 'bank' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
-            transition: 'all 0.2s',
-            flexShrink: 0
-          }}
-        >
-          <FiCreditCard /> Chuyển Khoản (VietQR)
-        </button>
-        <button
-          onClick={() => setSearchParams({ tab: 'general' })}
-          style={{
-            padding: '8px 16px',
-            border: 'none',
-            background: activeTab === 'general' ? 'var(--primary-color)' : 'none',
-            color: activeTab === 'general' ? 'white' : 'var(--text-light)',
-            fontWeight: 600,
-            borderRadius: '10px',
-            cursor: 'pointer',
-            fontSize: '0.85rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            boxShadow: activeTab === 'general' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
-            transition: 'all 0.2s',
-            flexShrink: 0
-          }}
-        >
-          <FiGlobe /> Cài Đặt Chung
-        </button>
-        <button
-          onClick={() => setSearchParams({ tab: 'invoice' })}
-          style={{
-            padding: '8px 16px',
-            border: 'none',
-            background: activeTab === 'invoice' ? 'var(--primary-color)' : 'none',
-            color: activeTab === 'invoice' ? 'white' : 'var(--text-light)',
-            fontWeight: 600,
-            borderRadius: '10px',
-            cursor: 'pointer',
-            fontSize: '0.85rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            boxShadow: activeTab === 'invoice' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
-            transition: 'all 0.2s',
-            flexShrink: 0
-          }}
-        >
-          <FiFileText /> Mẫu Hóa Đơn
-        </button>
-        <button
-          onClick={() => setSearchParams({ tab: 'renewal' })}
-          style={{
-            padding: '8px 16px',
-            border: 'none',
-            background: activeTab === 'renewal' ? 'var(--primary-color)' : 'none',
-            color: activeTab === 'renewal' ? 'white' : 'var(--text-light)',
-            fontWeight: 600,
-            borderRadius: '10px',
-            cursor: 'pointer',
-            fontSize: '0.85rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            boxShadow: activeTab === 'renewal' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
-            transition: 'all 0.2s',
-            flexShrink: 0
-          }}
-        >
-          <FiClock /> Gia Hạn
-        </button>
-        <button
-          onClick={() => setSearchParams({ tab: 'account' })}
-          style={{
-            padding: '8px 16px',
-            border: 'none',
-            background: activeTab === 'account' ? 'var(--primary-color)' : 'none',
-            color: activeTab === 'account' ? 'white' : 'var(--text-light)',
-            fontWeight: 600,
-            borderRadius: '10px',
-            cursor: 'pointer',
-            fontSize: '0.85rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            boxShadow: activeTab === 'account' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
-            transition: 'all 0.2s',
-            flexShrink: 0
-          }}
-        >
-          <FiShield /> Admin
-        </button>
-        <button
-          onClick={() => setSearchParams({ tab: 'email-templates' })}
-          style={{
-            padding: '8px 16px',
-            border: 'none',
-            background: activeTab === 'email-templates' ? 'var(--primary-color)' : 'none',
-            color: activeTab === 'email-templates' ? 'white' : 'var(--text-light)',
-            fontWeight: 600,
-            borderRadius: '10px',
-            cursor: 'pointer',
-            fontSize: '0.85rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            boxShadow: activeTab === 'email-templates' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
-            transition: 'all 0.2s',
-            flexShrink: 0
-          }}
-        >
-          <FiMessageSquare /> Mẫu Email
-        </button>
-        <button
-          onClick={() => setSearchParams({ tab: 'backup' })}
-          style={{
-            padding: '8px 16px',
-            border: 'none',
-            background: activeTab === 'backup' ? 'var(--primary-color)' : 'none',
-            color: activeTab === 'backup' ? 'white' : 'var(--text-light)',
-            fontWeight: 600,
-            borderRadius: '10px',
-            cursor: 'pointer',
-            fontSize: '0.85rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            boxShadow: activeTab === 'backup' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
-            transition: 'all 0.2s',
-            flexShrink: 0
-          }}
-        >
-          <FiDownloadCloud /> Sao Lưu
-        </button>
-        <button
-          onClick={() => setSearchParams({ tab: 'omnichannel' })}
-          style={{
-            padding: '8px 16px',
-            border: 'none',
-            background: activeTab === 'omnichannel' ? 'var(--primary-color)' : 'none',
-            color: activeTab === 'omnichannel' ? 'white' : 'var(--text-light)',
-            fontWeight: 600,
-            borderRadius: '10px',
-            cursor: 'pointer',
-            fontSize: '0.85rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            boxShadow: activeTab === 'omnichannel' ? '0 4px 12px rgba(0, 113, 227, 0.2)' : 'none',
-            transition: 'all 0.2s',
-            flexShrink: 0
-          }}
-        >
-          <FiMessageSquare /> Đấu nối Chat (Omni)
-        </button>
-      </div>
+      ) : null}
 
 
       {/* Thông báo trạng thái */}
@@ -1634,18 +1475,67 @@ const CaiDat: React.FC = () => {
                 <FiMessageSquare style={{ color: '#0071E3' }} /> Mẫu Email Tự Động
               </h2>
               <form onSubmit={handleSaveTemplates}>
-                {/* Handover Template */}
-                <div style={{ marginBottom: '2rem', padding: '1rem', backgroundColor: '#F5F5F7', borderRadius: '12px' }}>
-                  <h3 style={{ fontSize: '1rem', color: '#1D1D1F', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <FiMail style={{ color: '#34C759' }} /> Email Bàn Giao Tài Khoản
+                
+                {/* Welcome / Registration Template */}
+                <div style={{ marginBottom: '2rem', padding: '1rem', backgroundColor: '#F2F8FF', borderRadius: '12px', border: '1px solid #D2E9FF' }}>
+                  <h3 style={{ fontSize: '1rem', color: '#0071E3', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <FiUser style={{ color: '#0071E3' }} /> Email Đăng Ký Thành Viên Mới
                   </h3>
                   <div className="form-group" style={{ marginBottom: '0.75rem' }}>
                     <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Tiêu đề:</label>
-                    <input type="text" value={emailTemplates.handover.subject} onChange={e => handleTemplateChange('handover', 'subject', e.target.value)} placeholder="🎉 Bàn giao tài khoản - {{customer_name}}" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                    <input type="text" value={emailTemplates.welcome?.subject || ''} onChange={e => handleTemplateChange('welcome', 'subject', e.target.value)} placeholder="🎉 Chào mừng thành viên mới - {{customer_name}}" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
                   </div>
                   <div className="form-group">
                     <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Nội dung:</label>
-                    <textarea value={emailTemplates.handover.body} onChange={e => handleTemplateChange('handover', 'body', e.target.value)} placeholder="Xin chào {{customer_name}},..." rows={4} style={{ borderRadius: '8px', border: '1px solid var(--border-color)', padding: '10px', width: '100%', outline: 'none', resize: 'vertical', fontFamily: 'monospace', fontSize: '0.85rem' }} />
+                    <textarea value={emailTemplates.welcome?.body || ''} onChange={e => handleTemplateChange('welcome', 'body', e.target.value)} placeholder="Xin chào {{customer_name}},..." rows={4} style={{ borderRadius: '8px', border: '1px solid var(--border-color)', padding: '10px', width: '100%', outline: 'none', resize: 'vertical', fontFamily: 'monospace', fontSize: '0.85rem' }} />
+                  </div>
+                  <small style={{ color: '#86868B', fontSize: '0.75rem' }}>Biến hỗ trợ: {'{{customer_name}}'}, {'{{store_name}}'}</small>
+                </div>
+
+                {/* Invoice Template */}
+                <div style={{ marginBottom: '2rem', padding: '1rem', backgroundColor: '#FAF5FE', borderRadius: '12px', border: '1px solid #EAD8F7' }}>
+                  <h3 style={{ fontSize: '1rem', color: '#AF52DE', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <FiFileText style={{ color: '#AF52DE' }} /> Email Gửi Hóa Đơn Thanh Toán
+                  </h3>
+                  <div className="form-group" style={{ marginBottom: '0.75rem' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Tiêu đề:</label>
+                    <input type="text" value={emailTemplates.invoice?.subject || ''} onChange={e => handleTemplateChange('invoice', 'subject', e.target.value)} placeholder="🧾 Hóa đơn thanh toán đơn hàng {{order_id}} - {{customer_name}}" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                  </div>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Nội dung:</label>
+                    <textarea value={emailTemplates.invoice?.body || ''} onChange={e => handleTemplateChange('invoice', 'body', e.target.value)} placeholder="Xin chào {{customer_name}},..." rows={4} style={{ borderRadius: '8px', border: '1px solid var(--border-color)', padding: '10px', width: '100%', outline: 'none', resize: 'vertical', fontFamily: 'monospace', fontSize: '0.85rem' }} />
+                  </div>
+                  <small style={{ color: '#86868B', fontSize: '0.75rem' }}>Biến hỗ trợ: {'{{customer_name}}'}, {'{{store_name}}'}, {'{{order_id}}'}, {'{{total_amount}}'}, {'{{payment_date}}'}</small>
+                </div>
+
+                {/* Renewal (Gia Hạn) Template */}
+                <div style={{ marginBottom: '2rem', padding: '1rem', backgroundColor: '#F4FBF6', borderRadius: '12px', border: '1px solid #C8E6C9' }}>
+                  <h3 style={{ fontSize: '1rem', color: '#34C759', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <FiClock style={{ color: '#34C759' }} /> Email Xác Nhận Gia Hạn Thành Công
+                  </h3>
+                  <div className="form-group" style={{ marginBottom: '0.75rem' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Tiêu đề:</label>
+                    <input type="text" value={emailTemplates.renewal?.subject || ''} onChange={e => handleTemplateChange('renewal', 'subject', e.target.value)} placeholder="🔄 Xác nhận gia hạn dịch vụ thành công - {{customer_name}}" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                  </div>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Nội dung:</label>
+                    <textarea value={emailTemplates.renewal?.body || ''} onChange={e => handleTemplateChange('renewal', 'body', e.target.value)} placeholder="Xin chào {{customer_name}},..." rows={4} style={{ borderRadius: '8px', border: '1px solid var(--border-color)', padding: '10px', width: '100%', outline: 'none', resize: 'vertical', fontFamily: 'monospace', fontSize: '0.85rem' }} />
+                  </div>
+                  <small style={{ color: '#86868B', fontSize: '0.75rem' }}>Biến hỗ trợ: {'{{customer_name}}'}, {'{{store_name}}'}, {'{{product_name}}'}, {'{{expiry_date}}'}</small>
+                </div>
+
+                {/* Handover Template */}
+                <div style={{ marginBottom: '2rem', padding: '1rem', backgroundColor: '#F5F5F7', borderRadius: '12px' }}>
+                  <h3 style={{ fontSize: '1rem', color: '#1D1D1F', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <FiMail style={{ color: '#8E8E93' }} /> Email Bàn Giao Tài Khoản
+                  </h3>
+                  <div className="form-group" style={{ marginBottom: '0.75rem' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Tiêu đề:</label>
+                    <input type="text" value={emailTemplates.handover?.subject || ''} onChange={e => handleTemplateChange('handover', 'subject', e.target.value)} placeholder="🎉 Bàn giao tài khoản - {{customer_name}}" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                  </div>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Nội dung:</label>
+                    <textarea value={emailTemplates.handover?.body || ''} onChange={e => handleTemplateChange('handover', 'body', e.target.value)} placeholder="Xin chào {{customer_name}},..." rows={4} style={{ borderRadius: '8px', border: '1px solid var(--border-color)', padding: '10px', width: '100%', outline: 'none', resize: 'vertical', fontFamily: 'monospace', fontSize: '0.85rem' }} />
                   </div>
                   <small style={{ color: '#86868B', fontSize: '0.75rem' }}>Biến hỗ trợ: {'{{customer_name}}'}, {'{{store_name}}'}, {'{{account_info}}'}, {'{{expiry_date}}'}</small>
                 </div>
@@ -1657,11 +1547,11 @@ const CaiDat: React.FC = () => {
                   </h3>
                   <div className="form-group" style={{ marginBottom: '0.75rem' }}>
                     <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Tiêu đề:</label>
-                    <input type="text" value={emailTemplates.renewal_reminder.subject} onChange={e => handleTemplateChange('renewal_reminder', 'subject', e.target.value)} placeholder="⚠️ Nhắc gia hạn - {{customer_name}}" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                    <input type="text" value={emailTemplates.renewal_reminder?.subject || ''} onChange={e => handleTemplateChange('renewal_reminder', 'subject', e.target.value)} placeholder="⚠️ Nhắc gia hạn - {{customer_name}}" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
                   </div>
                   <div className="form-group">
                     <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Nội dung:</label>
-                    <textarea value={emailTemplates.renewal_reminder.body} onChange={e => handleTemplateChange('renewal_reminder', 'body', e.target.value)} placeholder="Xin chào {{customer_name}},..." rows={4} style={{ borderRadius: '8px', border: '1px solid var(--border-color)', padding: '10px', width: '100%', outline: 'none', resize: 'vertical', fontFamily: 'monospace', fontSize: '0.85rem' }} />
+                    <textarea value={emailTemplates.renewal_reminder?.body || ''} onChange={e => handleTemplateChange('renewal_reminder', 'body', e.target.value)} placeholder="Xin chào {{customer_name}},..." rows={4} style={{ borderRadius: '8px', border: '1px solid var(--border-color)', padding: '10px', width: '100%', outline: 'none', resize: 'vertical', fontFamily: 'monospace', fontSize: '0.85rem' }} />
                   </div>
                   <small style={{ color: '#86868B', fontSize: '0.75rem' }}>Biến hỗ trợ: {'{{customer_name}}'}, {'{{store_name}}'}, {'{{expiry_date}}'}</small>
                 </div>
@@ -1673,11 +1563,11 @@ const CaiDat: React.FC = () => {
                   </h3>
                   <div className="form-group" style={{ marginBottom: '0.75rem' }}>
                     <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Tiêu đề:</label>
-                    <input type="text" value={emailTemplates.thank_you.subject} onChange={e => handleTemplateChange('thank_you', 'subject', e.target.value)} placeholder="🙏 Cảm ơn - {{customer_name}}" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
+                    <input type="text" value={emailTemplates.thank_you?.subject || ''} onChange={e => handleTemplateChange('thank_you', 'subject', e.target.value)} placeholder="🙏 Cảm ơn - {{customer_name}}" style={{ height: '40px', borderRadius: '8px', border: '1px solid var(--border-color)', padding: '0 10px', width: '100%', outline: 'none' }} />
                   </div>
                   <div className="form-group">
                     <label style={{ fontSize: '0.8rem', fontWeight: 600 }}>Nội dung:</label>
-                    <textarea value={emailTemplates.thank_you.body} onChange={e => handleTemplateChange('thank_you', 'body', e.target.value)} placeholder="Xin chào {{customer_name}},..." rows={4} style={{ borderRadius: '8px', border: '1px solid var(--border-color)', padding: '10px', width: '100%', outline: 'none', resize: 'vertical', fontFamily: 'monospace', fontSize: '0.85rem' }} />
+                    <textarea value={emailTemplates.thank_you?.body || ''} onChange={e => handleTemplateChange('thank_you', 'body', e.target.value)} placeholder="Xin chào {{customer_name}},..." rows={4} style={{ borderRadius: '8px', border: '1px solid var(--border-color)', padding: '10px', width: '100%', outline: 'none', resize: 'vertical', fontFamily: 'monospace', fontSize: '0.85rem' }} />
                   </div>
                   <small style={{ color: '#86868B', fontSize: '0.75rem' }}>Biến hỗ trợ: {'{{customer_name}}'}, {'{{store_name}}'}</small>
                 </div>
@@ -1949,7 +1839,7 @@ const CaiDat: React.FC = () => {
 
                   {/* 2. ZALO OA INTEGRATION */}
                   <div style={{ border: '1px solid #E5E5EA', borderRadius: '16px', padding: '1.5rem', backgroundColor: '#FFF' }}>
-                    <div style={{ display: 'flex', justifyBetween: 'space-between', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div style={{ backgroundColor: '#0068FF', color: '#FFF', width: '36px', height: '36px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.1rem' }}>Z</div>
                         <div>
@@ -2083,7 +1973,7 @@ const CaiDat: React.FC = () => {
 
                   {/* 3. FACEBOOK MESSENGER INTEGRATION */}
                   <div style={{ border: '1px solid #E5E5EA', borderRadius: '16px', padding: '1.5rem', backgroundColor: '#FFF' }}>
-                    <div style={{ display: 'flex', justifyBetween: 'space-between', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div style={{ backgroundColor: '#1877F2', color: '#FFF', width: '36px', height: '36px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.1rem' }}>F</div>
                         <div>
@@ -2276,6 +2166,380 @@ const CaiDat: React.FC = () => {
             </form>
           )}
         </div>
+      )}
+
+      {/* 2. CÁC CẤU HÌNH KHÁC (Submenus as Premium Cards at the Bottom) */}
+      {!activeTab && (
+        <div style={{ marginTop: '3.5rem', borderTop: '1px solid #E5E5EA', paddingTop: '2.5rem', marginBottom: '3rem' }}>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#1D1D1F', marginBottom: '1.25rem' }}>Các cấu hình khác</h3>
+        
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gap: '16px'
+        }}>
+          
+          {/* Card: Thương hiệu */}
+          <div 
+            onClick={() => setSearchParams({ tab: 'general' })}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '1.25rem',
+              backgroundColor: '#FFF',
+              border: activeTab === 'general' ? '2px solid var(--primary-color)' : '1px solid #E5E5EA',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: activeTab === 'general' ? '0 4px 15px rgba(0, 113, 227, 0.1)' : 'none'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.06)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = activeTab === 'general' ? '0 4px 15px rgba(0, 113, 227, 0.1)' : 'none';
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+              <div style={{ backgroundColor: '#E3F2FD', color: '#0071E3', padding: '10px', borderRadius: '10px', display: 'flex', flexShrink: 0 }}>
+                <FiGlobe size={20} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', minWidth: 0 }}>
+                <strong style={{ fontSize: '0.9rem', color: '#1D1D1F' }}>Thương hiệu</strong>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-light)', lineHeight: '1.3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Tuỳ chỉnh logo, thông tin doanh nghiệp, múi giờ</span>
+              </div>
+            </div>
+            <FiChevronRight style={{ color: '#86868B', marginLeft: '8px', flexShrink: 0 }} />
+          </div>
+
+          {/* Card: Bảo mật */}
+          <div 
+            onClick={() => setSearchParams({ tab: 'account' })}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '1.25rem',
+              backgroundColor: '#FFF',
+              border: activeTab === 'account' ? '2px solid var(--primary-color)' : '1px solid #E5E5EA',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: activeTab === 'account' ? '0 4px 15px rgba(0, 113, 227, 0.1)' : 'none'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.06)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = activeTab === 'account' ? '0 4px 15px rgba(0, 113, 227, 0.1)' : 'none';
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+              <div style={{ backgroundColor: '#EBF9EB', color: '#34C759', padding: '10px', borderRadius: '10px', display: 'flex', flexShrink: 0 }}>
+                <FiShield size={20} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', minWidth: 0 }}>
+                <strong style={{ fontSize: '0.9rem', color: '#1D1D1F' }}>Bảo mật</strong>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-light)', lineHeight: '1.3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Quản lý chính sách mật khẩu, tài khoản admin</span>
+              </div>
+            </div>
+            <FiChevronRight style={{ color: '#86868B', marginLeft: '8px', flexShrink: 0 }} />
+          </div>
+
+          {/* Card: Tích hợp & Đa kênh */}
+          <div 
+            onClick={() => setSearchParams({ tab: 'omnichannel' })}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '1.25rem',
+              backgroundColor: '#FFF',
+              border: activeTab === 'omnichannel' ? '2px solid var(--primary-color)' : '1px solid #E5E5EA',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: activeTab === 'omnichannel' ? '0 4px 15px rgba(0, 113, 227, 0.1)' : 'none'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.06)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = activeTab === 'omnichannel' ? '0 4px 15px rgba(0, 113, 227, 0.1)' : 'none';
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+              <div style={{ backgroundColor: '#FAF5FE', color: '#AF52DE', padding: '10px', borderRadius: '10px', display: 'flex', flexShrink: 0 }}>
+                <FiMessageSquare size={20} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', minWidth: 0 }}>
+                <strong style={{ fontSize: '0.9rem', color: '#1D1D1F' }}>Tích hợp</strong>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-light)', lineHeight: '1.3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Cấu hình API Keys, Chatbot, Webhooks và Macros</span>
+              </div>
+            </div>
+            <FiChevronRight style={{ color: '#86868B', marginLeft: '8px', flexShrink: 0 }} />
+          </div>
+
+          {/* Card: Cấu hình AI */}
+          <div 
+            onClick={() => setSearchParams({ tab: 'omnichannel' })}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '1.25rem',
+              backgroundColor: '#FFF',
+              border: '1px solid #E5E5EA',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.06)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+              <div style={{ backgroundColor: '#FFF3E0', color: '#FF9500', padding: '10px', borderRadius: '10px', display: 'flex', flexShrink: 0 }}>
+                <FiGrid size={20} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', minWidth: 0 }}>
+                <strong style={{ fontSize: '0.9rem', color: '#1D1D1F' }}>Cấu hình AI</strong>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-light)', lineHeight: '1.3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Thiết lập AI Assistant, prompt thông minh, tự động trả lời</span>
+              </div>
+            </div>
+            <FiChevronRight style={{ color: '#86868B', marginLeft: '8px', flexShrink: 0 }} />
+          </div>
+
+          {/* Card: Cấu hình SMTP */}
+          <div 
+            onClick={() => setSearchParams({ tab: 'smtp' })}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '1.25rem',
+              backgroundColor: '#FFF',
+              border: activeTab === 'smtp' ? '2px solid var(--primary-color)' : '1px solid #E5E5EA',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: activeTab === 'smtp' ? '0 4px 15px rgba(0, 113, 227, 0.1)' : 'none'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.06)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = activeTab === 'smtp' ? '0 4px 15px rgba(0, 113, 227, 0.1)' : 'none';
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+              <div style={{ backgroundColor: '#F2F7FD', color: '#0071E3', padding: '10px', borderRadius: '10px', display: 'flex', flexShrink: 0 }}>
+                <FiMail size={20} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', minWidth: 0 }}>
+                <strong style={{ fontSize: '0.9rem', color: '#1D1D1F' }}>Cấu hình SMTP</strong>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-light)', lineHeight: '1.3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Cài đặt Email Server gửi thông báo hóa đơn, nhắc nợ</span>
+              </div>
+            </div>
+            <FiChevronRight style={{ color: '#86868B', marginLeft: '8px', flexShrink: 0 }} />
+          </div>
+
+          {/* Card: Chuyển khoản (VietQR) */}
+          <div 
+            onClick={() => setSearchParams({ tab: 'bank' })}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '1.25rem',
+              backgroundColor: '#FFF',
+              border: activeTab === 'bank' ? '2px solid var(--primary-color)' : '1px solid #E5E5EA',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: activeTab === 'bank' ? '0 4px 15px rgba(0, 113, 227, 0.1)' : 'none'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.06)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = activeTab === 'bank' ? '0 4px 15px rgba(0, 113, 227, 0.1)' : 'none';
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+              <div style={{ backgroundColor: '#EBF9EB', color: '#34C759', padding: '10px', borderRadius: '10px', display: 'flex', flexShrink: 0 }}>
+                <FiCreditCard size={20} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', minWidth: 0 }}>
+                <strong style={{ fontSize: '0.9rem', color: '#1D1D1F' }}>Chuyển khoản (VietQR)</strong>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-light)', lineHeight: '1.3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Cấu hình tài khoản ngân hàng nhận thanh toán</span>
+              </div>
+            </div>
+            <FiChevronRight style={{ color: '#86868B', marginLeft: '8px', flexShrink: 0 }} />
+          </div>
+
+          {/* Card: Mẫu hóa đơn PDF */}
+          <div 
+            onClick={() => setSearchParams({ tab: 'invoice' })}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '1.25rem',
+              backgroundColor: '#FFF',
+              border: activeTab === 'invoice' ? '2px solid var(--primary-color)' : '1px solid #E5E5EA',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: activeTab === 'invoice' ? '0 4px 15px rgba(0, 113, 227, 0.1)' : 'none'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.06)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = activeTab === 'invoice' ? '0 4px 15px rgba(0, 113, 227, 0.1)' : 'none';
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+              <div style={{ backgroundColor: '#FAF5FE', color: '#AF52DE', padding: '10px', borderRadius: '10px', display: 'flex', flexShrink: 0 }}>
+                <FiFileText size={20} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', minWidth: 0 }}>
+                <strong style={{ fontSize: '0.9rem', color: '#1D1D1F' }}>Mẫu hóa đơn PDF</strong>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-light)', lineHeight: '1.3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Tùy chỉnh giao diện tiêu đề, chữ ký hóa đơn</span>
+              </div>
+            </div>
+            <FiChevronRight style={{ color: '#86868B', marginLeft: '8px', flexShrink: 0 }} />
+          </div>
+
+          {/* Card: Cấu hình gia hạn */}
+          <div 
+            onClick={() => setSearchParams({ tab: 'renewal' })}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '1.25rem',
+              backgroundColor: '#FFF',
+              border: activeTab === 'renewal' ? '2px solid var(--primary-color)' : '1px solid #E5E5EA',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: activeTab === 'renewal' ? '0 4px 15px rgba(0, 113, 227, 0.1)' : 'none'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.06)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = activeTab === 'renewal' ? '0 4px 15px rgba(0, 113, 227, 0.1)' : 'none';
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+              <div style={{ backgroundColor: '#FFF3E0', color: '#FF9500', padding: '10px', borderRadius: '10px', display: 'flex', flexShrink: 0 }}>
+                <FiClock size={20} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', minWidth: 0 }}>
+                <strong style={{ fontSize: '0.9rem', color: '#1D1D1F' }}>Cấu hình gia hạn</strong>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-light)', lineHeight: '1.3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Quản lý số ngày nhắc nợ và thời gian khóa tài nguyên</span>
+              </div>
+            </div>
+            <FiChevronRight style={{ color: '#86868B', marginLeft: '8px', flexShrink: 0 }} />
+          </div>
+
+          {/* Card: Mẫu Email */}
+          <div 
+            onClick={() => setSearchParams({ tab: 'email-templates' })}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '1.25rem',
+              backgroundColor: '#FFF',
+              border: activeTab === 'email-templates' ? '2px solid var(--primary-color)' : '1px solid #E5E5EA',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: activeTab === 'email-templates' ? '0 4px 15px rgba(0, 113, 227, 0.1)' : 'none'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.06)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = activeTab === 'email-templates' ? '0 4px 15px rgba(0, 113, 227, 0.1)' : 'none';
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+              <div style={{ backgroundColor: '#F2F7FD', color: '#0071E3', padding: '10px', borderRadius: '10px', display: 'flex', flexShrink: 0 }}>
+                <FiMail size={20} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', minWidth: 0 }}>
+                <strong style={{ fontSize: '0.9rem', color: '#1D1D1F' }}>Mẫu Email</strong>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-light)', lineHeight: '1.3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Tự động soạn sẵn email gửi bàn giao, nhắc nợ</span>
+              </div>
+            </div>
+            <FiChevronRight style={{ color: '#86868B', marginLeft: '8px', flexShrink: 0 }} />
+          </div>
+
+          {/* Card: Sao lưu dữ liệu */}
+          <div 
+            onClick={() => setSearchParams({ tab: 'backup' })}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '1.25rem',
+              backgroundColor: '#FFF',
+              border: activeTab === 'backup' ? '2px solid var(--primary-color)' : '1px solid #E5E5EA',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: activeTab === 'backup' ? '0 4px 15px rgba(0, 113, 227, 0.1)' : 'none'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.06)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = activeTab === 'backup' ? '0 4px 15px rgba(0, 113, 227, 0.1)' : 'none';
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+              <div style={{ backgroundColor: '#EBF9EB', color: '#34C759', padding: '10px', borderRadius: '10px', display: 'flex', flexShrink: 0 }}>
+                <FiDownloadCloud size={20} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', minWidth: 0 }}>
+                <strong style={{ fontSize: '0.9rem', color: '#1D1D1F' }}>Sao lưu dữ liệu</strong>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-light)', lineHeight: '1.3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Xuất và phục hồi dữ liệu hệ thống dự phòng</span>
+              </div>
+            </div>
+            <FiChevronRight style={{ color: '#86868B', marginLeft: '8px', flexShrink: 0 }} />
+          </div>
+
+        </div>
+      </div>
       )}
 
     </div>

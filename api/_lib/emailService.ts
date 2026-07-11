@@ -50,7 +50,7 @@ export async function sendInvoiceEmail({
   isPreview: boolean;
 }): Promise<ISendEmailResult> {
   await dbConnect();
-  
+
   if (!orderId && !accountId) {
     throw new Error('Thiếu ID đơn hàng hoặc ID tài khoản để gửi nhắc nhở');
   }
@@ -61,7 +61,7 @@ export async function sendInvoiceEmail({
   let reminderTitle = '';
   let isUnpaidInvoice = false;
   let isPaidConfirmation = false;
-  
+
   if (orderId) {
     // 1. Nhắc nhở theo đơn hàng
     const order = await Order.findById(orderId).populate('customer_id').populate('accounts');
@@ -83,18 +83,18 @@ export async function sendInvoiceEmail({
     if (!account) {
       throw new Error('Không tìm thấy tài nguyên');
     }
-    
+
     if (customerId) {
       customer = await Customer.findById(customerId);
     } else {
       customer = account.customer_id;
     }
-    
+
     accountsToRemind = [account];
     billingAmount = account.cost || 0;
     reminderTitle = `Dịch vụ ${account.product_type}`;
   }
-  
+
   if (!customer) {
     throw new Error('Không tìm thấy thông tin khách hàng');
   }
@@ -136,34 +136,79 @@ export async function sendInvoiceEmail({
     emailSubject = `🔔 [Beegadget.net] Thông báo nhắc gia hạn bản quyền - ${reminderTitle}`;
   }
 
-  // Tạo HTML template hóa đơn & gia hạn phong cách Apple tinh tế
-  const accountRows = accountsToRemind.map((acc: any) => {
-    const details = acc.account_details || {};
-    const isClientUpgrade = !details.password_acc || details.password_acc.includes('Nâng cấp') || details.password_acc.includes('Upgrade') || details.password_acc === '';
-    
-    const loginLabel = isClientUpgrade ? 'Tài khoản nâng cấp' : 'Tài khoản';
-    const loginInfo = details.username ? `<li><strong>${loginLabel}:</strong> ${details.username}</li>` : '';
-    const passInfo = isClientUpgrade 
-      ? `<li><strong>Hình thức:</strong> Nâng cấp trực tiếp trên tài khoản của khách (Không cấp mật khẩu mới)</li>`
-      : (details.password_acc ? `<li><strong>Mật khẩu:</strong> ${details.password_acc}</li>` : '');
-      
-    const keyInfo = details.license_key ? `<li><strong>License Key:</strong> <code style="background:#F5F5F7;padding:2px 4px;border-radius:4px;font-family:monospace;">${details.license_key}</code></li>` : '';
-    const pinInfo = details.pin ? `<li><strong>PIN Profile:</strong> ${details.pin}</li>` : '';
-    const validUntilStr = acc.valid_until ? new Date(acc.valid_until).toLocaleDateString('vi-VN') : 'Không giới hạn';
+  // Lấy thêm thông tin từ order (cho modal đơn giản)
+  let orderExtra: any = {};
+  if (orderId) {
+    const fullOrder = await Order.findById(orderId);
+    if (fullOrder) {
+      orderExtra = fullOrder;
+    }
+  }
 
-    return `
-      <div class="service-card" style="border: 1px solid #E5E5EA; padding: 14px; border-radius: 10px; margin-bottom: 10px; background-color: #FAFAFC;">
-        <h4 style="margin:0 0 6px 0; color:#0071E3; font-size:14px; font-weight:600;">${acc.product_type}</h4>
-        <ul style="margin:0; padding-left:18px; font-size:13px; color:#1D1D1F; line-height:1.5;">
-          ${loginInfo}
-          ${passInfo}
-          ${keyInfo}
-          ${pinInfo}
-          <li><strong>Hạn sử dụng mới:</strong> <span style="color:#2E7D32;font-weight:600;">${validUntilStr}</span></li>
-        </ul>
+  // Tạo HTML template hóa đơn & gia hạn phong cách Apple tinh tế
+  let accountRows = '';
+  if (accountsToRemind && accountsToRemind.length > 0) {
+    accountRows = accountsToRemind.map((acc: any) => {
+      const details = acc.account_details || {};
+      const isSlot = acc.resource_type === 'slot';
+      const isClientUpgrade = isSlot || !details.password_acc || details.password_acc.includes('Nâng cấp') || details.password_acc.includes('Upgrade') || details.password_acc === '';
+
+      const loginLabel = isClientUpgrade ? 'Tài khoản nâng cấp' : 'Tài khoản';
+
+      const loginInfo = (!isSlot && details.username) ? `<li><strong>${loginLabel}:</strong> ${details.username}</li>` : '';
+      const passInfo = isSlot
+        ? `<li><strong>Hình thức:</strong> Tham gia Family (Share slot)</li>
+           <li><strong>Hướng dẫn kích hoạt:</strong> Lời mời tham gia Family sẽ được gửi đến địa chỉ email của bạn. Vui lòng kiểm tra hộp thư (bao gồm cả thư rác / spam) để chấp nhận lời mời tham gia Family.</li>`
+        : (isClientUpgrade
+          ? `<li><strong>Hình thức:</strong> Nâng cấp trực tiếp trên tài khoản của khách (Không cấp mật khẩu mới)</li>`
+          : (details.password_acc ? `<li><strong>Mật khẩu:</strong> ${details.password_acc}</li>` : ''));
+
+      const keyInfo = details.license_key ? `<li><strong>License Key:</strong> <code style="background:#F5F5F7;padding:2px 4px;border-radius:4px;font-family:monospace;">${details.license_key}</code></li>` : '';
+      const pinInfo = details.pin ? `<li><strong>PIN Profile:</strong> ${details.pin}</li>` : '';
+      const validUntilStr = acc.valid_until ? new Date(acc.valid_until).toLocaleDateString('vi-VN') : 'Không giới hạn';
+
+      return `
+        <div class="service-card" style="border: 1px solid #E5E5EA; padding: 14px; border-radius: 10px; margin-bottom: 10px; background-color: #FAFAFC;">
+          <h4 style="margin:0 0 6px 0; color:#0071E3; font-size:14px; font-weight:600;">${acc.product_type}</h4>
+          <ul style="margin:0; padding-left:18px; font-size:13px; color:#1D1D1F; line-height:1.5;">
+            ${loginInfo}
+            ${passInfo}
+            ${keyInfo}
+            ${pinInfo}
+            <li><strong>Hạn sử dụng mới:</strong> <span style="color:#2E7D32;font-weight:600;">${validUntilStr}</span></li>
+          </ul>
+        </div>
+      `;
+    }).join('');
+  } else if (orderExtra.product_name) {
+    // Fallback: Đơn hàng mới (modal đơn giản) — không có accounts nhưng có product_name
+    const pName = orderExtra.product_name || 'Sản phẩm';
+    const qty = orderExtra.quantity || 1;
+    const sellPrice = orderExtra.selling_price || 0;
+    const costPrice = orderExtra.cost_price || 0;
+    const expiryStr = orderExtra.expiry_date ? new Date(orderExtra.expiry_date).toLocaleDateString('vi-VN') : 'Không xác định';
+    const paymentMethodStr = orderExtra.payment_method === 'bank_transfer' ? 'Chuyển khoản ngân hàng' : orderExtra.payment_method === 'cash' ? 'Tiền mặt' : '—';
+    const customerNoteStr = orderExtra.customer_note || '';
+    const recurringStr = orderExtra.recurring_invoice?.enabled
+      ? (orderExtra.recurring_invoice.custom_interval || `Mỗi ${orderExtra.recurring_invoice.interval_months} tháng`)
+      : 'Không';
+
+    accountRows = `
+      <div class="service-card" style="border: 1px solid #E5E5EA; padding: 16px; border-radius: 10px; margin-bottom: 10px; background-color: #FAFAFC;">
+        <h4 style="margin:0 0 10px 0; color:#0071E3; font-size:15px; font-weight:600;">📋 ${pName}</h4>
+        <table style="width:100%; border-collapse:collapse; font-size:13px; color:#1D1D1F; line-height:1.8;">
+          <tr><td style="padding:4px 8px; color:#86868B; width:130px;">Số lượng</td><td style="font-weight:600;">${qty}</td></tr>
+          <tr><td style="padding:4px 8px; color:#86868B;">Giá gốc</td><td>${costPrice.toLocaleString('vi-VN')} đ</td></tr>
+          <tr><td style="padding:4px 8px; color:#86868B;">Giá bán</td><td style="font-weight:600; color:#0071E3;">${sellPrice.toLocaleString('vi-VN')} đ</td></tr>
+          <tr><td style="padding:4px 8px; color:#86868B;">Hạn sử dụng</td><td style="font-weight:600;">${expiryStr}</td></tr>
+          <tr><td style="padding:4px 8px; color:#86868B;">Hóa đơn định kỳ</td><td>${recurringStr}</td></tr>
+          <tr><td style="padding:4px 8px; color:#86868B;">Hình thức thanh toán</td><td><strong>${paymentMethodStr}</strong></td></tr>
+          ${orderExtra.discount_amount > 0 ? `<tr><td style="padding:4px 8px; color:#D32F2F;">Giảm giá</td><td style="color:#D32F2F; font-weight:600;">-${orderExtra.discount_amount.toLocaleString('vi-VN')} đ</td></tr>` : ''}
+          ${customerNoteStr ? `<tr><td style="padding:4px 8px; color:#86868B;">Ghi chú</td><td style="font-style:italic; color:#515154;">${customerNoteStr}</td></tr>` : ''}
+        </table>
       </div>
     `;
-  }).join('');
+  }
 
   let logoBase64 = '';
   const logoPath = path.join(process.cwd(), 'src/assets/logo.png');
@@ -331,12 +376,13 @@ export async function sendInvoiceEmail({
 
   // Sinh hóa đơn PDF Apple Style
   const pdfBuffer = await generateInvoicePDF(
-    customer, 
-    accountsToRemind, 
-    billingAmount, 
-    showTransferInPDF, 
+    customer,
+    accountsToRemind,
+    billingAmount,
+    showTransferInPDF,
     (orderId || accountId || undefined),
-    isRenewal
+    isRenewal,
+    orderExtra
   );
   const pdfBase64 = pdfBuffer.toString('base64');
 
@@ -387,8 +433,8 @@ export async function sendInvoiceEmail({
       attachments: attachments
     });
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       mode: 'smtp',
       message: `Đã gửi email nhắc gia hạn thành công kèm Hóa đơn PDF đến địa chỉ ${customerEmail} qua SMTP!`,
       pdfBase64: pdfBase64

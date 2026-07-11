@@ -37,30 +37,30 @@ function removeVietnameseTones(str: string): string {
 
 // ─── Màu Burgundy/Wine — đỏ trầm sang trọng ─────────────────────────────────
 const C = {
-  sidebar:      '#6B2737',  // đỏ rượu vang đậm
-  sidebarAccent:'#4E1A27',  // accent tối trong sidebar
-  tableHeader:  '#7D3040',  // header bảng (nhẹ hơn sidebar 1 tông)
-  rowAlt:       '#FDF3F4',  // nền hàng xen kẽ (hồng rất nhạt)
-  pageBg:       '#FAFAFA',  // nền trang trắng xám
-  accent:       '#9B3647',  // màu nhấn chữ (đỏ vừa phải)
-  textOnSide:   '#F5D5DC',  // chữ mờ trên sidebar
-  textWhite:    '#FFFFFF',
-  bodyText:     '#1D1D1F',
-  mutedText:    '#86868B',
-  border:       '#E8E0E1',
-  totalBg:      '#FDF0F2',
-  totalBorder:  '#E8C0C8',
+  sidebar: '#6B2737',  // đỏ rượu vang đậm
+  sidebarAccent: '#4E1A27',  // accent tối trong sidebar
+  tableHeader: '#7D3040',  // header bảng (nhẹ hơn sidebar 1 tông)
+  rowAlt: '#FDF3F4',  // nền hàng xen kẽ (hồng rất nhạt)
+  pageBg: '#FAFAFA',  // nền trang trắng xám
+  accent: '#9B3647',  // màu nhấn chữ (đỏ vừa phải)
+  textOnSide: '#F5D5DC',  // chữ mờ trên sidebar
+  textWhite: '#FFFFFF',
+  bodyText: '#1D1D1F',
+  mutedText: '#86868B',
+  border: '#E8E0E1',
+  totalBg: '#FDF0F2',
+  totalBorder: '#E8C0C8',
 };
 
 // ─── Hằng số bố cục A4 ───────────────────────────────────────────────────────
 // Sidebar thẳng đứng (KHÔNG vát chéo) để tránh tràn nội dung
-const PAGE_W    = 595.28;
-const PAGE_H    = 841.89;
-const SB_W      = 160;      // chiều rộng sidebar tuyệt đối
-const SB_PAD    = 18;       // padding trong sidebar
-const CT_X      = SB_W + 18; // tọa độ X bắt đầu vùng nội dung
-const CT_RIGHT  = PAGE_W - 18; // tọa độ X kết thúc vùng nội dung  
-const CT_W      = CT_RIGHT - CT_X; // = 595.28 - 18 - 178 = 399.28
+const PAGE_W = 595.28;
+const PAGE_H = 841.89;
+const SB_W = 160;      // chiều rộng sidebar tuyệt đối
+const SB_PAD = 18;       // padding trong sidebar
+const CT_X = SB_W + 18; // tọa độ X bắt đầu vùng nội dung
+const CT_RIGHT = PAGE_W - 18; // tọa độ X kết thúc vùng nội dung  
+const CT_W = CT_RIGHT - CT_X; // = 595.28 - 18 - 178 = 399.28
 
 /**
  * Sinh hóa đơn PDF — Burgundy Sidebar Layout, layout cố định đúng lề.
@@ -71,7 +71,8 @@ export function generateInvoicePDF(
   totalAmount: number,
   isUnpaidInvoice: boolean,
   orderId?: string,
-  isRenewal?: boolean
+  isRenewal?: boolean,
+  orderExtra?: any,
 ): Promise<Buffer> {
   return new Promise(async (resolve, reject) => {
     try {
@@ -94,11 +95,11 @@ export function generateInvoicePDF(
 
       // ── Fonts ──────────────────────────────────────────────────────────────
       const regularFont = path.join(process.cwd(), 'api/_fonts/Roboto-Regular.ttf');
-      const boldFont    = path.join(process.cwd(), 'api/_fonts/Roboto-Bold.ttf');
+      const boldFont = path.join(process.cwd(), 'api/_fonts/Roboto-Bold.ttf');
       if (fs.existsSync(regularFont)) doc.registerFont('Roboto-Regular', regularFont);
-      if (fs.existsSync(boldFont))    doc.registerFont('Roboto-Bold',    boldFont);
+      if (fs.existsSync(boldFont)) doc.registerFont('Roboto-Bold', boldFont);
       const FN = fs.existsSync(regularFont) ? 'Roboto-Regular' : 'Helvetica';
-      const FB = fs.existsSync(boldFont)    ? 'Roboto-Bold'    : 'Helvetica-Bold';
+      const FB = fs.existsSync(boldFont) ? 'Roboto-Bold' : 'Helvetica-Bold';
       doc.font(FN);
 
       // ═══════════════════════════════════════════════════════════════════════
@@ -117,7 +118,7 @@ export function generateInvoicePDF(
       // ═══════════════════════════════════════════════════════════════════════
       // PHẦN 2: NỘI DUNG SIDEBAR
       // ═══════════════════════════════════════════════════════════════════════
-      const invNo   = orderId ? `#${orderId.toString().substring(18).toUpperCase()}` : '#RETAIL';
+      const invNo = orderId ? `#${orderId.toString().substring(18).toUpperCase()}` : '#RETAIL';
       const dateStr = new Date().toLocaleDateString('vi-VN');
 
       // — Mã hóa đơn & ngày —
@@ -125,7 +126,7 @@ export function generateInvoicePDF(
       doc.rect(SB_PAD, 40, 16, 20).lineWidth(1.2).strokeColor(C.textWhite).stroke();
       doc.moveTo(SB_PAD + 3, 47).lineTo(SB_PAD + 13, 47).strokeColor(C.textWhite).lineWidth(0.8).stroke();
       doc.moveTo(SB_PAD + 3, 51).lineTo(SB_PAD + 13, 51).stroke();
-      doc.moveTo(SB_PAD + 3, 55).lineTo(SB_PAD + 9,  55).stroke();
+      doc.moveTo(SB_PAD + 3, 55).lineTo(SB_PAD + 9, 55).stroke();
 
       doc.font(FB).fontSize(9).fillColor(C.textWhite).text('Hoá đơn', SB_PAD, 68);
       doc.fontSize(12).text(invNo, SB_PAD, 80);
@@ -133,23 +134,23 @@ export function generateInvoicePDF(
       doc.font(FB).fontSize(8.5).fillColor(C.textWhite).text(dateStr, SB_PAD, 110);
 
       doc.moveTo(SB_PAD, 130).lineTo(SB_W - SB_PAD, 130)
-         .strokeColor('rgba(255,255,255,0.15)').lineWidth(0.5).stroke();
+        .strokeColor('rgba(255,255,255,0.15)').lineWidth(0.5).stroke();
 
       // — Thông tin thanh toán —
       // Icon thẻ
       doc.roundedRect(SB_PAD, 143, 18, 12, 2)
-         .lineWidth(1.2).strokeColor(C.textWhite).stroke();
+        .lineWidth(1.2).strokeColor(C.textWhite).stroke();
       doc.moveTo(SB_PAD, 148).lineTo(SB_PAD + 18, 148).stroke();
 
       doc.font(FB).fontSize(7.5).fillColor(C.textWhite).text('THÔNG TIN THANH TOÁN', SB_PAD, 164);
 
       doc.font(FN).fontSize(7).fillColor(C.textOnSide).text('Ngân hàng:', SB_PAD, 180);
       doc.font(FB).fontSize(8).fillColor(C.textWhite)
-         .text(bankInfo.bank_name, SB_PAD, 190, { width: SB_W - SB_PAD * 2 });
+        .text(bankInfo.bank_name, SB_PAD, 190, { width: SB_W - SB_PAD * 2 });
 
       doc.font(FN).fontSize(7).fillColor(C.textOnSide).text('Tên tài khoản:', SB_PAD, 212);
       doc.font(FB).fontSize(7.5).fillColor(C.textWhite)
-         .text(bankInfo.account_name.toUpperCase(), SB_PAD, 222, { width: SB_W - SB_PAD * 2 });
+        .text(bankInfo.account_name.toUpperCase(), SB_PAD, 222, { width: SB_W - SB_PAD * 2 });
 
       doc.font(FN).fontSize(7).fillColor(C.textOnSide).text('Số tài khoản:', SB_PAD, 248);
       doc.font(FB).fontSize(9).fillColor(C.textWhite).text(bankInfo.account_no, SB_PAD, 258);
@@ -157,29 +158,29 @@ export function generateInvoicePDF(
       const orderNoStr = orderId ? orderId.toString().substring(18).toUpperCase() : 'RETAIL';
       doc.font(FN).fontSize(7).fillColor(C.textOnSide).text('Nội dung CK:', SB_PAD, 280);
       doc.font(FB).fontSize(7.5).fillColor(C.textWhite)
-         .text(`TT DH #${orderNoStr}`, SB_PAD, 290, { width: SB_W - SB_PAD * 2 });
+        .text(`TT DH #${orderNoStr}`, SB_PAD, 290, { width: SB_W - SB_PAD * 2 });
 
       doc.moveTo(SB_PAD, 312).lineTo(SB_W - SB_PAD, 312)
-         .strokeColor('rgba(255,255,255,0.15)').lineWidth(0.5).stroke();
+        .strokeColor('rgba(255,255,255,0.15)').lineWidth(0.5).stroke();
 
       // — QR Code —
       if (isUnpaidInvoice) {
-        const addInfoStr   = encodeURIComponent(`Thanh toan don hang ${invNo}`);
-        const cleanBankId  = bankInfo.bank_id.replace(/\s+/g, '');
-        const cleanAccNo   = bankInfo.account_no.replace(/\s+/g, '');
+        const addInfoStr = encodeURIComponent(`Thanh toan don hang ${invNo}`);
+        const cleanBankId = bankInfo.bank_id.replace(/\s+/g, '');
+        const cleanAccNo = bankInfo.account_no.replace(/\s+/g, '');
         const cleanAccName = encodeURIComponent(removeVietnameseTones(bankInfo.account_name).toUpperCase());
         const qrUrl = `https://img.vietqr.io/image/${cleanBankId}-${cleanAccNo}-compact2.png?amount=${totalAmount}&addInfo=${addInfoStr}&accountName=${cleanAccName}`;
         try {
           const qrBuffer = await fetchImageBuffer(qrUrl);
           if (qrBuffer) {
             const QR_SIZE = SB_W - SB_PAD * 2;  // 160 - 36 = 124px
-            const QR_X    = SB_PAD;
-            const QR_Y    = 322;
+            const QR_X = SB_PAD;
+            const QR_Y = 322;
             doc.roundedRect(QR_X - 2, QR_Y - 2, QR_SIZE + 4, QR_SIZE + 4, 6).fill(C.textWhite);
             doc.image(qrBuffer, QR_X, QR_Y, { width: QR_SIZE, height: QR_SIZE });
             doc.font(FN).fontSize(7).fillColor(C.textOnSide)
-               .text('Quét mã để thanh toán nhanh', 0, QR_Y + QR_SIZE + 8,
-                     { align: 'center', width: SB_W });
+              .text('Quét mã để thanh toán nhanh', 0, QR_Y + QR_SIZE + 8,
+                { align: 'center', width: SB_W });
           }
         } catch (e) {
           console.error('VietQR error:', e);
@@ -201,27 +202,27 @@ export function generateInvoicePDF(
 
       // — Badge trạng thái —
       let statusText = 'ĐÃ THANH TOÁN';
-      let statusBg   = '#EBF9EB';
-      let statusFg   = '#2E7D32';
+      let statusBg = '#EBF9EB';
+      let statusFg = '#2E7D32';
       if (isUnpaidInvoice) {
         if (isRenewal) {
           statusText = 'CẦN GIA HẠN';
-          statusBg   = C.totalBg;
-          statusFg   = C.accent;
+          statusBg = C.totalBg;
+          statusFg = C.accent;
         } else {
           statusText = 'CHƯA THANH TOÁN';
-          statusBg   = '#FFF5E6';
-          statusFg   = '#C47000';
+          statusBg = '#FFF5E6';
+          statusFg = '#C47000';
         }
       }
       doc.roundedRect(CT_X, 58, 115, 19, 5).fill(statusBg);
       doc.font(FB).fontSize(8).fillColor(statusFg)
-         .text(statusText, CT_X, 64, { align: 'center', width: 115 });
+        .text(statusText, CT_X, 64, { align: 'center', width: 115 });
 
       // — Thông tin khách hàng —
       doc.font(FB).fontSize(9.5).fillColor(C.accent).text('THÔNG TIN KHÁCH HÀNG', CT_X, 92);
       doc.moveTo(CT_X, 106).lineTo(CT_RIGHT, 106)
-         .strokeColor(C.border).lineWidth(0.5).stroke();
+        .strokeColor(C.border).lineWidth(0.5).stroke();
 
       const L1 = 112; // dòng đầu thông tin khách hàng
       doc.font(FN).fontSize(8.5).fillColor(C.mutedText).text('Tên khách hàng:', CT_X, L1);
@@ -236,71 +237,116 @@ export function generateInvoicePDF(
       // ═══════════════════════════════════════════════════════════════════════
       const TABLE_TOP = L1 + 55;
       doc.font(FB).fontSize(8).fillColor(C.mutedText)
-         .text('CHI TIẾT DỊCH VỤ / SERVICE DETAILS:', CT_X, TABLE_TOP);
+        .text('CHI TIẾT DỊCH VỤ / SERVICE DETAILS:', CT_X, TABLE_TOP);
 
-      // Định nghĩa cột — tổng = CT_W (399.28px)
-      // service(140) + type(90) + valid(80) + amount(89.28) = 399.28
-      const TH_Y   = TABLE_TOP + 14;
-      const COLS   = {
-        svc:    { x: CT_X,           w: 140 },
-        type:   { x: CT_X + 140,     w: 90  },
-        valid:  { x: CT_X + 230,     w: 85  },
-        amt:    { x: CT_X + 315,     w: CT_RIGHT - (CT_X + 315) },
-      };
+      const TH_Y = TABLE_TOP + 14;
+      const ROW_PAD = 7;
+      const ROW_MIN = 22;
+      let curY = TH_Y + 22;
 
-      // Header hàng bảng
-      doc.rect(CT_X, TH_Y, CT_W, 22).fill(C.tableHeader);
-      doc.font(FB).fontSize(7.5).fillColor(C.textWhite);
-      doc.text('DỊCH VỤ',      COLS.svc.x  + 5, TH_Y + 7, { width: COLS.svc.w  - 5 });
-      doc.text('PHÂN LOẠI',    COLS.type.x + 3, TH_Y + 7, { width: COLS.type.w - 3 });
-      doc.text('HẠN SỬ DỤNG', COLS.valid.x+ 3, TH_Y + 7, { width: COLS.valid.w- 3 });
-      doc.text('THÀNH TIỀN',   COLS.amt.x,      TH_Y + 7, { width: COLS.amt.w  - 3, align: 'right' });
+      // Kiểm tra xem có accounts hay là đơn hàng sản phẩm tùy chỉnh
+      const hasAccounts = accounts && accounts.length > 0;
+      const hasCustomProduct = !hasAccounts && orderExtra && orderExtra.product_name;
 
-      // Rows
-      const ROW_PAD  = 7;
-      const ROW_MIN  = 22;
-      let   curY     = TH_Y + 22;
-      const itemPrice = accounts.length > 0 ? totalAmount / accounts.length : totalAmount;
+      if (hasAccounts) {
+        // ── BẢNG CHUẨN CHO ACCOUNTS ──
+        const COLS = {
+          svc: { x: CT_X, w: 140 },
+          type: { x: CT_X + 140, w: 90 },
+          valid: { x: CT_X + 230, w: 85 },
+          amt: { x: CT_X + 315, w: CT_RIGHT - (CT_X + 315) },
+        };
 
-      accounts.forEach((acc, idx) => {
-        const pType    = acc.product_type || 'Gói bản quyền';
-        const rType    = acc.resource_type === 'key' ? 'Key kích hoạt' : 'Tài khoản\n(ID:Pass)';
-        const validStr = acc.valid_until
-          ? new Date(acc.valid_until).toLocaleDateString('vi-VN')
-          : 'Không giới hạn';
-        const costStr  = `${itemPrice.toLocaleString('vi-VN')} đ`;
+        doc.rect(CT_X, TH_Y, CT_W, 22).fill(C.tableHeader);
+        doc.font(FB).fontSize(7.5).fillColor(C.textWhite);
+        doc.text('DỊCH VỤ', COLS.svc.x + 5, TH_Y + 7, { width: COLS.svc.w - 5 });
+        doc.text('PHÂN LOẠI', COLS.type.x + 3, TH_Y + 7, { width: COLS.type.w - 3 });
+        doc.text('HẠN SỬ DỤNG', COLS.valid.x + 3, TH_Y + 7, { width: COLS.valid.w - 3 });
+        doc.text('THÀNH TIỀN', COLS.amt.x, TH_Y + 7, { width: COLS.amt.w - 3, align: 'right' });
 
-        // Đo chiều cao thực của từng ô
-        doc.font(FB).fontSize(8.5);
-        const hSvc  = doc.heightOfString(pType,    { width: COLS.svc.w  - 10 });
-        doc.font(FN).fontSize(8.5);
-        const hType = doc.heightOfString(rType,    { width: COLS.type.w - 6  });
-        const hVld  = doc.heightOfString(validStr, { width: COLS.valid.w- 6  });
-        const rowH  = Math.max(ROW_MIN, hSvc, hType, hVld) + ROW_PAD * 2;
+        const itemPrice = totalAmount / accounts.length;
 
-        // Nền xen kẽ
-        doc.rect(CT_X, curY, CT_W, rowH)
-           .fill(idx % 2 === 0 ? '#FFFFFF' : C.rowAlt);
+        accounts.forEach((acc, idx) => {
+          const pType = acc.product_type || 'Gói bản quyền';
+          const rType = acc.resource_type === 'key' ? 'Key kích hoạt' : 'Tài khoản\n(ID:Pass)';
+          const validStr = acc.valid_until
+            ? new Date(acc.valid_until).toLocaleDateString('vi-VN')
+            : 'Không giới hạn';
+          const costStr = `${itemPrice.toLocaleString('vi-VN')} đ`;
 
-        // Đường kẻ trên hàng
-        doc.moveTo(CT_X, curY).lineTo(CT_RIGHT, curY)
-           .strokeColor(C.border).lineWidth(0.3).stroke();
+          doc.font(FB).fontSize(8.5);
+          const hSvc = doc.heightOfString(pType, { width: COLS.svc.w - 10 });
+          doc.font(FN).fontSize(8.5);
+          const hType = doc.heightOfString(rType, { width: COLS.type.w - 6 });
+          const hVld = doc.heightOfString(validStr, { width: COLS.valid.w - 6 });
+          const rowH = Math.max(ROW_MIN, hSvc, hType, hVld) + ROW_PAD * 2;
 
-        const ty = curY + ROW_PAD;
-        doc.font(FB).fontSize(8.5).fillColor(C.bodyText)
-           .text(pType, COLS.svc.x + 5,  ty, { width: COLS.svc.w  - 10 });
-        doc.font(FN).fillColor(C.bodyText)
-           .text(rType, COLS.type.x + 3, ty, { width: COLS.type.w - 6 });
-        doc.text(validStr, COLS.valid.x + 3, ty, { width: COLS.valid.w - 6 });
-        doc.font(FB).fillColor(C.accent)
-           .text(costStr, COLS.amt.x, ty, { width: COLS.amt.w - 3, align: 'right' });
+          doc.rect(CT_X, curY, CT_W, rowH).fill(idx % 2 === 0 ? '#FFFFFF' : C.rowAlt);
+          doc.moveTo(CT_X, curY).lineTo(CT_RIGHT, curY).strokeColor(C.border).lineWidth(0.3).stroke();
 
-        curY += rowH;
-      });
+          const ty = curY + ROW_PAD;
+          doc.font(FB).fontSize(8.5).fillColor(C.bodyText).text(pType, COLS.svc.x + 5, ty, { width: COLS.svc.w - 10 });
+          doc.font(FN).fillColor(C.bodyText).text(rType, COLS.type.x + 3, ty, { width: COLS.type.w - 6 });
+          doc.text(validStr, COLS.valid.x + 3, ty, { width: COLS.valid.w - 6 });
+          doc.font(FB).fillColor(C.accent).text(costStr, COLS.amt.x, ty, { width: COLS.amt.w - 3, align: 'right' });
+
+          curY += rowH;
+        });
+      } else if (hasCustomProduct) {
+        // ── BẢNG CHO SẢN PHẨM TÙY CHỈNH ──
+        const pName = orderExtra.product_name || 'Sản phẩm';
+        const qty = orderExtra.quantity || 1;
+        const sellPrice = orderExtra.selling_price || 0;
+        const costPrice = orderExtra.cost_price || 0;
+        const expiryStr = orderExtra.expiry_date ? new Date(orderExtra.expiry_date).toLocaleDateString('vi-VN') : '—';
+
+        // Header đơn giản: 2 cột
+        const col1x = CT_X;
+        const col1w = CT_W * 0.62;
+        const col2x = col1x + col1w;
+        const col2w = CT_W - col1w;
+
+        doc.rect(CT_X, TH_Y, CT_W, 22).fill(C.tableHeader);
+        doc.font(FB).fontSize(7.5).fillColor(C.textWhite);
+        doc.text('THÔNG TIN', col1x + 5, TH_Y + 7, { width: col1w - 5 });
+        doc.text('CHI TIẾT', col2x + 3, TH_Y + 7, { width: col2w - 3, align: 'right' });
+
+        const rows: [string, string][] = [
+          ['Sản phẩm', pName],
+          ['Số lượng', String(qty)],
+          ['Giá gốc', `${costPrice.toLocaleString('vi-VN')} đ`],
+          ['Giá bán', `${sellPrice.toLocaleString('vi-VN')} đ`],
+          ['Hạn sử dụng', expiryStr],
+        ];
+        if (orderExtra.discount_amount > 0) {
+          rows.push(['Giảm giá', `-${orderExtra.discount_amount.toLocaleString('vi-VN')} đ`]);
+        }
+        if (orderExtra.recurring_invoice?.enabled) {
+          const recStr = orderExtra.recurring_invoice.custom_interval || `Mỗi ${orderExtra.recurring_invoice.interval_months} tháng`;
+          rows.push(['Hóa đơn định kỳ', recStr]);
+        }
+        const pmStr = orderExtra.payment_method === 'bank_transfer' ? 'Chuyển khoản' : orderExtra.payment_method === 'cash' ? 'Tiền mặt' : '—';
+        rows.push(['Hình thức TT', pmStr]);
+        if (orderExtra.customer_note) {
+          rows.push(['Ghi chú', orderExtra.customer_note]);
+        }
+
+        rows.forEach(([label, value], idx) => {
+          const rowH = Math.max(ROW_MIN, 16) + 6;
+          doc.rect(CT_X, curY, CT_W, rowH).fill(idx % 2 === 0 ? '#FFFFFF' : C.rowAlt);
+          doc.moveTo(CT_X, curY).lineTo(CT_RIGHT, curY).strokeColor(C.border).lineWidth(0.3).stroke();
+
+          const ty = curY + ROW_PAD;
+          doc.font(FB).fontSize(8.5).fillColor(C.mutedText).text(label, col1x + 5, ty, { width: col1w - 10 });
+          doc.font(FB).fontSize(8.5).fillColor(C.bodyText).text(value, col2x + 3, ty, { width: col2w - 6, align: 'right' });
+
+          curY += rowH;
+        });
+      }
 
       // Đường chân bảng
       doc.moveTo(CT_X, curY).lineTo(CT_RIGHT, curY)
-         .strokeColor(C.tableHeader).lineWidth(1).stroke();
+        .strokeColor(C.tableHeader).lineWidth(1).stroke();
 
       // ═══════════════════════════════════════════════════════════════════════
       // PHẦN 5: TỔNG TIỀN
@@ -311,27 +357,27 @@ export function generateInvoicePDF(
 
       doc.roundedRect(TOT_X, TOT_Y, TOT_W, 50, 8).fill(C.totalBg);
       doc.roundedRect(TOT_X, TOT_Y, TOT_W, 50, 8)
-         .strokeColor(C.totalBorder).lineWidth(0.7).stroke();
+        .strokeColor(C.totalBorder).lineWidth(0.7).stroke();
 
       const totalLabel = isUnpaidInvoice
         ? (isRenewal ? 'TỔNG TIỀN CẦN GIA HẠN:' : 'TỔNG TIỀN CẦN THANH TOÁN:')
         : 'TỔNG TIỀN ĐÃ THANH TOÁN:';
       doc.font(FN).fontSize(7.5).fillColor(C.mutedText)
-         .text(totalLabel, TOT_X + 12, TOT_Y + 10);
+        .text(totalLabel, TOT_X + 12, TOT_Y + 10);
       doc.font(FB).fontSize(14).fillColor(C.accent)
-         .text(`${totalAmount.toLocaleString('vi-VN')} đ`, TOT_X + 12, TOT_Y + 26,
-               { width: TOT_W - 20 });
+        .text(`${totalAmount.toLocaleString('vi-VN')} đ`, TOT_X + 12, TOT_Y + 26,
+          { width: TOT_W - 20 });
 
       // ═══════════════════════════════════════════════════════════════════════
       // PHẦN 6: FOOTER
       // ═══════════════════════════════════════════════════════════════════════
       const FOOT_Y = PAGE_H - 62;
       doc.moveTo(CT_X, FOOT_Y - 8).lineTo(CT_RIGHT, FOOT_Y - 8)
-         .strokeColor(C.border).lineWidth(0.5).stroke();
+        .strokeColor(C.border).lineWidth(0.5).stroke();
 
       doc.font(FB).fontSize(9).fillColor(C.accent).text('BEEGADGET.NET', CT_X, FOOT_Y);
       doc.font(FN).fontSize(7.5).fillColor(C.mutedText)
-         .text('Hotline: 0962979214  |  Email: renosang@gmail.com', CT_X, FOOT_Y + 13);
+        .text('Hotline: 0962979214  |  Email: renosang@gmail.com', CT_X, FOOT_Y + 13);
       doc.text('© 2026 Beegadget.net. All rights reserved.', CT_X, FOOT_Y + 25);
 
       doc.end();
