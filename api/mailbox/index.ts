@@ -1,5 +1,6 @@
 import dbConnect from '../_lib/dbConnect.ts';
 import EmailMessage from '../_models/EmailMessage.ts';
+import { syncEmails, sendReplyMail } from '../_lib/imapService.ts';
 import { syncGmailEmails, sendGmailEmail } from '../_lib/gmailService.ts';
 import Setting from '../_models/Setting.ts';
 import nodemailer from 'nodemailer';
@@ -12,8 +13,10 @@ export default async function handler(req: any, res: any) {
     switch (method) {
         case 'GET':
             if (id === 'sync') {
-                try { const result = await syncGmailEmails(); return res.status(200).json(result); }
-                catch (err: any) { return res.status(500).json({ success: false, message: err.message }); }
+                try {
+                    const result = await syncEmails();
+                    return res.status(200).json(result);
+                } catch (err: any) { return res.status(500).json({ success: false, message: err.message }); }
             }
             if (id === 'stats') {
                 const stats = { new: await EmailMessage.countDocuments({ status: 'new' }), pending: await EmailMessage.countDocuments({ status: 'pending' }), resolved: await EmailMessage.countDocuments({ status: 'resolved' }) };
@@ -32,12 +35,6 @@ export default async function handler(req: any, res: any) {
             if (id === 'compose') {
                 const { to, subject, body } = req.body;
                 if (!to || !subject || !body) return res.status(400).json({ success: false, message: 'Thiếu thông tin' });
-                // Try Gmail API first, fallback to SMTP
-                try {
-                    const result = await sendGmailEmail({ to, subject, body });
-                    if (result.success) return res.status(200).json(result);
-                } catch { }
-                // Fallback SMTP
                 const smtpSetting = await Setting.findOne({ key: 'smtp' });
                 let smtpHost = process.env.SMTP_HOST, smtpPort = process.env.SMTP_PORT, smtpUser = process.env.SMTP_USER;
                 let smtpPass = process.env.SMTP_PASS, smtpFrom = process.env.SMTP_FROM || smtpUser;
@@ -59,7 +56,7 @@ export default async function handler(req: any, res: any) {
                 if (!messageId || !body) return res.status(400).json({ success: false, message: 'Thiếu dữ liệu' });
                 const msg = await EmailMessage.findOne({ _id: messageId });
                 if (!msg) return res.status(404).json({ success: false, message: 'Không tìm thấy mail' });
-                const result = await sendGmailEmail({ to: msg.from, subject: msg.subject, body });
+                const result = await sendReplyMail({ to: msg.from, subject: msg.subject, body });
                 if (result.success) {
                     await EmailMessage.updateOne({ _id: messageId }, { $set: { status: 'resolved', is_read: true }, $push: { reply_history: { from: 'me', body, date: new Date() } } });
                     return res.status(200).json(result);
