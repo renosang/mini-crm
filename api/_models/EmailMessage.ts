@@ -12,7 +12,7 @@ const EmailMessageSchema = new mongoose.Schema(
         body_text: { type: String, default: '' },
         body_html: { type: String, default: '' },
         date: { type: Date, default: Date.now },
-        status: { type: String, enum: ['new', 'pending', 'resolved', 'archived'], default: 'new' },
+        status: { type: String, enum: ['new', 'pending', 'resolved', 'archived', 'sent'], default: 'new' },
         tags: [{ type: String }],
         attachments: [{ filename: String, content_type: String, size: Number }],
         linked_customer_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', default: null },
