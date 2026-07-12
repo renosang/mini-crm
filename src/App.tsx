@@ -64,7 +64,7 @@ function App() {
         <Route path="/ban-hang" element={<BanHang />} />
         <Route path="/ban-hang/bao-gia" element={<BaoGia />} />
         <Route path="/ban-hang/hoa-don" element={<HoaDon />} />
-        <Route path="/ban-hang/mailbox" element={<Mailbox />} />
+        <Route path="/mailbox" element={<Mailbox />} />
         <Route path="/ban-hang/chi-phi" element={<ChiPhi />} />
         <Route path="/kho-tai-nguyen" element={<KhoTaiNguyen />} />
         <Route path="/ban-quyen-ca-nhan" element={<BanQuyenCaNhan />} />
