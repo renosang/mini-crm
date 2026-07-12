@@ -5,7 +5,7 @@ import {
   FiHome, FiUsers, FiShoppingCart, FiBox, FiKey,
   FiClock, FiBriefcase, FiSettings, FiLogOut, FiChevronRight,
   FiDollarSign, FiTrendingUp, FiDownload, FiGrid, FiMessageCircle,
-  FiLayers, FiFileText
+  FiLayers, FiFileText, FiCreditCard
 } from 'react-icons/fi';
 
 import logo from '../assets/logo.png';
@@ -28,25 +28,19 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
     navigate('/login');
   };
 
-  // Tự động đóng sidebar mobile khi click link
   const handleNavClick = () => {
     onClose?.();
   };
 
   return (
     <aside className="sidebar">
-
-      {/* === PHẦN 1: LOGO (Luôn cố định) === */}
       <div className="sidebar-logo" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem 1rem' }}>
         <Link to="/" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }} onClick={handleNavClick}>
           <img src={logo} alt="Logo" style={{ maxHeight: '65px', maxWidth: '85%', objectFit: 'contain' }} />
         </Link>
       </div>
 
-      {/* === PHẦN 2: NAV (Sẽ tự cuộn) === */}
       <nav className="sidebar-nav">
-
-        {/* --- NHÓM 1: HOẠT ĐỘNG CHÍNH --- */}
         <div className="sidebar-category-header">Hoạt Động Chính</div>
         <NavLink to="/" end className="nav-item" onClick={handleNavClick}>
           <FiHome /> Dashboard
@@ -69,7 +63,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           <FiMessageCircle /> Omni-channel Inbox
         </NavLink>
 
-        {/* --- NHÓM 2: QUẢN LÝ KHO & HẠN DÙNG --- */}
         <div className="sidebar-category-header">Quản Lý Kho & Bản Quyền</div>
         <NavLink to="/san-pham" className="nav-item" onClick={handleNavClick}>
           <FiLayers /> Sản Phẩm / Dịch Vụ
@@ -81,22 +74,18 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           <FiClock /> Quản Lý Gia Hạn
         </NavLink>
 
-        {/* --- NHÓM 3: ĐỐI TÁC & HỆ THỐNG --- */}
         <div className="sidebar-category-header">Hệ Thống</div>
         <NavLink to="/cai-dat" className="nav-item" onClick={handleNavClick}>
           <FiSettings /> Cài Đặt
         </NavLink>
-
       </nav>
 
-      {/* === PHẦN 3: FOOTER (Luôn cố định) === */}
       <div className="sidebar-footer">
         <button onClick={handleLogout} className="logout-button-sidebar">
           <FiLogOut />
           Đăng xuất (Admin)
         </button>
       </div>
-
     </aside>
   );
 }
