@@ -4,6 +4,8 @@ import Order from '../_models/Order.ts';
 
 export default async function handler(req: any, res: any) {
     await dbConnect();
+    const urlParts = (req.url || req.originalUrl || '').split('?')[0];
+    const isPnl = urlParts.endsWith('/pnl');
     const id = req.query.id || req.params?.id;
     const { method } = req;
     await (Expense as any).generateRecurring();
@@ -11,7 +13,7 @@ export default async function handler(req: any, res: any) {
     switch (method) {
         case 'GET':
             try {
-                if (id === 'pnl') {
+                if (isPnl) {
                     const paidOrders = await Order.find({ status: 'paid' });
                     const totalRevenue = paidOrders.reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
                     const expenses = await Expense.find({ status: 'paid' });
@@ -22,6 +24,11 @@ export default async function handler(req: any, res: any) {
                     for (const o of paidOrders) { cogs += (o.cost_price || 0) * (o.quantity || 1); }
                     const profit = totalRevenue - totalCost - cogs;
                     return res.status(200).json({ success: true, data: { totalRevenue, cogs, totalCost, costByCategory, profit, expenseCount: expenses.length, orderCount: paidOrders.length } });
+                }
+                if (id) {
+                    const expense = await Expense.findById(id).populate('supplier_id');
+                    if (!expense) return res.status(404).json({ success: false });
+                    return res.status(200).json({ success: true, data: expense });
                 }
                 const { category, supplier_id } = req.query;
                 const filter: any = {};
