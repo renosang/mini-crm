@@ -27,6 +27,8 @@ const ChiPhi: React.FC = () => {
     const [formDesc, setFormDesc] = useState('');
     const [formRecurring, setFormRecurring] = useState(false);
     const [formInterval, setFormInterval] = useState(30);
+    const [formUseDate, setFormUseDate] = useState(false);
+    const [formNextDate, setFormNextDate] = useState('');
 
     useEffect(() => { loadData(); }, [categoryFilter]);
 
@@ -37,21 +39,28 @@ const ChiPhi: React.FC = () => {
                 api.get('/expenses/pnl'),
                 api.get('/expenses' + (categoryFilter ? '?category=' + categoryFilter : '')),
             ]);
-            if (resPnl.data.success && resPnl.data.data && typeof resPnl.data.data.totalRevenue === 'number') setPnl(resPnl.data.data);
-            if (resExp.data.success && Array.isArray(resExp.data.data)) setExpenses(resExp.data.data);
+            const p = resPnl.data;
+            if (p.success && p.data && typeof p.data.totalRevenue === 'number') setPnl(p.data);
+            const e = resExp.data;
+            if (e.success && Array.isArray(e.data)) setExpenses(e.data);
         } catch (err) { console.error(err); } finally { setLoading(false); }
     };
 
-    const handleCreate = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleCreate = async (ev: React.FormEvent) => {
+        ev.preventDefault();
         if (!formAmount) { alert('Nhập số tiền'); return; }
         try {
+            const nextDue = formRecurring && formUseDate && formNextDate
+                ? new Date(formNextDate)
+                : formRecurring && !formUseDate
+                    ? new Date(Date.now() + formInterval * 86400000)
+                    : null;
             await api.post('/expenses', {
                 category: formCategory, amount: Number(formAmount), description: formDesc,
-                recurring_config: formRecurring ? { enabled: true, interval_days: formInterval, next_due_date: new Date(Date.now() + formInterval * 86400000) } : undefined
+                recurring_config: formRecurring ? { enabled: true, interval_days: formInterval, next_due_date: nextDue } : undefined
             });
             setIsModalOpen(false); loadData();
-            setFormAmount(''); setFormDesc(''); setFormRecurring(false); setFormInterval(30);
+            setFormAmount(''); setFormDesc(''); setFormRecurring(false); setFormUseDate(false); setFormNextDate(''); setFormInterval(30);
         } catch (err: any) { alert('Lỗi: ' + err.message); }
     };
 
@@ -72,40 +81,23 @@ const ChiPhi: React.FC = () => {
                 <p>Theo dõi chi phí vận hành & phân tích lợi nhuận</p>
             </div>
 
-            {/* P&L Dashboard Cards */}
             {pnl && (
                 <div className="stats-grid-3" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', marginBottom: '1.5rem' }}>
-                    <div className="stat-card widget stat-card-blue">
-                        <div className="stat-card-icon"><FiTrendingUp /></div>
-                        <div className="stat-card-info"><h3>Tổng Doanh Thu</h3><p className="stat-card-value">{pnl.totalRevenue.toLocaleString('vi-VN')} đ</p></div>
-                    </div>
-                    <div className="stat-card widget stat-card-orange">
-                        <div className="stat-card-icon"><FiDollarSign /></div>
-                        <div className="stat-card-info"><h3>Giá Vốn (COGS)</h3><p className="stat-card-value">{pnl.cogs.toLocaleString('vi-VN')} đ</p></div>
-                    </div>
-                    <div className="stat-card widget stat-card-red">
-                        <div className="stat-card-icon"><FiTrendingDown /></div>
-                        <div className="stat-card-info"><h3>Tổng Chi Phí</h3><p className="stat-card-value">{pnl.totalCost.toLocaleString('vi-VN')} đ</p></div>
-                    </div>
-                    <div className="stat-card widget" style={{ background: pnl.profit >= 0 ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : 'linear-gradient(135deg, #FFEBEA, #FFD2D2)' }}>
-                        <div className="stat-card-icon" style={{ color: pnl.profit >= 0 ? '#2E7D32' : '#D32F2F' }}><FiDollarSign /></div>
-                        <div className="stat-card-info"><h3>Lợi Nhuận Ròng</h3><p className="stat-card-value" style={{ color: pnl.profit >= 0 ? '#2E7D32' : '#D32F2F' }}>{pnl.profit.toLocaleString('vi-VN')} đ</p></div>
-                    </div>
+                    <div className="stat-card widget stat-card-blue"><div className="stat-card-icon"><FiTrendingUp /></div><div className="stat-card-info"><h3>Tổng Doanh Thu</h3><p className="stat-card-value">{pnl.totalRevenue.toLocaleString('vi-VN')} đ</p></div></div>
+                    <div className="stat-card widget stat-card-orange"><div className="stat-card-icon"><FiDollarSign /></div><div className="stat-card-info"><h3>Giá Vốn (COGS)</h3><p className="stat-card-value">{pnl.cogs.toLocaleString('vi-VN')} đ</p></div></div>
+                    <div className="stat-card widget stat-card-red"><div className="stat-card-icon"><FiTrendingDown /></div><div className="stat-card-info"><h3>Tổng Chi Phí</h3><p className="stat-card-value">{pnl.totalCost.toLocaleString('vi-VN')} đ</p></div></div>
+                    <div className="stat-card widget" style={{ background: pnl.profit >= 0 ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : 'linear-gradient(135deg, #FFEBEA, #FFD2D2)' }}><div className="stat-card-icon" style={{ color: pnl.profit >= 0 ? '#2E7D32' : '#D32F2F' }}><FiDollarSign /></div><div className="stat-card-info"><h3>Lợi Nhuận Ròng</h3><p className="stat-card-value" style={{ color: pnl.profit >= 0 ? '#2E7D32' : '#D32F2F' }}>{pnl.profit.toLocaleString('vi-VN')} đ</p></div></div>
                 </div>
             )}
 
-            {/* Category Breakdown */}
             {pnl && pnl.costByCategory && (
                 <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
                     {Object.entries(pnl.costByCategory).map(([cat, amt]: any) => (
-                        <span key={cat} style={{ padding: '4px 12px', borderRadius: 99, background: catColor(cat) + '15', color: catColor(cat), fontSize: 12, fontWeight: 600 }}>
-                            {catLabel(cat)}: {amt.toLocaleString('vi-VN')} đ
-                        </span>
+                        <span key={cat} style={{ padding: '4px 12px', borderRadius: 99, background: catColor(cat) + '15', color: catColor(cat), fontSize: 12, fontWeight: 600 }}>{catLabel(cat)}: {amt.toLocaleString('vi-VN')} đ</span>
                     ))}
                 </div>
             )}
 
-            {/* Toolbar */}
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
                     {categoryTabs.map(tab => (
@@ -120,13 +112,10 @@ const ChiPhi: React.FC = () => {
                 </button>
             </div>
 
-            {/* Table */}
             {loading ? <p>Đang tải...</p> : (
                 <div className="table-container widget" style={{ boxShadow: 'var(--shadow)' }}>
                     <table className="styled-table">
-                        <thead><tr>
-                            <th>Ngày</th><th>Loại</th><th>Mô tả</th><th>Số tiền</th><th>Định kỳ</th><th></th>
-                        </tr></thead>
+                        <thead><tr><th>Ngày</th><th>Loại</th><th>Mô tả</th><th>Số tiền</th><th>Định kỳ</th><th></th></tr></thead>
                         <tbody>
                             {expenses.length > 0 ? expenses.map(e => (
                                 <tr key={e._id}>
@@ -134,7 +123,11 @@ const ChiPhi: React.FC = () => {
                                     <td className="nowrap"><span style={{ padding: '2px 8px', borderRadius: 99, background: catColor(e.category) + '15', color: catColor(e.category), fontSize: 11, fontWeight: 600 }}>{catLabel(e.category)}</span></td>
                                     <td>{e.description}</td>
                                     <td className="nowrap" style={{ fontWeight: 700, color: '#D32F2F' }}>-{e.amount.toLocaleString('vi-VN')} đ</td>
-                                    <td className="nowrap">{e.recurring_config?.enabled ? <FiRepeat style={{ color: '#0071E3' }} /> : '—'}</td>
+                                    <td className="nowrap">
+                                        {e.recurring_config?.enabled
+                                            ? <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><FiRepeat style={{ color: '#0071E3' }} />{e.recurring_config.next_due_date ? <span style={{ fontSize: 10, color: '#8E8E93' }}>{new Date(e.recurring_config.next_due_date).toLocaleDateString('vi-VN')}</span> : ''}</span>
+                                            : '—'}
+                                    </td>
                                     <td className="nowrap"><button onClick={() => handleDelete(e._id)} style={{ border: 'none', background: 'none', color: '#FF3B30', cursor: 'pointer' }}><FiTrash2 /></button></td>
                                 </tr>
                             )) : <tr><td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: '#8E8E93' }}>Chưa có chi phí nào</td></tr>}
@@ -143,7 +136,6 @@ const ChiPhi: React.FC = () => {
                 </div>
             )}
 
-            {/* Create Modal */}
             {isModalOpen && (
                 <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()} style={{ width: '500px', maxWidth: '95vw' }}>
@@ -167,17 +159,41 @@ const ChiPhi: React.FC = () => {
                                     <label>Mô tả</label>
                                     <input type="text" value={formDesc} onChange={e => setFormDesc(e.target.value)} placeholder="Ví dụ: Gia hạn tài khoản Zoom Master" />
                                 </div>
-                                <div className="form-group">
-                                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                                        <input type="checkbox" checked={formRecurring} onChange={e => setFormRecurring(e.target.checked)} /> Chi phí định kỳ
-                                    </label>
+
+                                <div className="form-group" style={{ background: '#F8F9FC', borderRadius: 12, padding: '1rem', border: '1px solid #EEEEEF' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: formRecurring ? '0.85rem' : 0 }}>
+                                        <div style={{ width: 26, height: 26, borderRadius: 8, background: '#0071E3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FiRepeat style={{ color: '#FFF', fontSize: '0.75rem' }} /></div>
+                                        <span style={{ fontWeight: 600, fontSize: '0.92rem' }}>Định kỳ</span>
+                                        <label style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: '0.85rem', color: '#6E6E73' }}>
+                                            <input type="checkbox" checked={formRecurring} onChange={e => setFormRecurring(e.target.checked)} style={{ width: 16, height: 16, accentColor: '#0071E3' }} />
+                                            Bật
+                                        </label>
+                                    </div>
                                     {formRecurring && (
-                                        <div style={{ marginTop: 8 }}>
-                                            <label>Chu kỳ (ngày)</label>
-                                            <select value={formInterval} onChange={e => setFormInterval(Number(e.target.value))}>
-                                                <option value={1}>1 ngày</option><option value={7}>7 ngày</option><option value={30}>30 ngày</option>
-                                                <option value={90}>90 ngày</option><option value={180}>180 ngày</option><option value={365}>365 ngày</option>
-                                            </select>
+                                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                            <div style={{ flex: 1, minWidth: 140 }}>
+                                                <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#6E6E73', display: 'block', marginBottom: 4 }}>Chu kỳ</label>
+                                                <select value={formUseDate ? 'custom' : formInterval} onChange={e => {
+                                                    const val = e.target.value;
+                                                    if (val === 'custom') { setFormUseDate(true); setFormNextDate(''); }
+                                                    else { setFormUseDate(false); setFormInterval(Number(val)); setFormNextDate(''); }
+                                                }} style={{ width: '100%', padding: '0.5rem', borderRadius: 8, border: '1px solid #D2D2D7', fontSize: '0.85rem' }}>
+                                                    <option value={30}>Mỗi 30 ngày</option>
+                                                    <option value={7}>Mỗi 7 ngày</option>
+                                                    <option value={90}>Mỗi 90 ngày</option>
+                                                    <option value={180}>Mỗi 180 ngày</option>
+                                                    <option value={365}>Mỗi 365 ngày</option>
+                                                    <option value={1}>Mỗi 1 ngày</option>
+                                                    <option value="custom">📅 Chọn ngày cụ thể</option>
+                                                </select>
+                                            </div>
+                                            {formUseDate && (
+                                                <div style={{ flex: 1.5, minWidth: 160 }}>
+                                                    <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#6E6E73', display: 'block', marginBottom: 4 }}>Ngày đến hạn</label>
+                                                    <input type="date" value={formNextDate} onChange={e => setFormNextDate(e.target.value)}
+                                                        style={{ width: '100%', padding: '0.5rem', borderRadius: 8, border: '1px solid #D2D2D7', fontSize: '0.85rem' }} />
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
