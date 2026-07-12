@@ -5,7 +5,7 @@ import {
   FiHome, FiUsers, FiShoppingCart, FiBox, FiKey,
   FiClock, FiBriefcase, FiSettings, FiLogOut, FiChevronRight,
   FiDollarSign, FiTrendingUp, FiDownload, FiGrid, FiMessageCircle,
-  FiLayers, FiFileText, FiCreditCard
+  FiLayers, FiFileText, FiCreditCard, FiMail
 } from 'react-icons/fi';
 
 import logo from '../assets/logo.png';
@@ -55,6 +55,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           </NavLink>
           <NavLink to="/ban-hang/hoa-don" className="nav-item" onClick={handleNavClick} style={{ marginBottom: 0, paddingLeft: '2.8rem', fontSize: '0.88rem' }}>
             <FiCreditCard /> Hóa Đơn
+          </NavLink>
+          <NavLink to="/ban-hang/mailbox" className="nav-item" onClick={handleNavClick} style={{ marginBottom: 0, paddingLeft: '2.8rem', fontSize: '0.88rem' }}>
+            <FiMail /> Mail Box
           </NavLink>
           <NavLink to="/ban-hang/chi-phi" className="nav-item" onClick={handleNavClick} style={{ marginBottom: 0, paddingLeft: '2.8rem', fontSize: '0.88rem' }}>
             <FiDollarSign /> Chi Phí

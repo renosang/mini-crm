@@ -46,6 +46,9 @@ import productDetailHandler from './api/products/[id].ts';
 import discountsHandler from './api/discounts/index.ts';
 import discountDetailHandler from './api/discounts/[id].ts';
 
+// Mailbox routes
+import mailboxHandler from './api/mailbox/index.ts';
+
 // Expense routes
 import expensesHandler from './api/expenses/index.ts';
 
@@ -180,6 +183,14 @@ app.post('/api/discounts', discountsHandler);
 app.get('/api/discounts/:id', mapParams, discountDetailHandler);
 app.put('/api/discounts/:id', mapParams, discountDetailHandler);
 app.delete('/api/discounts/:id', mapParams, discountDetailHandler);
+
+// Mailbox Routes
+app.get('/api/mailbox/sync', mailboxHandler);
+app.get('/api/mailbox/stats', mailboxHandler);
+app.get('/api/mailbox', mailboxHandler);
+app.get('/api/mailbox/:id', mapParams, mailboxHandler);
+app.put('/api/mailbox/:id', mapParams, mailboxHandler);
+app.post('/api/mailbox/reply', mailboxHandler);
 
 // Expense Routes
 app.get('/api/expenses/pnl', mapParams, expensesHandler);

@@ -18,7 +18,9 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "imap": "^0.8.19",
     "jsonwebtoken": "^9.0.2",
+    "mailparser": "^3.9.14",
     "mongoose": "^8.4.1",
     "nodemailer": "^8.0.7",
     "pdfkit": "^0.18.0",
@@ -30,6 +32,8 @@
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/imap": "^0.8.43",
+    "@types/mailparser": "^3.4.6",
     "@types/next": "^8.0.7",
     "@types/pdfkit": "^0.17.6",
     "@types/react": "^18.2.66",
