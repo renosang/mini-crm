@@ -29,6 +29,7 @@ import renewalSettingsHandler from './api/settings/renewal.ts';
 import accountSettingsHandler from './api/settings/account.ts';
 import emailTemplatesHandler from './api/settings/email-templates.ts';
 import backupSettingsHandler from './api/settings/backup.ts';
+import imapSettingsHandler from './api/settings/imap.ts';
 import omnichannelSettingsHandler from './api/settings/omnichannel.ts';
 import chatMacrosHandler from './api/settings/macros.ts';
 import omnichannelAlertsHandler from './api/omnichannel/alerts.ts';
@@ -137,6 +138,9 @@ app.post('/api/settings/renewal', renewalSettingsHandler);
 
 app.get('/api/settings/account', accountSettingsHandler);
 app.post('/api/settings/account', accountSettingsHandler);
+
+app.get('/api/settings/imap', imapSettingsHandler);
+app.post('/api/settings/imap', imapSettingsHandler);
 
 app.get('/api/settings/email-templates', emailTemplatesHandler);
 app.post('/api/settings/email-templates', emailTemplatesHandler);

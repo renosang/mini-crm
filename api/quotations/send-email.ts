@@ -40,7 +40,7 @@ export default async function handler(req: any, res: any) {
     if (bankSetting?.value) bankInfo = { ...bankInfo, ...bankSetting.value };
 
     const token = quotation.tracking_token || '';
-    const appUrl = process.env.PUBLIC_URL || 'http://localhost:5173';
+    const appUrl = process.env.PUBLIC_URL || 'https://crm.beegadget.net';
     const confirmUrl = `${appUrl}/bao-gia/xac-nhan/${token}`;
     const trackOpenUrl = `${appUrl}/api/quotations/track-open?t=${token}`;
     const cleanBankId = bankInfo.bank_id.replace(/\s+/g, '');
