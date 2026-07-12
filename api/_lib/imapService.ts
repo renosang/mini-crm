@@ -19,9 +19,12 @@ export async function syncEmails(): Promise<{ success: boolean; count: number; m
         let count = 0;
         imap.once('ready', () => {
             imap.openBox('INBOX', false, async (err: any) => {
-                if (err) { imap.end(); resolve({ success: false, count: 0, message: err.message }); return; }
-                imap.search(['UNSEEN'], async (err2: any, results: any) => {
-                    if (err2 || !results.length) { imap.end(); resolve({ success: true, count: 0, message: 'Không có mail mới' }); return; }
+                if (err) { imap.end(); resolve({ success: false, count: 0, message: 'Lỗi kết nối IMAP: ' + err.message }); return; }
+                // Lấy email 7 ngày gần đây thay vì chỉ UNSEEN
+                const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+                imap.search([['SINCE', since.toISOString().split('T')[0]]], async (err2: any, results: any) => {
+                    if (err2) { imap.end(); resolve({ success: false, count: 0, message: 'Lỗi tìm kiếm: ' + err2.message }); return; }
+                    if (!results || !results.length) { imap.end(); resolve({ success: true, count: 0, message: 'Không có mail mới trong 7 ngày qua' }); return; }
                     const fetch = imap.fetch(results, { bodies: '', struct: true });
                     fetch.on('message', (msg: any) => {
                         let body = '';
@@ -31,6 +34,9 @@ export async function syncEmails(): Promise<{ success: boolean; count: number; m
                                 const parsed = await simpleParser(body);
                                 const mid = parsed.messageId || '';
                                 if (!mid) return;
+                                // Kiểm tra đã tồn tại chưa
+                                const existing = await EmailMessage.findOne({ message_id: mid });
+                                if (existing) return;
                                 const fromText = parsed.from?.text || '';
                                 const fromName = parsed.from?.value?.[0]?.name || '';
                                 const extractedFrom = fromText.match(/<([^>]+)>/) ? fromText.match(/<([^>]+)>/)![1] : fromText;
@@ -51,7 +57,15 @@ export async function syncEmails(): Promise<{ success: boolean; count: number; m
                                     const subj = (parsed.subject || '').toLowerCase();
                                     if (/lỗi|không đăng nhập|sai mk|bảo hành/i.test(subj)) aiDraft = `Chào ${name},\n\nShop đã nhận được phản hồi của bạn. Shop sẽ kiểm tra và gửi lại thông tin tài khoản mới ngay.\n\nTrân trọng,\nBeegadget.net`;
                                 }
-                                await EmailMessage.updateOne({ message_id: mid }, { $setOnInsert: { message_id: mid, from: extractedFrom, from_name: fromName || extractedFrom, to: parsed.to?.text || '', subject: parsed.subject || '', body_text: parsed.text || '', body_html: parsed.html || '', date: parsed.date || new Date(), tags, linked_customer_id: linkedId, ai_draft: aiDraft, status: 'new', is_read: false } }, { upsert: true });
+                                await EmailMessage.create({
+                                    message_id: mid, email_account: config.user,
+                                    from: extractedFrom, from_name: fromName || extractedFrom,
+                                    to: parsed.to?.text || '', subject: parsed.subject || '',
+                                    body_text: parsed.text || '', body_html: parsed.html || '',
+                                    date: parsed.date || new Date(), tags,
+                                    linked_customer_id: linkedId, ai_draft: aiDraft,
+                                    status: 'new', is_read: false
+                                });
                                 count++;
                             } catch { }
                         });
@@ -61,7 +75,7 @@ export async function syncEmails(): Promise<{ success: boolean; count: number; m
                 });
             });
         });
-        imap.once('error', (err: any) => { resolve({ success: false, count: 0, message: err.message }); });
+        imap.once('error', (err: any) => { resolve({ success: false, count: 0, message: 'Lỗi IMAP: ' + err.message }); });
         imap.connect();
     });
 }
