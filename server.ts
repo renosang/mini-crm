@@ -107,6 +107,7 @@ app.delete('/api/accounts/:id', mapParams, accountDetailHandler);
 app.post('/api/accounts/:id/renew', mapParams, renewHandler);
 
 app.get('/api/orders', ordersHandler);
+app.get('/api/orders/pdf/:id', mapParams, (req: any, res: any) => import('./api/orders/pdf.ts').then(m => m.default(req, res)));
 app.get('/api/orders/:id', mapParams, ordersHandler);
 app.post('/api/orders', ordersHandler);
 app.delete('/api/orders/:id', mapParams, ordersHandler);
