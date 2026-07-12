@@ -37,8 +37,8 @@ const ChiPhi: React.FC = () => {
                 api.get('/expenses/pnl'),
                 api.get('/expenses' + (categoryFilter ? '?category=' + categoryFilter : '')),
             ]);
-            if (resPnl.data.success) setPnl(resPnl.data.data);
-            if (resExp.data.success) setExpenses(resExp.data.data);
+            if (resPnl.data.success && resPnl.data.data && typeof resPnl.data.data.totalRevenue === 'number') setPnl(resPnl.data.data);
+            if (resExp.data.success && Array.isArray(resExp.data.data)) setExpenses(resExp.data.data);
         } catch (err) { console.error(err); } finally { setLoading(false); }
     };
 
@@ -57,7 +57,7 @@ const ChiPhi: React.FC = () => {
 
     const handleDelete = async (id: string) => {
         if (!window.confirm('Xóa chi phí này?')) return;
-        try { await api.delete('/expenses/' + id); loadData(); } catch {}
+        try { await api.delete('/expenses/' + id); loadData(); } catch { }
     };
 
     const catLabel = (c: string) => ({ recurring: 'Định kỳ', risk: 'Rủi ro', funding: 'Nạp ví', other: 'Khác' } as any)[c] || c;
