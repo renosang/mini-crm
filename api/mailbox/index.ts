@@ -1,13 +1,17 @@
 import dbConnect from '../_lib/dbConnect.ts';
 import EmailMessage from '../_models/EmailMessage.ts';
 import { syncEmails, sendReplyMail } from '../_lib/imapService.ts';
-import { syncGmailEmails, sendGmailEmail } from '../_lib/gmailService.ts';
 import Setting from '../_models/Setting.ts';
 import nodemailer from 'nodemailer';
 
 export default async function handler(req: any, res: any) {
     await dbConnect();
-    const id = req.query.id || req.params?.id;
+    const url = (req.url || req.originalUrl || '').toString();
+    const id = req.query.id || req.params?.id
+        || (url.includes('/sync') ? 'sync' : undefined)
+        || (url.includes('/compose') ? 'compose' : undefined)
+        || (url.includes('/reply') ? 'reply' : undefined)
+        || (url.includes('/stats') ? 'stats' : undefined);
     const { method } = req;
 
     switch (method) {
