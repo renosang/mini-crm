@@ -19,26 +19,20 @@ export async function syncEmails(): Promise<{ success: boolean; count: number; m
         let count = 0;
         let resolved = false;
         const safeResolve = (data: any) => { if (!resolved) { resolved = true; try { imap.end(); } catch { } resolve(data); } };
-        setTimeout(() => safeResolve({ success: true, count, message: `Đã đồng bộ ${count} mail (timeout)` }), 60000);
+        setTimeout(() => safeResolve({ success: true, count, message: 'Đã đồng bộ ' + count + ' mail' }), 60000);
 
         imap.once('ready', () => {
             imap.openBox('INBOX', false, (err: any, box: any) => {
                 if (err) { safeResolve({ success: false, count: 0, message: 'Lỗi mở hộp thư: ' + err.message }); return; }
                 const total = box.messages.total;
                 const start = Math.max(1, total - 19);
-                // Fetch last 20 by sequence number (FAST - no search needed)
-                const fetch = imap.seq.fetch(`${start}:${total}`, { bodies: ['HEADER', 'TEXT'] });
+                const fetch = imap.seq.fetch(start + ':' + total, { bodies: '' });
                 fetch.on('message', (msg: any) => {
-                    let header = '';
-                    let body = '';
-                    msg.on('body', (stream: any, info: any) => {
-                        let b = '';
-                        stream.on('data', (c: any) => b += c.toString('utf8'));
-                        stream.once('end', () => { if (info.which === 'HEADER') header = b; else if (info.which === 'TEXT') body = b; });
-                    });
+                    let raw = '';
+                    msg.on('body', (stream: any) => { let b = ''; stream.on('data', (c: any) => b += c.toString('utf8')); stream.once('end', () => raw = b); });
                     msg.once('end', async () => {
                         try {
-                            const parsed = await simpleParser(header + '\r\n\r\n' + body);
+                            const parsed = await simpleParser(raw);
                             const mid = parsed.messageId || '';
                             if (!mid) return;
                             const existing = await EmailMessage.findOne({ message_id: mid });
@@ -61,9 +55,10 @@ export async function syncEmails(): Promise<{ success: boolean; count: number; m
                                 const cust = await Customer.findById(linkedId);
                                 const name = cust?.name || fromName || 'Quý khách';
                                 if (/lỗi|không đăng nhập|sai mk|bảo hành/i.test((parsed.subject || '').toLowerCase())) {
-                                    aiDraft = `Chào ${name},\n\nShop đã nhận được phản hồi của bạn. Shop sẽ kiểm tra và gửi lại thông tin tài khoản mới ngay.\n\nTrân trọng,\nBeegadget.net`;
+                                    aiDraft = 'Chào ' + name + ',\n\nShop đã nhận được phản hồi của bạn. Shop sẽ kiểm tra và gửi lại thông tin tài khoản mới ngay.\n\nTrân trọng,\nBeegadget.net';
                                 }
                             }
+                            const atts = (parsed.attachments || []).map((a: any) => ({ filename: a.filename || '', content_type: a.contentType || '', size: a.size || 0 }));
                             await EmailMessage.create({
                                 message_id: mid, email_account: config.user,
                                 from: fromEmail, from_name: fromName || fromEmail,
@@ -71,14 +66,15 @@ export async function syncEmails(): Promise<{ success: boolean; count: number; m
                                 body_text: parsed.text || '', body_html: parsed.html || '',
                                 date: parsed.date || new Date(), tags,
                                 linked_customer_id: linkedId, ai_draft: aiDraft,
-                                status: 'new', is_read: false
+                                status: 'new', is_read: false,
+                                attachments: atts
                             });
                             count++;
                         } catch { }
                     });
                 });
-                fetch.once('error', () => safeResolve({ success: true, count, message: `Đã đồng bộ ${count} mail` }));
-                fetch.once('end', () => safeResolve({ success: true, count, message: `Đã đồng bộ ${count} mail` }));
+                fetch.once('error', () => safeResolve({ success: true, count, message: 'Đã đồng bộ ' + count + ' mail' }));
+                fetch.once('end', () => safeResolve({ success: true, count, message: 'Đã đồng bộ ' + count + ' mail' }));
             });
         });
         imap.once('error', (err: any) => { safeResolve({ success: false, count: 0, message: 'Lỗi IMAP: ' + err.message }); });
