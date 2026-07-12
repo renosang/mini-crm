@@ -92,6 +92,17 @@ const Mailbox: React.FC = () => {
         } catch (err: any) { alert('Lỗi: ' + err.message); }
     };
 
+    const connectGmail = async () => {
+        try {
+            const res = await api.get('/mailbox/oauth');
+            if (res.data.success && res.data.url) {
+                window.location.href = res.data.url;
+            } else {
+                alert('Không thể lấy URL xác thực Gmail');
+            }
+        } catch (err: any) { alert('Lỗi: ' + err.message); }
+    };
+
     const markRead = async (id: string) => {
         try { await api.put('/mailbox/' + id, { is_read: true }); } catch { }
     };
@@ -132,17 +143,29 @@ const Mailbox: React.FC = () => {
                 <p>Quản lý email khách hàng, trả lời trực tiếp không cần mở Gmail</p>
             </div>
 
-            {/* Settings banner if not configured */}
+            {/* Settings/OAuth banner */}
             {!imapEmail && (
-                <div style={{ background: '#FFF5E6', borderRadius: 12, padding: '1rem', marginBottom: '1rem', border: '1px solid #FFE0B2', display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ background: '#FFF5E6', borderRadius: 12, padding: '1rem', marginBottom: '1rem', border: '1px solid #FFE0B2', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                     <FiAlertCircle style={{ color: '#D27B00', fontSize: 20 }} />
-                    <div style={{ flex: 1 }}>
-                        <strong style={{ color: '#D27B00' }}>Chưa cấu hình IMAP</strong>
-                        <p style={{ margin: '2px 0 0', fontSize: 13, color: '#515154' }}>Vui lòng nhập Email và Mật khẩu ứng dụng Gmail để bắt đầu đồng bộ mail.</p>
+                    <div style={{ flex: 1, minWidth: 200 }}>
+                        <strong style={{ color: '#D27B00' }}>Chưa kết nối Gmail</strong>
+                        <p style={{ margin: '2px 0 0', fontSize: 13, color: '#515154' }}>Kết nối Gmail để đồng bộ và gửi mail trực tiếp từ CRM.</p>
                     </div>
-                    <button onClick={() => setShowSettings(true)} style={{ border: 'none', background: '#0071E3', color: '#FFF', padding: '8px 16px', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
-                        <FiSettings style={{ marginRight: 4, verticalAlign: 'middle' }} /> Cấu hình ngay
-                    </button>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                        <button onClick={connectGmail} style={{ border: 'none', background: '#34C759', color: '#FFF', padding: '8px 16px', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                            🔗 Kết nối Gmail (OAuth)
+                        </button>
+                        <button onClick={() => setShowSettings(true)} style={{ border: 'none', background: '#0071E3', color: '#FFF', padding: '8px 16px', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                            <FiSettings style={{ marginRight: 4, verticalAlign: 'middle' }} /> Cấu hình thủ công
+                        </button>
+                    </div>
+                </div>
+            )}
+            {imapEmail && (
+                <div style={{ background: '#F0F9F1', borderRadius: 12, padding: '0.6rem 1rem', marginBottom: '1rem', border: '1px solid #C2E7C6', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <FiCheckCircle style={{ color: '#2E7D32', fontSize: 16 }} />
+                    <span style={{ fontSize: 13, color: '#2E7D32', fontWeight: 600 }}>✅ Đã kết nối: {imapEmail}</span>
+                    <button onClick={connectGmail} style={{ marginLeft: 'auto', border: 'none', background: 'transparent', color: '#0071E3', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Kết nối lại</button>
                 </div>
             )}
 

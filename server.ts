@@ -191,6 +191,8 @@ app.delete('/api/discounts/:id', mapParams, discountDetailHandler);
 
 // Mailbox Routes
 app.get('/api/mailbox/test-imap', (req, res) => import('./api/mailbox/test-imap.ts').then(m => m.default(req, res)));
+app.get('/api/mailbox/oauth', (req, res) => import('./api/mailbox/oauth.ts').then(m => m.default(req, res)));
+app.get('/api/mailbox/oauth-callback', (req, res) => import('./api/mailbox/oauth-callback.ts').then(m => m.default(req, res)));
 app.get('/api/mailbox/sync', mailboxHandler);
 app.get('/api/mailbox/stats', mailboxHandler);
 app.get('/api/mailbox', mailboxHandler);
