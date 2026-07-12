@@ -7,7 +7,6 @@ const OrderSchema = new mongoose.Schema(
       ref: 'Customer',
       required: true,
     },
-    // Một mảng các tài khoản đã bán trong đơn hàng này
     accounts: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -20,62 +19,53 @@ const OrderSchema = new mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           ref: 'Product',
         },
-        package_id: {
-          type: String,
-        },
-        name: String, // Tên sản phẩm + gói
-        price: {
-          type: Number,
-        },
-        quantity: {
-          type: Number,
-          default: 1,
-        }
+        package_id: { type: String },
+        name: String,
+        price: { type: Number },
+        quantity: { type: Number, default: 1 },
       }
     ],
-    // === Trường mới cho modal đơn giản ===
-    product_name: { type: String, default: '' },       // Tên sản phẩm tùy chỉnh
-    quantity: { type: Number, default: 1 },              // Số lượng
-    cost_price: { type: Number, default: 0 },            // Giá gốc
-    selling_price: { type: Number, default: 0 },         // Giá bán
-    expiry_date: { type: Date, default: null },          // Hạn sử dụng
-    recurring_invoice: {                                 // Gửi hóa đơn định kỳ
+    product_name: { type: String, default: '' },
+    quantity: { type: Number, default: 1 },
+    cost_price: { type: Number, default: 0 },
+    selling_price: { type: Number, default: 0 },
+    expiry_date: { type: Date, default: null },
+    recurring_invoice: {
       enabled: { type: Boolean, default: false },
       interval_months: { type: Number, default: 1 },
       custom_interval: { type: String, default: '' },
     },
-    discount_code: {
-      type: String,
-      default: '',
-    },
-    discount_reason: {
-      type: String,
-      default: '',
-    },
-    discount_amount: {
-      type: Number,
-      default: 0,
-    },
-    total_amount: {
-      type: Number,
-      required: true, // Tổng tiền bán
-    },
-    payment_method: {                                    // Hình thức thanh toán
-      type: String,
-      enum: ['bank_transfer', 'cash', ''],
-      default: '',
-    },
-    customer_note: { type: String, default: '' },        // Note hiển thị với khách hàng
-    internal_note: { type: String, default: '' },        // Note nội bộ
-    status: {
-      type: String,
-      enum: ['pending', 'paid', 'cancelled'],
-      default: 'pending',
-    },
-    order_date: {
-      type: Date,
-      default: Date.now,
-    },
+    discount_code: { type: String, default: '' },
+    discount_reason: { type: String, default: '' },
+    discount_amount: { type: Number, default: 0 },
+    total_amount: { type: Number, required: true },
+    payment_method: { type: String, enum: ['bank_transfer', 'cash', ''], default: '' },
+    customer_note: { type: String, default: '' },
+    internal_note: { type: String, default: '' },
+    status: { type: String, enum: ['pending', 'paid', 'cancelled'], default: 'pending' },
+    // === Invoice / Hóa đơn fields ===
+    invoice_id: { type: String, default: '' },
+    delivery_status: { type: String, enum: ['not_delivered', 'delivered', 'error'], default: 'not_delivered' },
+    delivered_keys: [{
+      key: { type: String, default: '' },
+      product_name: { type: String, default: '' },
+      delivered_at: { type: Date, default: Date.now },
+    }],
+    logs: [{
+      timestamp: { type: Date, default: Date.now },
+      action: { type: String, default: '' },
+      detail: { type: String, default: '' },
+    }],
+    refund_status: { type: String, enum: ['none', 'requested', 'refunded'], default: 'none' },
+    refund_reason: { type: String, default: '' },
+    revoked_keys: [{
+      key: { type: String, default: '' },
+      product_name: { type: String, default: '' },
+      revoked_at: { type: Date, default: Date.now },
+      reason: { type: String, default: '' },
+    }],
+    sla_warning: { type: Boolean, default: false },
+    order_date: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );

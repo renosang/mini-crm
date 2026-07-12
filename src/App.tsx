@@ -13,6 +13,7 @@ import Login from './pages/Login.tsx';
 import KhachHang from './pages/KhachHang.tsx';
 import BanHang from './pages/BanHang.tsx';
 import BaoGia from './pages/BaoGia.tsx';
+import HoaDon from './pages/HoaDon.tsx';
 import BaoGiaXacNhan from './pages/BaoGiaXacNhan.tsx';
 import BanQuyenCaNhan from './pages/BanQuyenCaNhan.tsx';
 import KhoTaiNguyen from './pages/KhoTaiNguyen.tsx';
@@ -60,6 +61,7 @@ function App() {
         <Route path="/customers/:id" element={<CustomerDetail />} />
         <Route path="/ban-hang" element={<BanHang />} />
         <Route path="/ban-hang/bao-gia" element={<BaoGia />} />
+        <Route path="/ban-hang/hoa-don" element={<HoaDon />} />
         <Route path="/kho-tai-nguyen" element={<KhoTaiNguyen />} />
         <Route path="/ban-quyen-ca-nhan" element={<BanQuyenCaNhan />} />
         <Route path="/omnichannel" element={<OmnichannelInbox />} />

@@ -18,6 +18,7 @@ import accountDetailHandler from './api/accounts/[id].ts';
 import renewHandler from './api/accounts/renew.ts';
 
 import ordersHandler from './api/orders/index.ts';
+import invoiceActionsHandler from './api/orders/invoice-actions.ts';
 import personalLicensesHandler from './api/personal-licenses/index.ts';
 import sendOrderReminderHandler from './api/orders/send-reminder.ts';
 import smtpSettingsHandler from './api/settings/smtp.ts';
@@ -101,6 +102,8 @@ app.get('/api/orders', ordersHandler);
 app.get('/api/orders/:id', mapParams, ordersHandler);
 app.post('/api/orders', ordersHandler);
 app.delete('/api/orders/:id', mapParams, ordersHandler);
+app.post('/api/orders/:id/invoice-actions', mapParams, invoiceActionsHandler);
+app.put('/api/orders/:id/invoice-actions', mapParams, invoiceActionsHandler);
 
 app.get('/api/personal-licenses', personalLicensesHandler);
 app.get('/api/personal-licenses/:id', mapParams, personalLicensesHandler);
