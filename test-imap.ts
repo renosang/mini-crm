@@ -1,10 +1,14 @@
-// Script test IMAP độc lập - chạy trên VPS: tsx test-imap.ts
+// Script test IMAP — chạy trên VPS: npx tsx test-imap.ts
+import dotenv from 'dotenv';
+import path from 'path';
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 import mongoose from 'mongoose';
 import Setting from './api/_models/Setting.ts';
 import Imap from 'imap';
 import { simpleParser } from 'mailparser';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/mini-crm';
+const MONGODB_URI = process.env.MONGODB_URI;
+if (!MONGODB_URI) { console.log('❌ MONGODB_URI không được load từ .env.local'); process.exit(1); }
 
 async function main() {
     console.log('🔌 Kết nối MongoDB...');
