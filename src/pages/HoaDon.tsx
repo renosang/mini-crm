@@ -1,339 +1,185 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
-import {
-    FiFileText, FiSend, FiMail, FiAlertTriangle, FiEye, FiCopy,
-    FiCheckCircle, FiClock, FiSearch, FiList,
-    FiUser, FiKey, FiRotateCcw, FiAlertCircle
-} from 'react-icons/fi';
+import { FiFileText, FiSend, FiMail, FiAlertTriangle, FiEye, FiCopy, FiCheckCircle, FiClock, FiSearch, FiUser, FiRotateCcw, FiAlertCircle, FiDownload, FiPrinter, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
 interface ICustomer { _id: string; name: string; phone?: string; email?: string; }
-interface IOrder {
-    _id: string; invoice_id: string; customer_id: ICustomer | null;
-    items: any[]; product_name?: string; total_amount: number;
-    quantity?: number; selling_price?: number;
-    accounts?: any[];
-    status: string; payment_method?: string;
-    delivery_status: string; delivered_keys: any[]; revoked_keys: any[];
-    refund_status: string; refund_reason: string;
-    logs: any[]; sla_warning: boolean; createdAt: string;
-}
+interface IOrder { _id: string; invoice_id: string; customer_id: ICustomer | null; items: any[]; product_name?: string; total_amount: number; quantity?: number; selling_price?: number; cost_price?: number; expiry_date?: string; accounts?: any[]; status: string; payment_method?: string; delivery_status: string; delivered_keys: any[]; revoked_keys: any[]; refund_status: string; refund_reason: string; logs: any[]; sla_warning: boolean; createdAt: string; recurring_invoice?: any; discount_amount?: number; customer_note?: string; internal_note?: string; }
 
-const filterTabs = [
-    { key: 'all', label: 'Tất cả', con: <FiList /> },
-    { key: 'pending', label: 'Chờ thanh toán', icon: <FiClock /> },
-    { key: 'paid', label: 'Đã thanh toán', icon: <FiCheckCircle /> },
-    { key: 'delivered', label: 'Đã bàn giao', icon: <FiSend /> },
-    { key: 'error', label: 'Lỗi/SLA', icon: <FiAlertTriangle /> },
-    { key: 'refunded', label: 'Hoàn tiền', icon: <FiRotateCcw /> },
-];
-
-const productTypeTabs = [
-    { key: '', label: 'Tất cả' },
-    { key: 'key', label: 'Key' },
-    { key: 'account', label: 'Tài khoản' },
-    { key: 'service', label: 'Dịch vụ' },
-];
+const filterTabs = [{ key: 'all', label: 'Tất cả' }, { key: 'pending', label: 'Chờ TT' }, { key: 'paid', label: 'Đã TT' }, { key: 'delivered', label: 'Đã gửi' }, { key: 'refunded', label: 'Hoàn tiền' }];
 
 const HoaDon: React.FC = () => {
     const [orders, setOrders] = useState<IOrder[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('all');
-    const [productFilter, setProductFilter] = useState('');
     const [searchQ, setSearchQ] = useState('');
     const [viewingOrder, setViewingOrder] = useState<IOrder | null>(null);
-    const [showKeys, setShowKeys] = useState(false);
+    const [showPdf, setShowPdf] = useState(false);
     const [refundReason, setRefundReason] = useState('');
+    const [showKeys, setShowKeys] = useState(false);
 
     useEffect(() => { loadOrders(); }, [activeTab]);
 
     const loadOrders = async () => {
         setLoading(true);
-        try {
-            const res = await api.get('/orders');
-            if (res.data.success) {
-                let data = res.data.data;
-                const now = Date.now();
-                for (const o of data) {
-                    if (o.status === 'paid' && o.delivery_status !== 'delivered') {
-                        const paidAt = o.logs?.find((l: any) => l.action === 'paid')?.timestamp;
-                        if (paidAt && now - new Date(paidAt).getTime() > 5 * 60 * 1000) {
-                            o.sla_warning = true;
-                        }
-                    }
-                }
-                setOrders(data);
-            }
-        } catch (err) { console.error(err); }
-        finally { setLoading(false); }
+        try { const res = await api.get('/orders'); if (res.data.success) { const now = Date.now(); for (const o of res.data.data) { if (o.status === 'paid' && o.delivery_status !== 'delivered') { const paidAt = o.logs?.find((l: any) => l.action === 'paid')?.timestamp; if (paidAt && now - new Date(paidAt).getTime() > 5 * 60 * 1000) o.sla_warning = true; } } setOrders(res.data.data); } } catch { } finally { setLoading(false); }
     };
 
-    const handleDeliver = async (id: string) => {
-        try {
-            const res = await api.post('/orders/' + id + '/invoice-actions', { action: 'deliver' });
-            if (res.data.successEmail) {
-                alert('Đã gửi email bàn giao cho khách hàng!');
-            } else {
-                alert('Đã bàn giao thành công!');
-            }
-            loadOrders();
-            setViewingOrder(null);
-        } catch (err: any) { alert('Lỗi: ' + err.message); }
-    };
+    const handleDeliver = async (id: string) => { try { const res = await api.post('/orders/' + id + '/invoice-actions', { action: 'deliver' }); alert(res.data.successEmail ? 'Đã gửi email bàn giao!' : 'Đã bàn giao!'); loadOrders(); setViewingOrder(null); } catch (err: any) { alert('Lỗi: ' + err.message); } };
+    const handleRefund = async (id: string) => { if (!refundReason.trim()) { alert('Nhập lý do'); return; } try { await api.post('/orders/' + id + '/invoice-actions', { action: 'refund', reason: refundReason }); alert('Đã hoàn tiền!'); loadOrders(); setViewingOrder(null); setRefundReason(''); } catch (err: any) { alert('Lỗi: ' + err.message); } };
+    const copyKeys = (keys: any[]) => { navigator.clipboard.writeText(keys.map(k => k.key).filter(Boolean).join('\n')); alert('Đã copy ' + keys.length + ' key!'); };
 
-    const handleRefund = async (id: string) => {
-        if (!refundReason.trim()) { alert('Nhập lý do hoàn tiền'); return; }
-        try { await api.post('/orders/' + id + '/invoice-actions', { action: 'refund', reason: refundReason }); alert('Đã hoàn tiền!'); loadOrders(); setViewingOrder(null); setRefundReason(''); }
-        catch (err: any) { alert('Lỗi: ' + err.message); }
-    };
+    const getPdfUrl = (id: string) => '/api/orders/pdf/' + id;
+    const downloadPdf = (id: string) => { const a = document.createElement('a'); a.href = getPdfUrl(id); a.download = 'hoa-don-' + id + '.pdf'; a.click(); };
+    const getStatusBadge = (s: string) => ({ pending: { bg: '#FFF5E6', color: '#D27B00', l: 'Chờ TT' }, paid: { bg: '#F0F9F1', color: '#2E7D32', l: 'Đã TT' }, cancelled: { bg: '#FFEBEA', color: '#D32F2F', l: 'Hủy' } } as any)[s] || { bg: '#F5F5F7', color: '#86868B', l: s };
+    const getProductType = (o: IOrder): string => { const n = o.items?.map(i => i.name).join(' ') || o.product_name || ''; return n.toLowerCase().includes('key') || n.toLowerCase().includes('license') ? 'key' : n.toLowerCase().includes('tài khoản') || n.toLowerCase().includes('account') || n.toLowerCase().includes('netflix') ? 'account' : 'service'; };
 
-    const copyKeys = (keys: any[]) => {
-        const text = keys.map(k => k.key).filter(Boolean).join('\n');
-        navigator.clipboard.writeText(text);
-        alert('Đã copy ' + keys.length + ' thông tin bàn giao!');
-    };
+    let displayOrders = orders;
+    if (activeTab === 'pending') displayOrders = orders.filter(o => o.status === 'pending');
+    else if (activeTab === 'paid') displayOrders = orders.filter(o => o.status === 'paid' && o.delivery_status !== 'delivered');
+    else if (activeTab === 'delivered') displayOrders = orders.filter(o => o.delivery_status === 'delivered');
+    else if (activeTab === 'refunded') displayOrders = orders.filter(o => o.refund_status === 'refunded');
+    if (searchQ) displayOrders = displayOrders.filter(o => o.customer_id?.name?.toLowerCase().includes(searchQ.toLowerCase()) || (o.invoice_id || '').toLowerCase().includes(searchQ.toLowerCase()));
 
-    const getStatusBadge = (status: string) => {
-        const map: any = {
-            pending: { bg: '#FFF5E6', color: '#D27B00', label: 'Chờ TT' },
-            paid: { bg: '#F0F9F1', color: '#2E7D32', label: 'Đã TT' },
-            cancelled: { bg: '#FFEBEA', color: '#D32F2F', label: 'Đã hủy' },
-        };
-        const s = map[status] || map.pending;
-        return <span style={{ padding: '3px 10px', borderRadius: 99, background: s.bg, color: s.color, fontSize: 11, fontWeight: 700 }}>{s.label}</span>;
-    };
-
-    const getDeliveryBadge = (ds: string, sla: boolean) => {
-        if (sla) return <span style={{ padding: '3px 10px', borderRadius: 99, background: '#FF3B30', color: '#FFF', fontSize: 11, fontWeight: 700 }}>⚠ SLA</span>;
-        const map: any = {
-            not_delivered: { bg: '#F5F5F7', color: '#86868B', label: 'Chưa gửi' },
-            delivered: { bg: '#E8F5E9', color: '#2E7D32', label: 'Đã gửi' },
-            error: { bg: '#FFEBEA', color: '#D32F2F', label: 'Lỗi' },
-        };
-        const s = map[ds] || map.not_delivered;
-        return <span style={{ padding: '3px 10px', borderRadius: 99, background: s.bg, color: s.color, fontSize: 11, fontWeight: 700 }}>{s.label}</span>;
-    };
-
-    const getProductType = (order: IOrder): string => {
-        const names = order.items?.map(i => i.name).join(' ') || order.product_name || '';
-        if (names.toLowerCase().includes('key') || names.toLowerCase().includes('license')) return 'key';
-        if (names.toLowerCase().includes('tài khoản') || names.toLowerCase().includes('account') || names.toLowerCase().includes('netflix') || names.toLowerCase().includes('spotify')) return 'account';
-        return 'service';
-    };
-
-    let filteredOrders = orders;
-    if (activeTab === 'pending') filteredOrders = orders.filter(o => o.status === 'pending');
-    else if (activeTab === 'paid') filteredOrders = orders.filter(o => o.status === 'paid' && o.delivery_status !== 'delivered');
-    else if (activeTab === 'delivered') filteredOrders = orders.filter(o => o.delivery_status === 'delivered');
-    else if (activeTab === 'error') filteredOrders = orders.filter(o => o.sla_warning || o.delivery_status === 'error');
-    else if (activeTab === 'refunded') filteredOrders = orders.filter(o => o.refund_status === 'refunded');
-
-    if (productFilter) filteredOrders = filteredOrders.filter(o => getProductType(o) === productFilter);
-    if (searchQ) filteredOrders = filteredOrders.filter(o => o.customer_id?.name?.toLowerCase().includes(searchQ.toLowerCase()));
+    const formatMoney = (n: number) => n.toLocaleString('vi-VN') + ' đ';
 
     return (
         <div>
-            <div className="customer-detail-header" style={{ marginBottom: '1.25rem' }}>
+            <div className="customer-detail-header" style={{ marginBottom: '1rem' }}>
                 <h1 className="gradient-title">Quản Lý Hóa Đơn</h1>
-                <p>Bàn giao key & tài khoản, theo dõi thanh toán, xử lý hoàn tiền</p>
+                <p>Theo dõi thanh toán, bàn giao key & tải hóa đơn PDF</p>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-                <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-                    {filterTabs.map(tab => (
-                        <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-                            style={{ border: 'none', background: activeTab === tab.key ? '#0071E3' : '#F5F5F7', color: activeTab === tab.key ? '#FFF' : '#1D1D1F', padding: '7px 14px', borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
-                            {tab.icon} {tab.label}
-                        </button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap' }}>
+                    {filterTabs.map(t => (
+                        <button key={t.key} onClick={() => setActiveTab(t.key)} style={{ border: 'none', background: activeTab === t.key ? '#0071E3' : '#F5F5F7', color: activeTab === t.key ? '#FFF' : '#1D1D1F', padding: '7px 14px', borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>{t.label}</button>
                     ))}
                 </div>
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <select value={productFilter} onChange={e => setProductFilter(e.target.value)}
-                        style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #D2D2D7', fontSize: 12, background: '#FFF' }}>
-                        {productTypeTabs.map(t => <option key={t.key} value={t.key}>{t.label}</option>)}
-                    </select>
-                    <div style={{ position: 'relative' }}>
-                        <FiSearch style={{ position: 'absolute', left: 10, top: 9, color: '#8E8E93' }} />
-                        <input type="text" placeholder="Tìm khách..." value={searchQ} onChange={e => setSearchQ(e.target.value)}
-                            style={{ padding: '7px 12px 7px 32px', borderRadius: 8, border: '1px solid #D2D2D7', fontSize: 13, width: 200 }} />
-                    </div>
+                <div style={{ position: 'relative' }}>
+                    <FiSearch style={{ position: 'absolute', left: 10, top: 9, color: '#8E8E93' }} />
+                    <input placeholder="Tìm khách hoặc mã HĐ..." value={searchQ} onChange={e => setSearchQ(e.target.value)} style={{ padding: '7px 12px 7px 32px', borderRadius: 8, border: '1px solid #D2D2D7', fontSize: 13, width: 220 }} />
                 </div>
             </div>
 
-            {loading ? <p>Đang tải...</p> : (
-                <div className="table-container widget" style={{ boxShadow: 'var(--shadow)' }}>
-                    <table className="styled-table">
-                        <thead><tr>
-                            <th className="nowrap">Mã HĐ</th><th className="nowrap">Khách hàng</th><th className="nowrap">Loại</th>
-                            <th className="nowrap">Số lượng</th><th className="nowrap">Tổng tiền</th><th className="nowrap">Thanh toán</th>
-                            <th className="nowrap">Bàn giao</th><th className="nowrap">Ngày tạo</th><th className="nowrap">Thao tác</th>
-                        </tr></thead>
-                        <tbody>
-                            {filteredOrders.length > 0 ? filteredOrders.map(o => (
-                                <tr key={o._id} style={{ background: o.sla_warning ? '#FFF5F5' : undefined }}>
-                                    <td className="nowrap">
-                                        <button onClick={() => setViewingOrder(o)}
-                                            style={{ background: 'none', border: 'none', padding: 0, color: '#0071E3', fontFamily: 'monospace', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}>
-                                            #{o.invoice_id || o._id.substring(o._id.length - 6).toUpperCase()}
-                                        </button>
-                                        {o.sla_warning && <FiAlertCircle style={{ color: '#FF3B30', marginLeft: 4, fontSize: 12 }} />}
-                                    </td>
-                                    <td className="nowrap">{o.customer_id ? <Link to={'/customers/' + o.customer_id._id} style={{ fontWeight: 600 }}>{o.customer_id.name}</Link> : '—'}</td>
-                                    <td className="nowrap"><span style={{ fontSize: 12, padding: '2px 8px', borderRadius: 99, background: getProductType(o) === 'key' ? '#EBF5FF' : getProductType(o) === 'account' ? '#FFF0E6' : '#F0F9F1', color: getProductType(o) === 'key' ? '#0071E3' : getProductType(o) === 'account' ? '#D27B00' : '#2E7D32', fontWeight: 600 }}>{getProductType(o) === 'key' ? '🔑 Key' : getProductType(o) === 'account' ? '👤 TK' : '⚙ DV'}</span></td>
-                                    <td className="nowrap">{o.delivered_keys?.length || o.items?.reduce((s: number, i: any) => s + (i.quantity || 0), 0) || 0}</td>
-                                    <td className="nowrap" style={{ fontWeight: 700 }}>{o.total_amount.toLocaleString('vi-VN')} đ</td>
-                                    <td className="nowrap">{getStatusBadge(o.status)}</td>
-                                    <td className="nowrap">{getDeliveryBadge(o.delivery_status, o.sla_warning)}</td>
-                                    <td className="nowrap" style={{ fontSize: 12, color: '#8E8E93' }}>{new Date(o.createdAt).toLocaleDateString('vi-VN')}</td>
-                                    <td className="nowrap">
-                                        <div style={{ display: 'flex', gap: 4 }}>
-                                            <button onClick={() => setViewingOrder(o)} title="Chi tiết" style={{ border: 'none', background: 'none', color: '#0071E3', cursor: 'pointer', fontSize: 14, padding: 4 }}><FiEye /></button>
-                                            {o.status === 'paid' && o.delivery_status !== 'delivered' && (
-                                                <button onClick={() => handleDeliver(o._id)} title="Bàn giao qua email" style={{ border: 'none', background: 'none', color: '#34C759', cursor: 'pointer', fontSize: 14, padding: 4 }}><FiMail /></button>
-                                            )}
-                                            {o.delivered_keys?.length > 0 && <button onClick={() => copyKeys(o.delivered_keys)} title="Copy" style={{ border: 'none', background: 'none', color: '#5856D6', cursor: 'pointer', fontSize: 14, padding: 4 }}><FiCopy /></button>}
-                                        </div>
-                                    </td>
-                                </tr>
-                            )) : <tr><td colSpan={9} style={{ textAlign: 'center', padding: '2rem', color: '#8E8E93' }}>Không có hóa đơn nào</td></tr>}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+            {loading ? <p style={{ textAlign: 'center', padding: '2rem', color: '#8E8E93' }}>Đang tải...</p> :
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '0.75rem' }}>
+                    {displayOrders.length > 0 ? displayOrders.map(o => {
+                        const sb = getStatusBadge(o.status);
+                        const ptype = getProductType(o);
+                        return (
+                            <div key={o._id} onClick={() => setViewingOrder(o)} style={{ background: '#FFF', borderRadius: 14, border: '1px solid #EEE', padding: '1rem', cursor: 'pointer', transition: 'box-shadow 0.2s' }} onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,113,227,0.1)'} onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                                    <div style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 14, color: '#0071E3' }}>#{o.invoice_id || o._id.substring(18).toUpperCase()}</div>
+                                    <span style={{ padding: '3px 10px', borderRadius: 99, background: sb.bg, color: sb.color, fontSize: 11, fontWeight: 700 }}>{sb.l}</span>
+                                </div>
+                                <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>{o.customer_id?.name || 'Khách lẻ'}</div>
+                                <div style={{ fontSize: 12, color: '#8E8E93', marginBottom: 10 }}>{o.items?.length || 0} sản phẩm · {formatMoney(o.total_amount)}</div>
+                                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', fontSize: 11, color: '#6E6E73' }}>
+                                    {ptype === 'key' && <span style={{ padding: '2px 8px', borderRadius: 99, background: '#EBF5FF', color: '#0071E3', fontWeight: 600 }}>🔑 Key</span>}
+                                    {ptype === 'account' && <span style={{ padding: '2px 8px', borderRadius: 99, background: '#FFF0E6', color: '#D27B00', fontWeight: 600 }}>👤 Tài khoản</span>}
+                                    {o.delivery_status === 'delivered' && <span style={{ padding: '2px 8px', borderRadius: 99, background: '#E8F5E9', color: '#2E7D32', fontWeight: 600 }}>📨 Đã gửi</span>}
+                                    {o.refund_status === 'refunded' && <span style={{ padding: '2px 8px', borderRadius: 99, background: '#FFEBEA', color: '#D32F2F', fontWeight: 600 }}>🔄 Đã hoàn</span>}
+                                    <span>{new Date(o.createdAt).toLocaleDateString('vi-VN')}</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: 6, marginTop: 10, paddingTop: 10, borderTop: '1px solid #F0F0F5' }}>
+                                    <button onClick={(e) => { e.stopPropagation(); setViewingOrder(o); setShowPdf(true); }} style={pdfBtn}><FiFileText /> Xem PDF</button>
+                                    <button onClick={(e) => { e.stopPropagation(); downloadPdf(o._id); }} style={dlBtn}><FiDownload /> Tải</button>
+                                    {o.status === 'paid' && o.delivery_status !== 'delivered' && <button onClick={(e) => { e.stopPropagation(); handleDeliver(o._id); }} style={delBtn}><FiMail /> Gửi</button>}
+                                    {o.delivered_keys?.length > 0 && <button onClick={(e) => { e.stopPropagation(); copyKeys(o.delivered_keys); }} style={{ border: 'none', background: 'none', color: '#5856D6', cursor: 'pointer', padding: 4, fontSize: 13 }}><FiCopy /></button>}
+                                </div>
+                            </div>
+                        );
+                    }) : <div style={{ textAlign: 'center', padding: '3rem', color: '#8E8E93', gridColumn: '1/-1' }}>Không có hóa đơn nào</div>}
+                </div>}
 
             {/* Detail Modal */}
             {viewingOrder && (
-                <div className="modal-overlay" onClick={() => { setViewingOrder(null); setShowKeys(false); }}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()} style={{ width: '800px', maxWidth: '97vw' }}>
+                <div className="modal-overlay" onClick={() => { setViewingOrder(null); setShowPdf(false); setShowKeys(false); }}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()} style={{ width: showPdf ? '95vw' : '700px', maxWidth: showPdf ? '95vw' : '95vw', maxHeight: '90vh', overflow: 'auto' }}>
                         <div className="modal-header">
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                                <div style={{ width: 38, height: 38, borderRadius: 10, background: 'linear-gradient(135deg, #0071E3, #005BB5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <FiFileText style={{ color: '#FFF', fontSize: '1.1rem' }} />
-                                </div>
-                                <div>
-                                    <h2 style={{ margin: 0, fontSize: '1.15rem' }}>Chi Tiết Hóa Đơn #{viewingOrder.invoice_id || viewingOrder._id.substring(viewingOrder._id.length - 6).toUpperCase()}</h2>
-                                    <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: 'var(--text-light)' }}>Thông tin bàn giao & trạng thái</p>
-                                </div>
+                            <h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}><FiFileText /> Hóa đơn #{viewingOrder.invoice_id || viewingOrder._id.substring(18).toUpperCase()}</h2>
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                <button onClick={() => setShowPdf(!showPdf)} style={{ border: 'none', background: '#0071E3', color: '#FFF', padding: '6px 14px', borderRadius: 6, fontWeight: 600, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}><FiFileText /> {showPdf ? 'Ẩn PDF' : 'Xem PDF'}</button>
+                                <button onClick={() => downloadPdf(viewingOrder._id)} style={{ border: 'none', background: '#34C759', color: '#FFF', padding: '6px 14px', borderRadius: 6, fontWeight: 600, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}><FiDownload /> Tải PDF</button>
+                                <button onClick={() => { setViewingOrder(null); setShowPdf(false); setShowKeys(false); }} className="modal-close-btn">&times;</button>
                             </div>
-                            <button onClick={() => { setViewingOrder(null); setShowKeys(false); }} className="modal-close-btn">&times;</button>
                         </div>
-                        <div className="modal-body" style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: 5 }}>
-                            {/* Customer */}
-                            <div style={{ background: '#F8F9FC', borderRadius: 14, padding: '1rem', marginBottom: 16, border: '1px solid #EEE', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-                                <div><strong><FiUser style={{ marginRight: 6 }} />{viewingOrder.customer_id?.name || 'Khách lẻ'}</strong><span style={{ color: '#86868B', marginLeft: 12, fontSize: 13 }}>{viewingOrder.customer_id?.phone || ''} | {viewingOrder.customer_id?.email || ''}</span></div>
-                                <div style={{ display: 'flex', gap: 16 }}>
-                                    <div><span style={{ color: '#86868B', fontSize: 11 }}>Thanh toán</span><div>{getStatusBadge(viewingOrder.status)}</div></div>
-                                    <div><span style={{ color: '#86868B', fontSize: 11 }}>Bàn giao</span><div>{getDeliveryBadge(viewingOrder.delivery_status, viewingOrder.sla_warning)}</div></div>
-                                    <div><span style={{ color: '#86868B', fontSize: 11 }}>Hoàn tiền</span><div><span style={{ fontSize: 12, fontWeight: 600 }}>{viewingOrder.refund_status === 'refunded' ? '✅ Đã hoàn' : viewingOrder.refund_status === 'requested' ? '⏳ Đang xử lý' : '—'}</span></div></div>
+
+                        {showPdf && (
+                            <div style={{ background: '#F5F5F7', padding: '1rem' }}>
+                                <iframe src={getPdfUrl(viewingOrder._id)} style={{ width: '100%', height: '75vh', border: 'none', borderRadius: 8, background: '#FFF' }} title="Hóa đơn PDF" />
+                            </div>
+                        )}
+
+                        <div className="modal-body">
+                            <div style={{ background: '#F8F9FC', borderRadius: 12, padding: '1rem', marginBottom: 12, border: '1px solid #EEE', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                                <div style={{ fontWeight: 600 }}><FiUser style={{ marginRight: 6 }} />{viewingOrder.customer_id?.name || 'Khách lẻ'} <span style={{ fontWeight: 400, color: '#8E8E93', marginLeft: 8, fontSize: 12 }}>{viewingOrder.customer_id?.phone || ''} · {viewingOrder.customer_id?.email || ''}</span></div>
+                                <div style={{ display: 'flex', gap: 12, fontSize: 12 }}><span><span style={{ color: '#8E8E93' }}>TT:</span> {getStatusBadge(viewingOrder.status).l}</span><span><span style={{ color: '#8E8E93' }}>Gửi:</span> {viewingOrder.delivery_status === 'delivered' ? '✅' : '⏳'}</span><span><span style={{ color: '#8E8E93' }}>Tổng:</span> <strong style={{ color: '#D32F2F' }}>{formatMoney(viewingOrder.total_amount)}</strong></span></div>
+                            </div>
+
+                            <h4 style={{ margin: '0 0 8px', fontSize: 14 }}>📦 Sản phẩm / Dịch vụ</h4>
+                            <table className="styled-table" style={{ marginBottom: 12 }}><thead><tr><th>Tên SP</th><th>SL</th><th>Đơn giá</th><th style={{ textAlign: 'right' }}>Thành tiền</th></tr></thead>
+                                <tbody>
+                                    {viewingOrder.items && viewingOrder.items.length > 0 ? viewingOrder.items.map((it: any, i: number) => (<tr key={i}><td style={{ fontWeight: 600 }}>{it.name}</td><td>{it.quantity}</td><td>{formatMoney(it.price)}</td><td style={{ textAlign: 'right', fontWeight: 600 }}>{formatMoney(it.price * it.quantity)}</td></tr>))
+                                        : viewingOrder.product_name ? (<tr><td style={{ fontWeight: 600 }}>{viewingOrder.product_name}</td><td>{viewingOrder.quantity || 1}</td><td>{formatMoney(viewingOrder.selling_price || 0)}</td><td style={{ textAlign: 'right', fontWeight: 600 }}>{formatMoney(viewingOrder.total_amount)}</td></tr>)
+                                            : <tr><td colSpan={4} style={{ textAlign: 'center', color: '#8E8E93' }}>—</td></tr>}
+                                </tbody></table>
+
+                            {viewingOrder.product_name && (
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, fontSize: 12, marginBottom: 12, background: '#FAFAFC', padding: 10, borderRadius: 8, border: '1px solid #EEE' }}>
+                                    {viewingOrder.cost_price > 0 && <div><span style={{ color: '#8E8E93' }}>Giá gốc:</span> {formatMoney(viewingOrder.cost_price)}</div>}
+                                    {viewingOrder.selling_price > 0 && <div><span style={{ color: '#8E8E93' }}>Giá bán:</span> {formatMoney(viewingOrder.selling_price)}</div>}
+                                    {viewingOrder.expiry_date && <div><span style={{ color: '#8E8E93' }}>Hạn SD:</span> {new Date(viewingOrder.expiry_date).toLocaleDateString('vi-VN')}</div>}
+                                    {viewingOrder.discount_amount > 0 && <div><span style={{ color: '#D32F2F' }}>Giảm giá:</span> {formatMoney(viewingOrder.discount_amount)}</div>}
+                                    {viewingOrder.payment_method && <div><span style={{ color: '#8E8E93' }}>Thanh toán:</span> {viewingOrder.payment_method === 'bank_transfer' ? '🏦 CK' : '💵 TM'}</div>}
+                                    {viewingOrder.customer_note && <div style={{ gridColumn: '1/-1' }}><span style={{ color: '#8E8E93' }}>Ghi chú KH:</span> {viewingOrder.customer_note}</div>}
+                                    {viewingOrder.internal_note && <div style={{ gridColumn: '1/-1' }}><span style={{ color: '#8E8E93' }}>Ghi chú NB:</span> {viewingOrder.internal_note}</div>}
                                 </div>
-                            </div>
+                            )}
 
-                            {/* Items */}
-                            <div style={{ marginBottom: 16 }}>
-                                <h4 style={{ margin: '0 0 8px', fontSize: 14 }}>📦 Sản phẩm</h4>
-                                <table className="styled-table"><thead><tr><th>Tên SP</th><th>SL</th><th>Đơn giá</th><th style={{ textAlign: 'right' }}>Thành tiền</th></tr></thead>
-                                    <tbody>
-                                        {viewingOrder.items && viewingOrder.items.length > 0 ? viewingOrder.items.map((it: any, i: number) => (
-                                            <tr key={i}><td style={{ fontWeight: 600 }}>{it.name}</td><td>{it.quantity}</td><td>{it.price.toLocaleString('vi-VN')} đ</td><td style={{ textAlign: 'right', fontWeight: 600 }}>{(it.price * it.quantity).toLocaleString('vi-VN')} đ</td></tr>
-                                        )) : viewingOrder.product_name ? (
-                                            <tr><td style={{ fontWeight: 600 }}>{viewingOrder.product_name}</td><td>{viewingOrder.quantity || 1}</td><td>{(viewingOrder.selling_price || 0).toLocaleString('vi-VN')} đ</td><td style={{ textAlign: 'right', fontWeight: 600 }}>{viewingOrder.total_amount.toLocaleString('vi-VN')} đ</td></tr>
-                                        ) : <tr><td colSpan={4} style={{ textAlign: 'center', color: '#8E8E93' }}>—</td></tr>}
-                                    </tbody></table>
-                            </div>
-
-                            {/* Keys — đổi tên thành "Thông tin bàn giao" */}
                             {viewingOrder.delivered_keys && viewingOrder.delivered_keys.length > 0 && (
-                                <div style={{ marginBottom: 16 }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                                <div style={{ marginBottom: 12 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, cursor: 'pointer' }} onClick={() => setShowKeys(!showKeys)}>
                                         <h4 style={{ margin: 0, fontSize: 14 }}>🔐 Thông tin bàn giao ({viewingOrder.delivered_keys.length})</h4>
-                                        <div style={{ display: 'flex', gap: 8 }}>
-                                            <button onClick={() => setShowKeys(!showKeys)} style={{ border: 'none', background: 'none', color: '#0071E3', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>{showKeys ? 'Ẩn' : 'Hiện'}</button>
-                                            <button onClick={() => copyKeys(viewingOrder.delivered_keys)} style={{ border: 'none', background: 'none', color: '#5856D6', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}><FiCopy /> Copy tất cả</button>
-                                        </div>
+                                        {showKeys ? <FiChevronUp /> : <FiChevronDown />}
                                     </div>
-                                    <div className="table-container" style={{ border: '1px solid #EEE', borderRadius: 10, overflow: 'hidden' }}>
-                                        <table className="styled-table"><thead><tr><th>#</th><th>Sản phẩm</th><th>Key/Tài khoản</th></tr></thead>
-                                            <tbody>{viewingOrder.delivered_keys.map((k: any, i: number) => (
-                                                <tr key={i}><td>{i + 1}</td><td>{k.product_name}</td><td><code style={{ background: '#F5F5F7', padding: '2px 6px', borderRadius: 4, fontSize: 11 }}>{showKeys ? k.key : '••••••••' + (k.key || '').substring((k.key || '').length - 4)}</code></td></tr>
-                                            ))}</tbody>
-                                        </table>
-                                    </div>
+                                    <table className="styled-table"><thead><tr><th>#</th><th>SP</th><th>Key/TK</th></tr></thead><tbody>{viewingOrder.delivered_keys.map((k: any, i: number) => (<tr key={i}><td>{i + 1}</td><td>{k.product_name}</td><td><code style={{ background: '#F5F5F7', padding: '2px 6px', borderRadius: 4, fontSize: 11 }}>{showKeys ? k.key : '••••' + (k.key || '').slice(-4)}</code></td></tr>))}</tbody></table>
                                 </div>
                             )}
 
-                            {/* Nếu chưa có delivered_keys nhưng có accounts → hiển thị thông tin tài khoản */}
-                            {(!viewingOrder.delivered_keys || viewingOrder.delivered_keys.length === 0) && viewingOrder.accounts && viewingOrder.accounts.length > 0 && (
-                                <div style={{ marginBottom: 16 }}>
-                                    <h4 style={{ margin: '0 0 8px', fontSize: 14 }}>👤 Tài khoản trong đơn</h4>
-                                    <div className="table-container" style={{ border: '1px solid #EEE', borderRadius: 10, overflow: 'hidden' }}>
-                                        <table className="styled-table"><thead><tr><th>#</th><th>Loại</th><th>Tài khoản</th></tr></thead>
-                                            <tbody>{viewingOrder.accounts.map((acc: any, i: number) => (
-                                                <tr key={i}><td>{i + 1}</td><td>{acc.product_type || '—'}</td><td><code style={{ background: '#F5F5F7', padding: '2px 6px', borderRadius: 4, fontSize: 11 }}>{acc.account_details?.username || acc.account_details?.license_key || '—'}</code></td></tr>
-                                            ))}</tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Refund section */}
-                            {viewingOrder.refund_status === 'refunded' && viewingOrder.revoked_keys?.length > 0 && (
-                                <div style={{ marginBottom: 16, background: '#FFF5F5', borderRadius: 10, padding: 12, border: '1px solid #FFD2D2' }}>
-                                    <h4 style={{ margin: '0 0 6px', fontSize: 14, color: '#D32F2F' }}>🔄 Đã thu hồi</h4>
-                                    <table className="styled-table"><tbody>{viewingOrder.revoked_keys.map((k: any, i: number) => (
-                                        <tr key={i}><td>{k.product_name}</td><td><code style={{ color: '#D32F2F' }}>{k.key}</code></td><td style={{ fontSize: 11 }}>{k.reason}</td></tr>
-                                    ))}</tbody></table>
-                                </div>
-                            )}
-
-                            {/* Action buttons */}
                             {viewingOrder.status === 'paid' && viewingOrder.delivery_status !== 'delivered' && (
-                                <div style={{ marginBottom: 16, background: '#F0F9F1', borderRadius: 10, padding: 14, border: '1px solid #C2E7C6' }}>
-                                    <p style={{ margin: '0 0 10px', fontSize: 13, color: '#515154' }}>
-                                        Khách hàng đã thanh toán. Nhấn nút bên dưới để <strong>gửi email bàn giao</strong> key/tài khoản cho khách.
-                                    </p>
-                                    <button onClick={() => handleDeliver(viewingOrder._id)}
-                                        style={{ border: 'none', background: '#0071E3', color: '#FFF', padding: '10px 20px', borderRadius: 8, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-                                        <FiMail /> Gửi Email Bàn Giao
-                                    </button>
+                                <div style={{ background: '#F0F9F1', borderRadius: 10, padding: 14, marginBottom: 12, border: '1px solid #C2E7C6' }}>
+                                    <p style={{ margin: '0 0 10px', fontSize: 13 }}>Khách đã thanh toán. <strong>Gửi email bàn giao</strong> key/tài khoản.</p>
+                                    <button onClick={() => handleDeliver(viewingOrder._id)} style={{ border: 'none', background: '#0071E3', color: '#FFF', padding: '10px 20px', borderRadius: 8, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}><FiMail /> Gửi Email Bàn Giao</button>
                                 </div>
                             )}
 
                             {viewingOrder.status !== 'cancelled' && viewingOrder.refund_status !== 'refunded' && (
-                                <div style={{ marginBottom: 16, background: '#FFFDF0', borderRadius: 10, padding: 14, border: '1px solid #FFEBB3' }}>
+                                <div style={{ background: '#FFFDF0', borderRadius: 10, padding: 14, marginBottom: 12, border: '1px solid #FFEBB3' }}>
                                     <h4 style={{ margin: '0 0 8px', fontSize: 14, color: '#D27B00' }}>🔄 Hoàn tiền</h4>
-                                    <div style={{ display: 'flex', gap: 8 }}>
-                                        <input type="text" placeholder="Lý do hoàn tiền..." value={refundReason} onChange={e => setRefundReason(e.target.value)}
-                                            style={{ flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid #D2D2D7', fontSize: 13 }} />
-                                        <button onClick={() => handleRefund(viewingOrder._id)}
-                                            style={{ border: 'none', background: '#FF3B30', color: '#FFF', padding: '8px 16px', borderRadius: 8, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                                            Hoàn tiền & Thu hồi
-                                        </button>
-                                    </div>
+                                    <div style={{ display: 'flex', gap: 8 }}><input placeholder="Lý do..." value={refundReason} onChange={e => setRefundReason(e.target.value)} style={{ flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid #D2D2D7', fontSize: 13 }} /><button onClick={() => handleRefund(viewingOrder._id)} style={{ border: 'none', background: '#FF3B30', color: '#FFF', padding: '8px 16px', borderRadius: 8, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>Hoàn tiền</button></div>
                                 </div>
                             )}
 
-                            {/* Logs */}
                             {viewingOrder.logs && viewingOrder.logs.length > 0 && (
-                                <div>
-                                    <h4 style={{ margin: '0 0 8px', fontSize: 14 }}>📋 Nhật ký</h4>
-                                    <div style={{ background: '#FAFAFC', borderRadius: 10, padding: 12, border: '1px solid #E5E5EA', maxHeight: 200, overflowY: 'auto' }}>
-                                        {viewingOrder.logs.map((log: any, i: number) => (
-                                            <div key={i} style={{ fontSize: 12, color: '#515154', padding: '6px 0', borderBottom: '1px solid #F0F0F3', display: 'flex', gap: 8 }}>
-                                                <span style={{ color: '#86868B', whiteSpace: 'nowrap' }}>{new Date(log.timestamp).toLocaleString('vi-VN')}</span>
-                                                <span style={{ fontWeight: 600, color: '#0071E3' }}>{log.action}</span>
-                                                <span>{log.detail}</span>
-                                            </div>
-                                        ))}
+                                <div><h4 style={{ margin: '0 0 8px', fontSize: 14 }}>📋 Nhật ký</h4>
+                                    <div style={{ background: '#FAFAFC', borderRadius: 10, padding: 10, border: '1px solid #E5E5EA', maxHeight: 150, overflowY: 'auto', fontSize: 11 }}>
+                                        {viewingOrder.logs.map((log: any, i: number) => (<div key={i} style={{ padding: '4px 0', borderBottom: '1px solid #F0F0F3', display: 'flex', gap: 8, color: '#515154' }}><span style={{ color: '#86868B', whiteSpace: 'nowrap' }}>{new Date(log.timestamp).toLocaleString('vi-VN')}</span><span style={{ fontWeight: 600, color: '#0071E3' }}>{log.action}</span><span>{log.detail}</span></div>))}
                                     </div>
                                 </div>
                             )}
                         </div>
-                        <div className="modal-footer"><button type="button" className="btn-cancel" onClick={() => { setViewingOrder(null); setShowKeys(false); }}>Đóng</button></div>
+                        <div className="modal-footer"><button type="button" className="btn-cancel" onClick={() => { setViewingOrder(null); setShowPdf(false); setShowKeys(false); }}>Đóng</button></div>
                     </div>
                 </div>
             )}
         </div>
     );
 };
+
+const pdfBtn: React.CSSProperties = { border: 'none', background: '#0071E3', color: '#FFF', padding: '6px 12px', borderRadius: 6, fontWeight: 600, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 };
+const dlBtn: React.CSSProperties = { border: 'none', background: '#F5F5F7', color: '#1D1D1F', padding: '6px 12px', borderRadius: 6, fontWeight: 600, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 };
+const delBtn: React.CSSProperties = { border: 'none', background: '#34C759', color: '#FFF', padding: '6px 12px', borderRadius: 6, fontWeight: 600, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 };
 
 export default HoaDon;
