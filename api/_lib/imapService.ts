@@ -17,15 +17,20 @@ export async function syncEmails(): Promise<{ success: boolean; count: number; m
     return new Promise((resolve) => {
         const imap = new Imap({ user: config.user, password: config.password, host: config.host, port: config.port, tls: config.tls, tlsOptions: { rejectUnauthorized: false } });
         let count = 0;
+        let resolved = false;
+        const safeResolve = (data: any) => { if (!resolved) { resolved = true; try { imap.end(); } catch { } resolve(data); } };
+
+        // Set timeout 25s (Vercel free plan limits)
+        const timer = setTimeout(() => safeResolve({ success: true, count, message: `Đã đồng bộ ${count} mail (timeout)` }), 25000);
+
         imap.once('ready', () => {
-            imap.openBox('INBOX', false, async (err: any) => {
-                if (err) { imap.end(); resolve({ success: false, count: 0, message: 'Lỗi kết nối IMAP: ' + err.message }); return; }
-                // Lấy email 7 ngày gần đây thay vì chỉ UNSEEN
-                const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-                imap.search([['SINCE', since.toISOString().split('T')[0]]], async (err2: any, results: any) => {
-                    if (err2) { imap.end(); resolve({ success: false, count: 0, message: 'Lỗi tìm kiếm: ' + err2.message }); return; }
-                    if (!results || !results.length) { imap.end(); resolve({ success: true, count: 0, message: 'Không có mail mới trong 7 ngày qua' }); return; }
-                    const fetch = imap.fetch(results, { bodies: '', struct: true });
+            imap.openBox('INBOX', false, (err: any) => {
+                if (err) { safeResolve({ success: false, count: 0, message: 'Lỗi mở hộp thư: ' + err.message }); return; }
+                imap.search(['ALL'], (err2: any, results: any) => {
+                    if (err2 || !results || !results.length) { safeResolve({ success: true, count: 0, message: 'Không có mail trong hộp thư' }); return; }
+                    // Chỉ lấy 10 mail mới nhất
+                    const latestResults = results.slice(-10);
+                    const fetch = imap.fetch(latestResults, { bodies: '' });
                     fetch.on('message', (msg: any) => {
                         let body = '';
                         msg.on('body', (stream: any) => { let b = ''; stream.on('data', (c: any) => b += c.toString('utf8')); stream.once('end', () => body = b); });
@@ -34,7 +39,6 @@ export async function syncEmails(): Promise<{ success: boolean; count: number; m
                                 const parsed = await simpleParser(body);
                                 const mid = parsed.messageId || '';
                                 if (!mid) return;
-                                // Kiểm tra đã tồn tại chưa
                                 const existing = await EmailMessage.findOne({ message_id: mid });
                                 if (existing) return;
                                 const fromText = parsed.from?.text || '';
@@ -70,12 +74,12 @@ export async function syncEmails(): Promise<{ success: boolean; count: number; m
                             } catch { }
                         });
                     });
-                    fetch.once('error', () => { imap.end(); resolve({ success: true, count, message: `Đã đồng bộ ${count} mail` }); });
-                    fetch.once('end', () => { imap.end(); resolve({ success: true, count, message: `Đã đồng bộ ${count} mail` }); });
+                    fetch.once('error', () => safeResolve({ success: true, count, message: `Đã đồng bộ ${count} mail` }));
+                    fetch.once('end', () => { clearTimeout(timer); safeResolve({ success: true, count, message: `Đã đồng bộ ${count} mail` }); });
                 });
             });
         });
-        imap.once('error', (err: any) => { resolve({ success: false, count: 0, message: 'Lỗi IMAP: ' + err.message }); });
+        imap.once('error', (err: any) => { clearTimeout(timer); safeResolve({ success: false, count: 0, message: 'Lỗi IMAP: ' + err.message }); });
         imap.connect();
     });
 }
@@ -93,7 +97,7 @@ export async function sendReplyMail({ to, subject, body }: { to: string; subject
     if (!smtpHost || !smtpUser || !smtpPass) return { success: false, message: 'Chưa cấu hình SMTP' };
     try {
         const transporter = nodemailer.createTransport({ host: smtpHost, port: Number(smtpPort || 587), secure: Number(smtpPort) === 465, auth: { user: smtpUser, pass: smtpPass } });
-        await transporter.sendMail({ from: smtpFrom, to, subject: `Re: ${subject}`, text: body });
+        await transporter.sendMail({ from: smtpFrom, to, subject: 'Re: ' + subject, text: body });
         return { success: true, message: 'Đã gửi' };
     } catch (err: any) { return { success: false, message: err.message }; }
 }
