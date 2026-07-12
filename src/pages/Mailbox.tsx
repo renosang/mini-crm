@@ -85,6 +85,13 @@ const Mailbox: React.FC = () => {
         } catch { } finally { setSyncing(false); }
     };
 
+    const testImap = async () => {
+        try {
+            const res = await api.get('/mailbox/test-imap');
+            alert(res.data.message || JSON.stringify(res.data));
+        } catch (err: any) { alert('Lỗi: ' + err.message); }
+    };
+
     const markRead = async (id: string) => {
         try { await api.put('/mailbox/' + id, { is_read: true }); } catch { }
     };
@@ -265,7 +272,7 @@ const Mailbox: React.FC = () => {
                                         <h3 style={{ margin: 0, fontSize: '1rem' }}>{selected.subject}</h3>
                                         <p style={{ margin: '4px 0 0', fontSize: 12, color: '#8E8E93' }}>
                                             {selected.from_name || selected.from} &lt;{selected.from}&gt;
-                                                {selected.linked_customer_id && <Link to={'/customers/' + selected.linked_customer_id._id} style={{ marginLeft: 8, color: '#0071E3', fontWeight: 600 }}><FiUser style={{ verticalAlign: 'middle' }} /> {selected.linked_customer_id.name}</Link>}
+                                            {selected.linked_customer_id && <Link to={'/customers/' + selected.linked_customer_id._id} style={{ marginLeft: 8, color: '#0071E3', fontWeight: 600 }}><FiUser style={{ verticalAlign: 'middle' }} /> {selected.linked_customer_id.name}</Link>}
                                         </p>
                                     </div>
                                     <select value={selected.status} onChange={e => updateStatus(selected._id, e.target.value)}
