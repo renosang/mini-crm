@@ -18,10 +18,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const isCaiDatPage = location.pathname === '/cai-dat';
-  const isNhaCungCapPage = location.pathname === '/nha-cung-cap';
-  const [settingsOpen, setSettingsOpen] = useState<boolean>(isCaiDatPage);
-  const [supplierOpen, setSupplierOpen] = useState<boolean>(isNhaCungCapPage);
+  const [settingsOpen] = useState(false);
+  const [supplierOpen] = useState(false);
 
   const handleLogout = () => {
     logout();

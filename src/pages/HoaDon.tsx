@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import {
-    FiFileText, FiSend, FiTruck, FiAlertTriangle, FiEye, FiCopy,
-    FiRefreshCw, FiDollarSign, FiClock, FiSearch, FiList,
-    FiCheckCircle, FiXCircle, FiUser, FiKey, FiBox, FiAlertCircle,
-    FiRotateCcw
+    FiFileText, FiSend, FiMail, FiAlertTriangle, FiEye, FiCopy,
+    FiCheckCircle, FiClock, FiSearch, FiList,
+    FiUser, FiKey, FiRotateCcw, FiAlertCircle
 } from 'react-icons/fi';
 
 interface ICustomer { _id: string; name: string; phone?: string; email?: string; }
@@ -13,6 +12,7 @@ interface IOrder {
     _id: string; invoice_id: string; customer_id: ICustomer | null;
     items: any[]; product_name?: string; total_amount: number;
     quantity?: number; selling_price?: number;
+    accounts?: any[];
     status: string; payment_method?: string;
     delivery_status: string; delivered_keys: any[]; revoked_keys: any[];
     refund_status: string; refund_reason: string;
@@ -20,10 +20,10 @@ interface IOrder {
 }
 
 const filterTabs = [
-    { key: 'all', label: 'Tất cả', icon: <FiList /> },
-    { key: 'pending', label: 'Chờ TT', icon: <FiClock /> },
-    { key: 'paid', label: 'Đã TT', icon: <FiCheckCircle /> },
-    { key: 'delivered', label: 'Đã giao', icon: <FiTruck /> },
+    { key: 'all', label: 'Tất cả', con: <FiList /> },
+    { key: 'pending', label: 'Chờ thanh toán', icon: <FiClock /> },
+    { key: 'paid', label: 'Đã thanh toán', icon: <FiCheckCircle /> },
+    { key: 'delivered', label: 'Đã bàn giao', icon: <FiSend /> },
     { key: 'error', label: 'Lỗi/SLA', icon: <FiAlertTriangle /> },
     { key: 'refunded', label: 'Hoàn tiền', icon: <FiRotateCcw /> },
 ];
@@ -53,7 +53,6 @@ const HoaDon: React.FC = () => {
             const res = await api.get('/orders');
             if (res.data.success) {
                 let data = res.data.data;
-                // SLA check
                 const now = Date.now();
                 for (const o of data) {
                     if (o.status === 'paid' && o.delivery_status !== 'delivered') {
@@ -70,8 +69,16 @@ const HoaDon: React.FC = () => {
     };
 
     const handleDeliver = async (id: string) => {
-        try { await api.post('/orders/' + id + '/invoice-actions', { action: 'deliver' }); alert('Đã giao key!'); loadOrders(); setViewingOrder(null); }
-        catch (err: any) { alert('Lỗi: ' + err.message); }
+        try {
+            const res = await api.post('/orders/' + id + '/invoice-actions', { action: 'deliver' });
+            if (res.data.successEmail) {
+                alert('Đã gửi email bàn giao cho khách hàng!');
+            } else {
+                alert('Đã bàn giao thành công!');
+            }
+            loadOrders();
+            setViewingOrder(null);
+        } catch (err: any) { alert('Lỗi: ' + err.message); }
     };
 
     const handleRefund = async (id: string) => {
@@ -83,7 +90,7 @@ const HoaDon: React.FC = () => {
     const copyKeys = (keys: any[]) => {
         const text = keys.map(k => k.key).filter(Boolean).join('\n');
         navigator.clipboard.writeText(text);
-        alert('Đã copy ' + keys.length + ' key!');
+        alert('Đã copy ' + keys.length + ' thông tin bàn giao!');
     };
 
     const getStatusBadge = (status: string) => {
@@ -99,8 +106,8 @@ const HoaDon: React.FC = () => {
     const getDeliveryBadge = (ds: string, sla: boolean) => {
         if (sla) return <span style={{ padding: '3px 10px', borderRadius: 99, background: '#FF3B30', color: '#FFF', fontSize: 11, fontWeight: 700 }}>⚠ SLA</span>;
         const map: any = {
-            not_delivered: { bg: '#F5F5F7', color: '#86868B', label: 'Chưa giao' },
-            delivered: { bg: '#E8F5E9', color: '#2E7D32', label: 'Đã giao' },
+            not_delivered: { bg: '#F5F5F7', color: '#86868B', label: 'Chưa gửi' },
+            delivered: { bg: '#E8F5E9', color: '#2E7D32', label: 'Đã gửi' },
             error: { bg: '#FFEBEA', color: '#D32F2F', label: 'Lỗi' },
         };
         const s = map[ds] || map.not_delivered;
@@ -128,7 +135,7 @@ const HoaDon: React.FC = () => {
         <div>
             <div className="customer-detail-header" style={{ marginBottom: '1.25rem' }}>
                 <h1 className="gradient-title">Quản Lý Hóa Đơn</h1>
-                <p>Giao key, theo dõi thanh toán & xử lý hoàn tiền</p>
+                <p>Bàn giao key & tài khoản, theo dõi thanh toán, xử lý hoàn tiền</p>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
@@ -157,9 +164,9 @@ const HoaDon: React.FC = () => {
                 <div className="table-container widget" style={{ boxShadow: 'var(--shadow)' }}>
                     <table className="styled-table">
                         <thead><tr>
-                            <th className="nowrap">Mã HĐ</th><th className="nowrap">Khách hàng</th><th className="nowrap">Loại SP</th>
-                            <th className="nowrap">SL Key</th><th className="nowrap">Tổng tiền</th><th className="nowrap">Thanh toán</th>
-                            <th className="nowrap">Giao key</th><th className="nowrap">Ngày tạo</th><th className="nowrap">Thao tác</th>
+                            <th className="nowrap">Mã HĐ</th><th className="nowrap">Khách hàng</th><th className="nowrap">Loại</th>
+                            <th className="nowrap">Số lượng</th><th className="nowrap">Tổng tiền</th><th className="nowrap">Thanh toán</th>
+                            <th className="nowrap">Bàn giao</th><th className="nowrap">Ngày tạo</th><th className="nowrap">Thao tác</th>
                         </tr></thead>
                         <tbody>
                             {filteredOrders.length > 0 ? filteredOrders.map(o => (
@@ -181,8 +188,10 @@ const HoaDon: React.FC = () => {
                                     <td className="nowrap">
                                         <div style={{ display: 'flex', gap: 4 }}>
                                             <button onClick={() => setViewingOrder(o)} title="Chi tiết" style={{ border: 'none', background: 'none', color: '#0071E3', cursor: 'pointer', fontSize: 14, padding: 4 }}><FiEye /></button>
-                                            {o.status === 'paid' && o.delivery_status !== 'delivered' && <button onClick={() => handleDeliver(o._id)} title="Giao key" style={{ border: 'none', background: 'none', color: '#34C759', cursor: 'pointer', fontSize: 14, padding: 4 }}><FiTruck /></button>}
-                                            {o.delivered_keys?.length > 0 && <button onClick={() => copyKeys(o.delivered_keys)} title="Copy key" style={{ border: 'none', background: 'none', color: '#5856D6', cursor: 'pointer', fontSize: 14, padding: 4 }}><FiCopy /></button>}
+                                            {o.status === 'paid' && o.delivery_status !== 'delivered' && (
+                                                <button onClick={() => handleDeliver(o._id)} title="Bàn giao qua email" style={{ border: 'none', background: 'none', color: '#34C759', cursor: 'pointer', fontSize: 14, padding: 4 }}><FiMail /></button>
+                                            )}
+                                            {o.delivered_keys?.length > 0 && <button onClick={() => copyKeys(o.delivered_keys)} title="Copy" style={{ border: 'none', background: 'none', color: '#5856D6', cursor: 'pointer', fontSize: 14, padding: 4 }}><FiCopy /></button>}
                                         </div>
                                     </td>
                                 </tr>
@@ -196,14 +205,25 @@ const HoaDon: React.FC = () => {
             {viewingOrder && (
                 <div className="modal-overlay" onClick={() => { setViewingOrder(null); setShowKeys(false); }}>
                     <div className="modal-content" onClick={e => e.stopPropagation()} style={{ width: '800px', maxWidth: '97vw' }}>
-                        <div className="modal-header"><h2><FiFileText style={{ marginRight: 6 }} /> Chi Tiết Hóa Đơn #{viewingOrder.invoice_id || viewingOrder._id.substring(viewingOrder._id.length - 6).toUpperCase()}</h2><button onClick={() => { setViewingOrder(null); setShowKeys(false); }} className="modal-close-btn">&times;</button></div>
+                        <div className="modal-header">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                <div style={{ width: 38, height: 38, borderRadius: 10, background: 'linear-gradient(135deg, #0071E3, #005BB5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <FiFileText style={{ color: '#FFF', fontSize: '1.1rem' }} />
+                                </div>
+                                <div>
+                                    <h2 style={{ margin: 0, fontSize: '1.15rem' }}>Chi Tiết Hóa Đơn #{viewingOrder.invoice_id || viewingOrder._id.substring(viewingOrder._id.length - 6).toUpperCase()}</h2>
+                                    <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: 'var(--text-light)' }}>Thông tin bàn giao & trạng thái</p>
+                                </div>
+                            </div>
+                            <button onClick={() => { setViewingOrder(null); setShowKeys(false); }} className="modal-close-btn">&times;</button>
+                        </div>
                         <div className="modal-body" style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: 5 }}>
                             {/* Customer */}
                             <div style={{ background: '#F8F9FC', borderRadius: 14, padding: '1rem', marginBottom: 16, border: '1px solid #EEE', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
                                 <div><strong><FiUser style={{ marginRight: 6 }} />{viewingOrder.customer_id?.name || 'Khách lẻ'}</strong><span style={{ color: '#86868B', marginLeft: 12, fontSize: 13 }}>{viewingOrder.customer_id?.phone || ''} | {viewingOrder.customer_id?.email || ''}</span></div>
                                 <div style={{ display: 'flex', gap: 16 }}>
                                     <div><span style={{ color: '#86868B', fontSize: 11 }}>Thanh toán</span><div>{getStatusBadge(viewingOrder.status)}</div></div>
-                                    <div><span style={{ color: '#86868B', fontSize: 11 }}>Giao key</span><div>{getDeliveryBadge(viewingOrder.delivery_status, viewingOrder.sla_warning)}</div></div>
+                                    <div><span style={{ color: '#86868B', fontSize: 11 }}>Bàn giao</span><div>{getDeliveryBadge(viewingOrder.delivery_status, viewingOrder.sla_warning)}</div></div>
                                     <div><span style={{ color: '#86868B', fontSize: 11 }}>Hoàn tiền</span><div><span style={{ fontSize: 12, fontWeight: 600 }}>{viewingOrder.refund_status === 'refunded' ? '✅ Đã hoàn' : viewingOrder.refund_status === 'requested' ? '⏳ Đang xử lý' : '—'}</span></div></div>
                                 </div>
                             </div>
@@ -221,20 +241,34 @@ const HoaDon: React.FC = () => {
                                     </tbody></table>
                             </div>
 
-                            {/* Keys */}
+                            {/* Keys — đổi tên thành "Thông tin bàn giao" */}
                             {viewingOrder.delivered_keys && viewingOrder.delivered_keys.length > 0 && (
                                 <div style={{ marginBottom: 16 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                                        <h4 style={{ margin: 0, fontSize: 14 }}>🔐 Key đã giao ({viewingOrder.delivered_keys.length})</h4>
+                                        <h4 style={{ margin: 0, fontSize: 14 }}>🔐 Thông tin bàn giao ({viewingOrder.delivered_keys.length})</h4>
                                         <div style={{ display: 'flex', gap: 8 }}>
-                                            <button onClick={() => setShowKeys(!showKeys)} style={{ border: 'none', background: 'none', color: '#0071E3', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>{showKeys ? 'Ẩn' : 'Hiện'} key</button>
+                                            <button onClick={() => setShowKeys(!showKeys)} style={{ border: 'none', background: 'none', color: '#0071E3', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>{showKeys ? 'Ẩn' : 'Hiện'}</button>
                                             <button onClick={() => copyKeys(viewingOrder.delivered_keys)} style={{ border: 'none', background: 'none', color: '#5856D6', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}><FiCopy /> Copy tất cả</button>
                                         </div>
                                     </div>
                                     <div className="table-container" style={{ border: '1px solid #EEE', borderRadius: 10, overflow: 'hidden' }}>
-                                        <table className="styled-table"><thead><tr><th>#</th><th>Sản phẩm</th><th>Key</th></tr></thead>
+                                        <table className="styled-table"><thead><tr><th>#</th><th>Sản phẩm</th><th>Key/Tài khoản</th></tr></thead>
                                             <tbody>{viewingOrder.delivered_keys.map((k: any, i: number) => (
                                                 <tr key={i}><td>{i + 1}</td><td>{k.product_name}</td><td><code style={{ background: '#F5F5F7', padding: '2px 6px', borderRadius: 4, fontSize: 11 }}>{showKeys ? k.key : '••••••••' + (k.key || '').substring((k.key || '').length - 4)}</code></td></tr>
+                                            ))}</tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Nếu chưa có delivered_keys nhưng có accounts → hiển thị thông tin tài khoản */}
+                            {(!viewingOrder.delivered_keys || viewingOrder.delivered_keys.length === 0) && viewingOrder.accounts && viewingOrder.accounts.length > 0 && (
+                                <div style={{ marginBottom: 16 }}>
+                                    <h4 style={{ margin: '0 0 8px', fontSize: 14 }}>👤 Tài khoản trong đơn</h4>
+                                    <div className="table-container" style={{ border: '1px solid #EEE', borderRadius: 10, overflow: 'hidden' }}>
+                                        <table className="styled-table"><thead><tr><th>#</th><th>Loại</th><th>Tài khoản</th></tr></thead>
+                                            <tbody>{viewingOrder.accounts.map((acc: any, i: number) => (
+                                                <tr key={i}><td>{i + 1}</td><td>{acc.product_type || '—'}</td><td><code style={{ background: '#F5F5F7', padding: '2px 6px', borderRadius: 4, fontSize: 11 }}>{acc.account_details?.username || acc.account_details?.license_key || '—'}</code></td></tr>
                                             ))}</tbody>
                                         </table>
                                     </div>
@@ -244,7 +278,7 @@ const HoaDon: React.FC = () => {
                             {/* Refund section */}
                             {viewingOrder.refund_status === 'refunded' && viewingOrder.revoked_keys?.length > 0 && (
                                 <div style={{ marginBottom: 16, background: '#FFF5F5', borderRadius: 10, padding: 12, border: '1px solid #FFD2D2' }}>
-                                    <h4 style={{ margin: '0 0 6px', fontSize: 14, color: '#D32F2F' }}>🔄 Key đã thu hồi</h4>
+                                    <h4 style={{ margin: '0 0 6px', fontSize: 14, color: '#D32F2F' }}>🔄 Đã thu hồi</h4>
                                     <table className="styled-table"><tbody>{viewingOrder.revoked_keys.map((k: any, i: number) => (
                                         <tr key={i}><td>{k.product_name}</td><td><code style={{ color: '#D32F2F' }}>{k.key}</code></td><td style={{ fontSize: 11 }}>{k.reason}</td></tr>
                                     ))}</tbody></table>
@@ -253,9 +287,13 @@ const HoaDon: React.FC = () => {
 
                             {/* Action buttons */}
                             {viewingOrder.status === 'paid' && viewingOrder.delivery_status !== 'delivered' && (
-                                <div style={{ marginBottom: 16 }}>
-                                    <button onClick={() => handleDeliver(viewingOrder._id)} style={{ border: 'none', background: '#34C759', color: '#FFF', padding: '10px 20px', borderRadius: 8, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-                                        <FiTruck /> Giao Key Ngay
+                                <div style={{ marginBottom: 16, background: '#F0F9F1', borderRadius: 10, padding: 14, border: '1px solid #C2E7C6' }}>
+                                    <p style={{ margin: '0 0 10px', fontSize: 13, color: '#515154' }}>
+                                        Khách hàng đã thanh toán. Nhấn nút bên dưới để <strong>gửi email bàn giao</strong> key/tài khoản cho khách.
+                                    </p>
+                                    <button onClick={() => handleDeliver(viewingOrder._id)}
+                                        style={{ border: 'none', background: '#0071E3', color: '#FFF', padding: '10px 20px', borderRadius: 8, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                        <FiMail /> Gửi Email Bàn Giao
                                     </button>
                                 </div>
                             )}
