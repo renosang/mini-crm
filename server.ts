@@ -46,6 +46,9 @@ import productDetailHandler from './api/products/[id].ts';
 import discountsHandler from './api/discounts/index.ts';
 import discountDetailHandler from './api/discounts/[id].ts';
 
+// Expense routes
+import expensesHandler from './api/expenses/index.ts';
+
 // Quotation routes
 import quotationsHandler from './api/quotations/index.ts';
 import quotationSendEmailHandler from './api/quotations/send-email.ts';
@@ -177,6 +180,14 @@ app.post('/api/discounts', discountsHandler);
 app.get('/api/discounts/:id', mapParams, discountDetailHandler);
 app.put('/api/discounts/:id', mapParams, discountDetailHandler);
 app.delete('/api/discounts/:id', mapParams, discountDetailHandler);
+
+// Expense Routes
+app.get('/api/expenses/pnl', mapParams, expensesHandler);
+app.get('/api/expenses', expensesHandler);
+app.post('/api/expenses', expensesHandler);
+app.get('/api/expenses/:id', mapParams, expensesHandler);
+app.put('/api/expenses/:id', mapParams, expensesHandler);
+app.delete('/api/expenses/:id', mapParams, expensesHandler);
 
 // Quotation Routes
 app.get('/api/quotations', quotationsHandler);

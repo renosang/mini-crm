@@ -56,6 +56,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
           <NavLink to="/ban-hang/hoa-don" className="nav-item" onClick={handleNavClick} style={{ marginBottom: 0, paddingLeft: '2.8rem', fontSize: '0.88rem' }}>
             <FiCreditCard /> Hóa Đơn
           </NavLink>
+          <NavLink to="/ban-hang/chi-phi" className="nav-item" onClick={handleNavClick} style={{ marginBottom: 0, paddingLeft: '2.8rem', fontSize: '0.88rem' }}>
+            <FiDollarSign /> Chi Phí
+          </NavLink>
         </div>
         <NavLink to="/omnichannel" className="nav-item" onClick={handleNavClick}>
           <FiMessageCircle /> Omni-channel Inbox
