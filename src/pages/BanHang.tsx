@@ -6,6 +6,7 @@ import {
   FiPackage, FiSearch, FiCalendar, FiCheckCircle, FiClock,
   FiXCircle, FiPlusCircle, FiMail, FiInfo, FiTag, FiShoppingBag
 } from 'react-icons/fi';
+import { useNotification } from '../contexts/NotificationContext.tsx';
 
 // === KIỂU DỮ LIỆU ===
 interface ICustomer {
@@ -80,6 +81,7 @@ interface IOrder {
 
 // === COMPONENT TRANG BÁN HÀNG ===
 const BanHang: React.FC = () => {
+  const { showNotification } = useNotification();
   const [orders, setOrders] = useState<IOrder[]>([]);
   const [customers, setCustomers] = useState<ICustomer[]>([]);
   const [products, setProducts] = useState<IProduct[]>([]);
@@ -196,7 +198,7 @@ const BanHang: React.FC = () => {
         setQuickCustomerPhone('');
       }
     } catch (err) {
-      alert('Không thể tạo nhanh khách hàng.');
+      showNotification('Không thể tạo nhanh khách hàng.', 'error');
     }
   };
 
@@ -230,17 +232,17 @@ const BanHang: React.FC = () => {
   const handleOrderSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCustomerId) {
-      alert('Vui lòng chọn khách hàng.');
+      showNotification('Vui lòng chọn khách hàng.', 'warning');
       return;
     }
 
     if (!productName.trim()) {
-      alert('Vui lòng nhập tên sản phẩm.');
+      showNotification('Vui lòng nhập tên sản phẩm.', 'warning');
       return;
     }
 
     if (!sellingPrice || Number(sellingPrice) <= 0) {
-      alert('Vui lòng nhập giá bán hợp lệ.');
+      showNotification('Vui lòng nhập giá bán hợp lệ.', 'warning');
       return;
     }
 
@@ -272,7 +274,7 @@ const BanHang: React.FC = () => {
         await loadAllData();
       }
     } catch (err: any) {
-      alert('Lỗi tạo đơn hàng: ' + (err.response?.data?.message || err.message));
+      showNotification('Lỗi tạo đơn hàng: ' + (err.response?.data?.message || err.message), 'error');
     }
   };
 
@@ -286,7 +288,7 @@ const BanHang: React.FC = () => {
         await loadAllData();
       }
     } catch (err) {
-      alert('Không thể xóa đơn hàng.');
+      showNotification('Không thể xóa đơn hàng.', 'error');
     }
   };
 
@@ -327,14 +329,14 @@ const BanHang: React.FC = () => {
           });
           setShowEmailPreviewModal(true);
         } else {
-          alert(res.data.message);
+          showNotification(res.data.message, 'success');
           setShowEmailPreviewModal(false);
           setEmailPreview(null);
           setActivePreviewOrderId(null);
         }
       }
     } catch (err: any) {
-      alert('Lỗi gửi email: ' + (err.response?.data?.message || err.message));
+      showNotification('Lỗi gửi email: ' + (err.response?.data?.message || err.message), 'error');
     } finally {
       setIsSendingEmailId(null);
     }

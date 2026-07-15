@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { FiFileText, FiSend, FiMail, FiAlertTriangle, FiEye, FiCopy, FiCheckCircle, FiClock, FiSearch, FiUser, FiRotateCcw, FiAlertCircle, FiDownload, FiPrinter, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { useNotification } from '../contexts/NotificationContext.tsx';
 
 interface ICustomer { _id: string; name: string; phone?: string; email?: string; }
 interface IOrder { _id: string; invoice_id: string; customer_id: ICustomer | null; items: any[]; product_name?: string; total_amount: number; quantity?: number; selling_price?: number; cost_price?: number; expiry_date?: string; accounts?: any[]; status: string; payment_method?: string; delivery_status: string; delivered_keys: any[]; revoked_keys: any[]; refund_status: string; refund_reason: string; logs: any[]; sla_warning: boolean; createdAt: string; recurring_invoice?: any; discount_amount?: number; customer_note?: string; internal_note?: string; }
@@ -9,6 +10,7 @@ interface IOrder { _id: string; invoice_id: string; customer_id: ICustomer | nul
 const filterTabs = [{ key: 'all', label: 'Tất cả' }, { key: 'pending', label: 'Chờ TT' }, { key: 'paid', label: 'Đã TT' }, { key: 'delivered', label: 'Đã gửi' }, { key: 'refunded', label: 'Hoàn tiền' }];
 
 const HoaDon: React.FC = () => {
+    const { showNotification } = useNotification();
     const [orders, setOrders] = useState<IOrder[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('all');
@@ -20,9 +22,9 @@ const HoaDon: React.FC = () => {
     useEffect(() => { loadOrders(); }, [activeTab]);
 
     const loadOrders = async () => { setLoading(true); try { const res = await api.get('/orders'); if (res.data.success) { const now = Date.now(); for (const o of res.data.data) { if (o.status === 'paid' && o.delivery_status !== 'delivered') { const paidAt = o.logs?.find((l: any) => l.action === 'paid')?.timestamp; if (paidAt && now - new Date(paidAt).getTime() > 5 * 60 * 1000) o.sla_warning = true; } } setOrders(res.data.data); } } catch { } finally { setLoading(false); } };
-    const handleDeliver = async (id: string) => { try { const res = await api.post('/orders/' + id + '/invoice-actions', { action: 'deliver' }); alert(res.data.successEmail ? 'Đã gửi email bàn giao!' : 'Đã bàn giao!'); loadOrders(); setViewingOrder(null); } catch (err: any) { alert('Lỗi: ' + err.message); } };
-    const handleRefund = async (id: string) => { if (!refundReason.trim()) { alert('Nhập lý do'); return; } try { await api.post('/orders/' + id + '/invoice-actions', { action: 'refund', reason: refundReason }); alert('Đã hoàn tiền!'); loadOrders(); setViewingOrder(null); setRefundReason(''); } catch (err: any) { alert('Lỗi: ' + err.message); } };
-    const copyKeys = (keys: any[]) => { navigator.clipboard.writeText(keys.map(k => k.key).filter(Boolean).join('\n')); alert('Đã copy ' + keys.length + ' key!'); };
+    const handleDeliver = async (id: string) => { try { const res = await api.post('/orders/' + id + '/invoice-actions', { action: 'deliver' }); showNotification(res.data.successEmail ? 'Đã gửi email bàn giao!' : 'Đã bàn giao!', 'success'); loadOrders(); setViewingOrder(null); } catch (err: any) { showNotification('Lỗi: ' + err.message, 'error'); } };
+    const handleRefund = async (id: string) => { if (!refundReason.trim()) { showNotification('Nhập lý do', 'warning'); return; } try { await api.post('/orders/' + id + '/invoice-actions', { action: 'refund', reason: refundReason }); showNotification('Đã hoàn tiền!', 'success'); loadOrders(); setViewingOrder(null); setRefundReason(''); } catch (err: any) { showNotification('Lỗi: ' + err.message, 'error'); } };
+    const copyKeys = (keys: any[]) => { navigator.clipboard.writeText(keys.map(k => k.key).filter(Boolean).join('\n')); showNotification('Đã copy ' + keys.length + ' key!', 'success'); };
     const getPdfUrl = (id: string) => '/api/orders/pdf/' + id;
     const downloadPdf = (id: string) => { const a = document.createElement('a'); a.href = getPdfUrl(id); a.download = 'hoa-don-' + id + '.pdf'; a.click(); };
     const viewPdf = (id: string) => window.open(getPdfUrl(id), '_blank');
