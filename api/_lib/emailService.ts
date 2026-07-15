@@ -382,7 +382,8 @@ export async function sendInvoiceEmail({
     showTransferInPDF,
     (orderId || accountId || undefined),
     isRenewal,
-    orderExtra
+    orderExtra,
+    bankInfo
   );
   const pdfBase64 = pdfBuffer.toString('base64');
 
@@ -422,21 +423,29 @@ export async function sendInvoiceEmail({
       auth: {
         user: smtpUser,
         pass: smtpPass
-      }
+      },
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 8000
     });
 
-    await transporter.sendMail({
+    // Thực hiện gửi email trong nền để phản hồi khách hàng ngay lập tức
+    transporter.sendMail({
       from: smtpFrom,
       to: customerEmail,
       subject: emailSubject,
       html: htmlContent,
       attachments: attachments
+    }).then(() => {
+      console.log(`[SMTP] Đã gửi email hóa đơn thành công đến ${customerEmail}`);
+    }).catch((err) => {
+      console.error(`[SMTP ERROR] Gửi email thất bại đến ${customerEmail}:`, err.message);
     });
 
     return {
       success: true,
       mode: 'smtp',
-      message: `Đã gửi email nhắc gia hạn thành công kèm Hóa đơn PDF đến địa chỉ ${customerEmail} qua SMTP!`,
+      message: `Đã kích hoạt gửi email hóa đơn đến ${customerEmail} qua SMTP trong nền!`,
       pdfBase64: pdfBase64
     };
   } else {

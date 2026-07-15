@@ -47,7 +47,10 @@ export default async function handler(req: any, res: any) {
           auth: {
             user: smtp_user,
             pass: smtp_pass
-          }
+          },
+          connectionTimeout: 5000,
+          greetingTimeout: 5000,
+          socketTimeout: 8000
         });
 
         let logoBase64 = '';

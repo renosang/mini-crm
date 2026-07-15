@@ -7,7 +7,7 @@ import Setting from '../_models/Setting.ts';
 
 async function fetchImageBuffer(url: string): Promise<Buffer | null> {
   try {
-    const response = await axios.get(url, { responseType: 'arraybuffer' });
+    const response = await axios.get(url, { responseType: 'arraybuffer', timeout: 2000 });
     return Buffer.from(response.data);
   } catch (error) {
     console.error(`Không thể tải hình ảnh từ URL: ${url}`, error);
@@ -73,19 +73,23 @@ export function generateInvoicePDF(
   orderId?: string,
   isRenewal?: boolean,
   orderExtra?: any,
+  passedBankInfo?: any,
 ): Promise<Buffer> {
   return new Promise(async (resolve, reject) => {
     try {
-      await dbConnect();
-      const bankSetting = await Setting.findOne({ key: 'bank' });
-      let bankInfo = {
-        bank_id: 'Sacombank',
-        account_no: '060233251669',
-        account_name: 'Nguyễn Thanh Sang',
-        bank_name: 'Sacombank'
-      };
-      if (bankSetting && bankSetting.value) {
-        bankInfo = { ...bankInfo, ...bankSetting.value };
+      let bankInfo = passedBankInfo;
+      if (!bankInfo) {
+        await dbConnect();
+        const bankSetting = await Setting.findOne({ key: 'bank' });
+        bankInfo = {
+          bank_id: 'Sacombank',
+          account_no: '060233251669',
+          account_name: 'Nguyễn Thanh Sang',
+          bank_name: 'Sacombank'
+        };
+        if (bankSetting && bankSetting.value) {
+          bankInfo = { ...bankInfo, ...bankSetting.value };
+        }
       }
 
       const doc = new PDFDocument({ size: 'A4', margin: 0 });
