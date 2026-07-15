@@ -63,9 +63,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
         <NavLink to="/mailbox" className="nav-item" onClick={handleNavClick}>
           <FiMail /> Mail Box
         </NavLink>
-        <NavLink to="/omnichannel" className="nav-item" onClick={handleNavClick}>
-          <FiMessageCircle /> Omni-channel Inbox
-        </NavLink>
 
         <div className="sidebar-category-header">Quản Lý Kho & Bản Quyền</div>
         <NavLink to="/san-pham" className="nav-item" onClick={handleNavClick}>

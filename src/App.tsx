@@ -23,7 +23,6 @@ import CustomerDetail from './pages/CustomerDetail.tsx';
 import QuanLyGiaHan from './pages/QuanLyGiaHan.tsx';
 import CaiDat from './pages/CaiDat.tsx';
 import NhaCungCap from './pages/NhaCungCap.tsx';
-import OmnichannelInbox from './pages/OmnichannelInbox.tsx';
 import SanPham from './pages/SanPham.tsx';
 
 
@@ -68,7 +67,6 @@ function App() {
         <Route path="/ban-hang/chi-phi" element={<ChiPhi />} />
         <Route path="/kho-tai-nguyen" element={<KhoTaiNguyen />} />
         <Route path="/ban-quyen-ca-nhan" element={<BanQuyenCaNhan />} />
-        <Route path="/omnichannel" element={<OmnichannelInbox />} />
         <Route path="/san-pham" element={<SanPham />} />
 
         {/* Các trang khác */}
