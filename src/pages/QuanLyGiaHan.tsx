@@ -6,6 +6,7 @@ import {
   FiCalendar, FiMail, FiRefreshCw, FiSearch, FiSliders,
   FiSend, FiMessageCircle, FiFacebook, FiInfo, FiExternalLink
 } from 'react-icons/fi';
+import { useNotification } from '../contexts/NotificationContext.tsx';
 
 
 
@@ -66,6 +67,7 @@ interface IFlattenedSub {
 }
 
 const QuanLyGiaHan: React.FC = () => {
+  const { showNotification } = useNotification();
   const [accounts, setAccounts] = useState<IAccount[]>([]);
   const [orders, setOrders] = useState<IOrder[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -309,12 +311,12 @@ const QuanLyGiaHan: React.FC = () => {
             isSimulation: emailRes.mode === 'simulation'
           });
         } else {
-          alert(`Gia hạn gói dịch vụ thành công đến ngày ${new Date(newExpiryDate).toLocaleDateString('vi-VN')} và đã gửi email hóa đơn!`);
+          showNotification(`Gia hạn gói dịch vụ thành công đến ngày ${new Date(newExpiryDate).toLocaleDateString('vi-VN')} và đã gửi email hóa đơn!`, 'success');
         }
       }
     } catch (err: any) {
       console.error(err);
-      alert(err.response?.data?.message || 'Không thể cập nhật gia hạn dịch vụ.');
+      showNotification(err.response?.data?.message || 'Không thể cập nhật gia hạn dịch vụ.', 'error');
     } finally {
       setIsRenewing(false);
     }
@@ -370,14 +372,14 @@ const QuanLyGiaHan: React.FC = () => {
           });
         } else {
           // Đã gửi email thực tế thành công!
-          alert(res.data.message);
+          showNotification(res.data.message, 'success');
           setPreviewEmailData(null);
           setActivePreviewSub(null);
         }
       }
     } catch (err: any) {
       console.error(err);
-      alert('Gửi email nhắc nhở thất bại. Có lỗi xảy ra.');
+      showNotification('Gửi email nhắc nhở thất bại. Có lỗi xảy ra.', 'error');
     } finally {
       setSendingEmailId(null);
     }

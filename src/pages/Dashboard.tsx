@@ -6,6 +6,7 @@ import {
   FiPlusCircle, FiClock, FiUserPlus, FiSettings,
   FiMail, FiRefreshCw, FiAlertTriangle, FiCheckCircle, FiInfo
 } from 'react-icons/fi';
+import { useNotification } from '../contexts/NotificationContext.tsx';
 
 // 1. Định nghĩa kiểu dữ liệu
 interface IDashboardStats {
@@ -65,6 +66,7 @@ interface IFlattenedSub {
 }
 
 const Dashboard: React.FC = () => {
+  const { showNotification } = useNotification();
   const navigate = useNavigate();
   const [stats, setStats] = useState<IDashboardStats | null>(null);
   const [orders, setOrders] = useState<IOrder[]>([]);
@@ -258,14 +260,14 @@ const Dashboard: React.FC = () => {
             isSimulation: true
           });
         } else {
-          alert(res.data.message);
+          showNotification(res.data.message, 'success');
           setPreviewEmailData(null);
           setActivePreviewSub(null);
         }
       }
     } catch (err) {
       console.error('Error sending reminder:', err);
-      alert('Gửi email nhắc nhở thất bại. Có lỗi xảy ra.');
+      showNotification('Gửi email nhắc nhở thất bại. Có lỗi xảy ra.', 'error');
     } finally {
       setSendingEmailId(null);
     }

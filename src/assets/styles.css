@@ -3277,5 +3277,108 @@ h5 {
   }
 }
 
+/* === Custom Apple-style Premium Toast Notifications === */
+.toast-container {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 11000; /* Higher than modal overlays */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.toast-item {
+  pointer-events: auto;
+  min-width: 320px;
+  max-width: 450px;
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 14px 18px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+  animation: toastSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast-item.toast-success {
+  background-color: rgba(235, 249, 235, 0.95);
+  border: 1px solid rgba(52, 199, 89, 0.2);
+}
+
+.toast-item.toast-error {
+  background-color: rgba(255, 235, 234, 0.95);
+  border: 1px solid rgba(255, 59, 48, 0.2);
+  animation: toastSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards, toastShake 0.4s linear;
+}
+
+.toast-item.toast-warning {
+  background-color: rgba(255, 243, 224, 0.95);
+  border: 1px solid rgba(255, 149, 0, 0.2);
+}
+
+.toast-item.toast-info {
+  background-color: rgba(242, 247, 253, 0.95);
+  border: 1px solid rgba(0, 113, 227, 0.2);
+}
+
+.toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  animation: toastProgress 4s linear forwards;
+}
+
+@keyframes toastSlideIn {
+  from {
+    transform: translateX(120%) scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes toastProgress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+@keyframes toastShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+.toast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: toastIconBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.1s both;
+}
+
+@keyframes toastIconBounce {
+  0% { transform: scale(0); }
+  100% { transform: scale(1); }
+}
+
+
 
 
